@@ -4,6 +4,8 @@ Custom WordPress theme built specifically for **Raghushree (`Raghushree Plast Pr
 
 > **Start here for the product master, Razorpay and Shiprocket setup:** [Product master and payments guide](#26-product-master-payments-and-manual-delivery). This guide covers installation, dashboard settings, test payments, manual delivery and developer details.
 >
+> **How the code connects:** [Code architecture README](docs/code-architecture/README.md) traces product data, shipping quotes, checkout, webhooks and order storage through the actual files and hooks.
+>
 > **Current status:** the code and mocked tests are present, but the payment flow has not been verified end-to-end on the deployed WordPress site with the merchant's actual accounts. Keep live checkout disabled until staging and controlled live checks are complete. Shiprocket is used for **quotes only**; orders and delivery are managed manually in WordPress.
 
 ---
