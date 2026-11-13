@@ -1,0 +1,61 @@
+/* Unified reading scale. Buttons and navigation intentionally retain their own sizing. */
+:root { --card-heading-size: 1.25rem; --reading-size: 1.0625rem; }
+@media (min-width: 900px) { :root { --card-heading-size: 1.375rem; } }
+
+/* All section prose, card descriptions and informational points. */
+main p,
+main .feature-card__desc, main .product-card__desc,
+main .process-card p, main .trust-item__desc,
+main .flip-card__summary, main .showcase-img-card__desc,
+main .sp-grade-card__desc, main .sp-tech-item__desc,
+main .sp-logistics-card__desc, main .contact-card p,
+main .capability-point p, main .market-card p,
+main .page-banner-card__points li, main .vps-slide__points li,
+main .flip-card__list li, main .sp-check-list li,
+main .enquiry-checklist li, main .market-card__list li {
+  font-size: var(--reading-size);
+  line-height: 1.6;
+}
+/* Cards use one heading size and a single hierarchy across templates. */
+main .feature-card__title, main .product-card__title,
+main .process-card__title, main .trust-item__title,
+main .flip-card__title, main .flip-card__back-title,
+main .showcase-img-card__title, main .sp-grade-card__title,
+main .sp-tech-item__title, main .sp-logistics-card__val,
+main .contact-card__value, main .capability-point__title,
+main .market-card h3, main .channel-panel h3 {
+  font-size: var(--card-heading-size);
+  line-height: 1.3;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+/* Supporting card labels and values should not shrink into microtype. */
+main .feature-card__meta, main .product-card__badge,
+main .flip-card__back-kicker, main .flip-card__tag,
+main .showcase-img-card__body .sp-kicker, main .sp-kicker,
+main .contact-card__label, main .about-fact__label,
+main .about-fact__value, main .about-triptych__fact-label,
+main .about-triptych__fact-val, main .summary-kv__label,
+main .summary-kv__val, main .vps-slide__badge,
+main .page-banner-card__caption-title, main .page-banner-card__caption-sub {
+  font-size: var(--reading-size);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+main .showcase-img-card__body .sp-kicker { white-space: normal; overflow: visible; }
+@media (min-width: 1200px) {
+  main .feature-card__title, main .product-card__title,
+  main .flip-card__title, main .showcase-img-card__title,
+  main .sp-grade-card__title, main .sp-tech-item__title,
+  main .sp-logistics-card__val, main .contact-card__value,
+  main .capability-point__title { min-height: 2.6em; }
+}
+main .grid-4 .feature-card__desc { font-size: var(--reading-size); line-height: 1.6; }
+main .tag, main .caption { font-size: var(--reading-size); line-height: 1.45; }
+@media (min-width: 1120px) {
+  main .showcase-img-card__body .sp-kicker { min-height: 2.9em; }
+}
+@media (min-width: 900px) {
+  main .sp-grade-card__head { min-height: 3.1em; }
+}
+main .buyer-roles p { font-size: var(--reading-size); line-height: 1.6; }

@@ -1,0 +1,246 @@
+/* ==========================================================================
+   Raghushree — Homepage Page-Specific Styles (12 Meaningful Sections)
+   ========================================================================== */
+
+/* Section 1: Home Hero (Full-Width Curved Wave Split Banner) */
+.home-hero {
+  background-color: var(--white);
+  padding-block: 0;
+}
+
+.home-banner {
+  position: relative;
+  width: 100%;
+  background-color: var(--white);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-banner__inner {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+.home-banner__content {
+  width: 100%;
+  padding-block: clamp(2.5rem, 4.5vw, 3.75rem) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: var(--white);
+  min-width: 0;
+}
+
+.home-banner__title {
+  margin-bottom: var(--space-4);
+}
+
+.home-banner__desc {
+  margin-bottom: var(--space-6);
+  max-width: 540px;
+}
+
+.home-banner__actions {
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 575px) {
+  .home-banner__actions .btn-group {
+    flex-direction: column;
+  }
+
+  .home-banner__actions .btn {
+    width: 100%;
+  }
+}
+
+.home-banner__highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.home-banner__desktop-wave {
+  display: none;
+}
+
+.home-banner__media {
+  position: relative;
+  width: 100%;
+  height: clamp(290px, 52vw, 430px);
+  z-index: 1;
+  background-color: var(--ink-soft);
+}
+
+.home-banner__mobile-wave {
+  display: block;
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  max-width: none;
+  height: clamp(64px, 11vw, 96px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.home-banner__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  filter: grayscale(100%) contrast(1.08) brightness(0.95);
+}
+
+.home-banner__quick-badge {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  z-index: 4;
+  background: linear-gradient(135deg, var(--accent), var(--cta));
+  padding: 7px 10px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+}
+
+.home-banner__quick-btn {
+  width: 34px;
+  height: 34px;
+  background-color: var(--white);
+  color: var(--cta);
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast) var(--ease-standard),
+              background-color var(--transition-fast) var(--ease-standard),
+              color var(--transition-fast) var(--ease-standard);
+}
+
+.home-banner__quick-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.home-banner__quick-btn:hover {
+  background-color: var(--ink);
+  color: var(--text-on-dark);
+  transform: translateY(-1px);
+}
+
+@media (min-width: 1024px) {
+  .home-banner {
+    min-height: 560px;
+  }
+
+  .home-banner__inner {
+    min-height: 560px;
+  }
+
+  .home-banner__content {
+    width: 48%;
+    max-width: 570px;
+    padding-block: clamp(3.25rem, 4.5vw, 4.25rem);
+    padding-right: var(--space-5);
+    background-color: transparent;
+  }
+
+  .home-banner__desktop-wave {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .home-banner__mobile-wave {
+    display: none;
+  }
+
+  .home-banner__media {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 56%;
+    height: 100%;
+  }
+
+  .home-banner__quick-badge {
+    top: 28px;
+    bottom: auto;
+    right: max(28px, var(--gutter-current));
+  }
+}
+
+/* Section 2: Business Strength / Trust Bar */
+.trust-bar__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .trust-bar__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .trust-bar__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.trust-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--ink-soft);
+  box-shadow: var(--shadow-dark);
+}
+
+.trust-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-xs);
+  background-color: var(--accent-18);
+  color: var(--accent-light);
+  flex-shrink: 0;
+}
+
+.trust-item__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.trust-item__title {
+  margin-bottom: 6px;
+  font-size: clamp(1.03125rem, 0.98rem + 0.22vw, 1.125rem);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-on-dark);
+}
+
+.trust-item__desc {
+  font-size: 0.875rem;
+  line-height: 1.56;
+  color: var(--text-on-dark-muted);
+}

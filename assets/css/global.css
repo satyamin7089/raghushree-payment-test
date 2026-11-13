@@ -1,0 +1,544 @@
+/* ==========================================================================
+   Raghushree — Global Design System & Foundational Styles
+   Mobile-first breakpoints: 320 (base), 480, 768, 900, 1200, 1440, 1920
+   ========================================================================== */
+
+/* 1. Self-Hosted Font Declarations (IBM Plex Sans + Inter) */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('../fonts/IBMPlexSans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('../fonts/IBMPlexSans-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('../fonts/IBMPlexSans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Centralized Design Tokens */
+:root {
+  /* Approved Exact Colour Palette */
+  --pearl: #FAFAFA;
+  --white: #FFFFFF;
+  --tint: #F4F4F4;
+
+  --ink: #0F1113;
+  --ink-soft: #1A1D21;
+
+  --heading: #0F1113;
+  --text: #5B6067;
+  --muted: #71767E;
+
+  /* Technical tokens kept per specification — never used for visible UI borders */
+  --line: #E6E6E6;
+  --line-strong: #D8D8D8;
+
+  --accent: #E63946;
+  --cta: #C5303C;
+  --cta-hover: #A62530;
+
+  --accent-06: rgba(230, 57, 70, 0.06);
+  --accent-10: rgba(230, 57, 70, 0.10);
+  --accent-18: rgba(230, 57, 70, 0.18);
+  --accent-35: rgba(230, 57, 70, 0.35);
+
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-muted: rgba(255, 255, 255, 0.66);
+
+  --accent-light: #FF7A83;
+
+  /* Typography Families */
+  --font-heading: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Fluid Responsive Typography Scale */
+  --text-h1: clamp(2rem, 1.72rem + 1.2vw, 2.75rem);
+  --text-h2: clamp(1.75rem, 1.47rem + 1.2vw, 2.4rem);
+  --text-h3: clamp(1.275rem, 1.12rem + 0.68vw, 1.6875rem);
+  --text-h4: clamp(1.125rem, 1.04rem + 0.36vw, 1.3125rem);
+  --text-h5: clamp(1.03125rem, 0.99rem + 0.22vw, 1.15rem);
+  --text-h6: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+
+  /* Paragraph & Eyebrow — strictly equal across every breakpoint */
+  --text-body: 1.0625rem;
+  --text-eyebrow: var(--text-body);
+
+  /* Functional UI Typography */
+  --text-button: 0.9375rem;
+  --text-nav: 0.9375rem;
+  --text-label: 0.875rem;
+  --text-form: 1rem;
+  --text-caption: 0.8125rem;
+
+  /* Line Heights (clear separation between headings and body) */
+  --lh-h1: 1.14;
+  --lh-h2: 1.18;
+  --lh-h3: 1.25;
+  --lh-h4: 1.30;
+  --lh-h5: 1.34;
+  --lh-h6: 1.38;
+  --lh-body: 1.65;
+  --lh-eyebrow: 1.4;
+  --lh-ui: 1.35;
+
+  /* Controlled Industrial Corner Radii (2px min — 4px max) */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+
+  /* Subtle Premium 3D Elevation & Inset Shadows (no outlines) */
+  --shadow-xs: 0 2px 8px rgba(15, 17, 19, 0.04);
+  --shadow-sm: 0 5px 16px rgba(15, 17, 19, 0.06);
+  --shadow-md: 0 12px 30px rgba(15, 17, 19, 0.08);
+  --shadow-lg: 0 20px 48px rgba(15, 17, 19, 0.10);
+  --shadow-dark: 0 14px 34px rgba(0, 0, 0, 0.28);
+  --shadow-inset: inset 0 1px 3px rgba(15, 17, 19, 0.045);
+  --shadow-hover: 0 16px 36px rgba(15, 17, 19, 0.11);
+  --shadow-focus: 0 0 0 3px var(--accent-35);
+
+  /* Global Containers & Gutters */
+  --container-wide: 1440px;
+  --container-main: 1280px;
+  --container-narrow: 960px;
+
+  --gutter-mobile: 20px;
+  --gutter-tablet: 32px;
+  --gutter-desktop: 48px;
+  --gutter-current: var(--gutter-mobile);
+
+  /* Section Vertical Spacing */
+  --section-space-mobile: 56px;
+  --section-space-tablet: 72px;
+  --section-space-desktop: 96px;
+  --section-space-large: 112px;
+  --section-space-current: var(--section-space-mobile);
+
+  /* Modular Internal Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+  --space-9: 64px;
+
+  /* Sticky Offset Calculations */
+  --header-height: 72px;
+  --subnav-height: 54px;
+  --sticky-offset: 88px;
+
+  /* Centralized Motion & Easing */
+  --transition-fast: 180ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+  --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter-current: var(--gutter-tablet);
+    --section-space-current: var(--section-space-tablet);
+    --header-height: 78px;
+    --sticky-offset: 96px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --gutter-current: var(--gutter-desktop);
+    --section-space-current: var(--section-space-desktop);
+    --header-height: 84px;
+    --sticky-offset: 104px;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --section-space-current: var(--section-space-large);
+  }
+}
+
+/* 3. Strict Reset & Zero-Visible-Border Enforcement */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border: 0 solid transparent;
+}
+
+html {
+  font-size: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: var(--lh-body);
+  color: var(--text);
+  background-color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+main {
+  display: block;
+  min-width: 0;
+}
+
+img,
+svg,
+video,
+picture {
+  display: block;
+  max-width: 100%;
+  border: 0;
+}
+
+img {
+  height: auto;
+}
+
+.svg-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+hr {
+  display: none;
+  border: 0;
+}
+
+button,
+input,
+select,
+textarea,
+fieldset {
+  font-family: var(--font-body);
+  border: 0;
+  outline: none;
+  background: none;
+}
+
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  border: 0;
+  border-collapse: collapse;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 4. Global Typography Hierarchy */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--heading);
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--text-h1);
+  line-height: var(--lh-h1);
+  font-weight: 700;
+  letter-spacing: -0.024em;
+}
+
+h2 {
+  font-size: var(--text-h2);
+  line-height: var(--lh-h2);
+}
+
+h3 {
+  font-size: var(--text-h3);
+  line-height: var(--lh-h3);
+}
+
+h4 {
+  font-size: var(--text-h4);
+  line-height: var(--lh-h4);
+}
+
+h5 {
+  font-size: var(--text-h5);
+  line-height: var(--lh-h5);
+}
+
+h6 {
+  font-size: var(--text-h6);
+  line-height: var(--lh-h6);
+}
+
+p {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  color: inherit;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+/* Eyebrow Typography System — strictly equal in font-size to Paragraph */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  line-height: var(--lh-eyebrow);
+  letter-spacing: 0.02em;
+  color: var(--cta);
+}
+
+.eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  border-radius: var(--radius-xs);
+  background-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.surface--ink .eyebrow,
+.surface--ink-soft .eyebrow {
+  color: var(--accent-light);
+}
+
+.surface--ink .eyebrow::before,
+.surface--ink-soft .eyebrow::before {
+  background-color: var(--accent-light);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast) var(--ease-standard),
+              background-color var(--transition-fast) var(--ease-standard),
+              box-shadow var(--transition-fast) var(--ease-standard),
+              transform var(--transition-fast) var(--ease-standard);
+}
+
+/* 5. Accessible Keyboard Focus States (No Conventional Borders) */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-xs);
+}
+
+.skip-link {
+  position: fixed;
+  top: -120px;
+  left: var(--space-4);
+  z-index: 9999;
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--cta);
+  color: var(--text-on-dark);
+  font-weight: 600;
+  font-size: var(--text-button);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  transition: top var(--transition-fast) var(--ease-standard);
+}
+
+.skip-link:focus {
+  top: var(--space-4);
+  box-shadow: var(--shadow-focus), var(--shadow-md);
+}
+
+.sr-only,
+.screen-reader-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 6. Global Containers & Section Spacing */
+.container,
+.container--main {
+  width: 100%;
+  max-width: calc(var(--container-main) + (var(--gutter-current) * 2));
+  margin-inline: auto;
+  padding-inline: var(--gutter-current);
+}
+
+.container--wide {
+  width: 100%;
+  max-width: calc(var(--container-wide) + (var(--gutter-current) * 2));
+  margin-inline: auto;
+  padding-inline: var(--gutter-current);
+}
+
+.container--narrow {
+  width: 100%;
+  max-width: calc(var(--container-narrow) + (var(--gutter-current) * 2));
+  margin-inline: auto;
+  padding-inline: var(--gutter-current);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--section-space-current);
+}
+
+.section--compact {
+  padding-block: clamp(2.25rem, 1.8rem + 2vw, 3.75rem);
+}
+
+.section--hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: 0;
+  background-color: var(--white);
+  color: var(--text);
+}
+
+.section--hero > .container,
+.section--hero > .container--narrow {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+/* Tonal Surface Layering (replaces borders and horizontal lines) */
+.surface--white {
+  background-color: var(--white);
+  color: var(--text);
+}
+
+.surface--pearl {
+  background-color: var(--pearl);
+  color: var(--text);
+}
+
+.surface--tint {
+  background-color: var(--tint);
+  color: var(--text);
+}
+
+.surface--ink {
+  background-color: var(--ink);
+  color: var(--text-on-dark-muted);
+}
+
+.surface--ink-soft {
+  background-color: var(--ink-soft);
+  color: var(--text-on-dark-muted);
+}
+
+.surface--ink h1,
+.surface--ink h2,
+.surface--ink h3,
+.surface--ink h4,
+.surface--ink h5,
+.surface--ink h6,
+.surface--ink-soft h1,
+.surface--ink-soft h2,
+.surface--ink-soft h3,
+.surface--ink-soft h4,
+.surface--ink-soft h5,
+.surface--ink-soft h6 {
+  color: var(--text-on-dark);
+}
+
+/* Anchor Offset for Sticky Header & Subnav */
+[id] {
+  scroll-margin-top: var(--sticky-offset);
+}
+
+/* 7. Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (min-width: 900px) { :root { --text-h1: 2.75rem; --text-h2: 2.4rem; } }

@@ -1,0 +1,1036 @@
+/* ==========================================================================
+   Raghushree Theme — Visual Product Story (5-Slide Pinned), 180° Flip Cards,
+   Single-Product Fade Banner Slider, Image Showcase Cards & About 3-Col Triptych
+   STRICT RULES: border: 0 · outline: 0 · max border-radius 4px · >=44px targets
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Five-Slide Scroll-Pinned Visual Product Story (.vps-*)
+   -------------------------------------------------------------------------- */
+.vps-section {
+  position: relative;
+  width: 100%;
+  background-color: var(--ink);
+  color: var(--text-on-dark);
+  overflow-x: clip;
+}
+
+.vps-viewport {
+  position: relative;
+  width: 100%;
+}
+
+.vps-viewport:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+
+/* No-JS Progressive Fallback: Stack all 5 slides cleanly */
+.vps-track {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.vps-slide {
+  position: relative;
+  width: 100%;
+  min-height: 540px;
+  display: flex;
+  align-items: center;
+  padding-block: var(--space-8) 108px;
+  overflow: hidden;
+}
+
+/* JS-Enabled Mobile & Reduced-Motion Horizontal Swipe Mode */
+html.js-ready .vps-track {
+  flex-direction: row;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+html.js-ready .vps-track::-webkit-scrollbar {
+  display: none;
+}
+
+html.js-ready .vps-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  scroll-snap-align: start;
+}
+
+/* Desktop Pinned Horizontal Story Mode (Controlled by GSAP ScrollTrigger) */
+@media (min-width: 960px) {
+  html.js-ready:not(.reduced-motion) .vps-section.is-pin-ready .vps-viewport {
+    height: calc(100vh - 82px);
+    min-height: 580px;
+    max-height: 860px;
+    overflow: hidden;
+  }
+
+  html.js-ready:not(.reduced-motion) .vps-section.is-pin-ready .vps-track {
+    width: 500%;
+    height: 100%;
+    overflow: visible;
+    scroll-snap-type: none;
+    will-change: transform;
+  }
+
+  html.js-ready:not(.reduced-motion) .vps-section.is-pin-ready .vps-slide {
+    flex: 0 0 20%;
+    width: 20%;
+    height: 100%;
+    padding-block: var(--space-8) 96px;
+  }
+}
+
+/* Full-View Slide Background + Left-to-Right Deep Black Gradient */
+.vps-slide__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.vps-slide__bg img,
+.vps-slide__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.vps-slide__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(10, 12, 15, 0.48) 0%, rgba(10, 12, 15, 0.445) 38%, rgba(10, 12, 15, 0.26) 68%, rgba(10, 12, 15, 0.08) 100%),
+    linear-gradient(180deg, rgba(10, 12, 15, 0.08) 0%, rgba(10, 12, 15, 0.36) 100%);
+}
+@media (max-width: 959px) {
+  .vps-slide__scrim {
+    background: linear-gradient(90deg, rgba(10, 12, 15, 0.475) 0%, rgba(10, 12, 15, 0.43) 65%, rgba(10, 12, 15, 0.29) 100%);
+  }
+}
+
+.vps-slide__container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.vps-slide__content {
+  max-width: 650px;
+}
+
+.vps-slide__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.vps-slide__meta .eyebrow {
+  margin-bottom: 0;
+}
+
+.vps-slide__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  background-color: var(--cta);
+  color: var(--text-on-dark);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.vps-slide__title {
+  color: var(--text-on-dark);
+  font-size: var(--text-h2);
+  line-height: 1.16;
+  margin-bottom: var(--space-4);
+}
+
+.vps-slide__desc {
+  color: var(--text-on-dark-muted);
+  font-size: var(--text-body);
+  line-height: 1.62;
+  margin-bottom: var(--space-4);
+}
+
+.vps-slide__points {
+  list-style: none;
+  margin: 0 0 var(--space-6) 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.vps-slide__points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text-on-dark);
+  font-size: var(--text-label);
+  line-height: 1.45;
+}
+
+.vps-slide__point-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: var(--radius-xs);
+  background-color: rgba(230, 57, 70, 0.24);
+  color: var(--accent-light);
+  flex-shrink: 0;
+}
+
+.vps-slide__point-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.vps-slide__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* Bottom Controls Dock */
+.vps-controls {
+  display: none;
+}
+
+html.js-ready .vps-controls {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  padding-block: 14px;
+  background: linear-gradient(180deg, rgba(15, 17, 19, 0) 0%, rgba(15, 17, 19, 0.92) 45%, rgba(15, 17, 19, 0.98) 100%);
+}
+
+.vps-controls__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.vps-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vps-step {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-on-dark-muted);
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard),
+              color var(--transition-fast) var(--ease-standard);
+}
+
+.vps-step:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: var(--text-on-dark);
+}
+
+.vps-step.is-active {
+  background-color: var(--cta);
+  color: var(--text-on-dark);
+}
+
+.vps-progress {
+  flex: 1 1 auto;
+  height: 4px;
+  max-width: 420px;
+  border-radius: var(--radius-xs);
+  background-color: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+
+@media (max-width: 639px) {
+  .vps-slide {
+    padding-block: var(--space-7) 120px;
+  }
+
+  .vps-progress {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .vps-controls__inner {
+    gap: 8px;
+  }
+
+  .vps-steps {
+    gap: 4px;
+  }
+
+  .vps-step {
+    min-width: 36px;
+    padding: 0 6px;
+    font-size: 0.75rem;
+  }
+
+  .vps-arrows {
+    gap: 4px;
+  }
+}
+
+.vps-progress__bar {
+  height: 100%;
+  border-radius: var(--radius-xs);
+  background-color: var(--cta);
+  transition: width 180ms var(--ease-standard);
+}
+
+.vps-arrows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vps-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-on-dark);
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+
+.vps-arrow:hover {
+  background-color: var(--cta);
+}
+
+/* --------------------------------------------------------------------------
+   2. Four-Card 180° Interactive Flip Section (.flip-*)
+   -------------------------------------------------------------------------- */
+.flip-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+@media (min-width: 640px) {
+  .flip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1120px) {
+  .flip-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.flip-card {
+  perspective: 1200px;
+  height: 100%;
+}
+
+/* No-JS Progressive Fallback: Show both faces stacked cleanly */
+.flip-card__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+}
+
+html.js-ready .flip-card__inner {
+  display: grid;
+  grid-template-areas: "flipface";
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.js-ready .flip-card.is-flipped .flip-card__inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card__face {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+html.js-ready .flip-card__face {
+  grid-area: flipface;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-card__front {
+  background-color: var(--pearl);
+}
+
+.surface--tint .flip-card__front,
+.surface--pearl .flip-card__front {
+  background-color: var(--white);
+}
+
+html.js-ready .flip-card__back {
+  transform: rotateY(180deg);
+}
+
+.flip-card__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background-color: var(--ink);
+  cursor: pointer;
+}
+
+.flip-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow) var(--ease-standard);
+}
+
+.flip-card:not(.is-flipped):hover .flip-card__media img {
+  transform: scale(1.04);
+}
+
+.flip-card__num {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 4px 9px;
+  border-radius: var(--radius-xs);
+  background-color: rgba(15, 17, 19, 0.88);
+  color: var(--text-on-dark);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.flip-card__body {
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  flex: 1 1 auto;
+  cursor: pointer;
+}
+
+.flip-card__title {
+  font-size: clamp(1.09375rem, 1.02rem + 0.3vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  margin-bottom: 10px;
+}
+
+.flip-card__summary {
+  font-size: 0.90625rem;
+  line-height: 1.58;
+  color: var(--text);
+  margin: 0;
+}
+
+.flip-card__footer {
+  padding: 0 var(--space-5) var(--space-5);
+  margin-top: auto;
+}
+
+.flip-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--ink);
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+
+.flip-card__btn:hover {
+  background-color: var(--cta);
+}
+
+.flip-card__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Back Face Styling */
+.flip-card__back {
+  padding: var(--space-5);
+  background-color: var(--ink);
+  color: var(--text-on-dark);
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.flip-card__back-kicker {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  color: var(--accent-light);
+  margin-bottom: 6px;
+}
+
+.flip-card__back-title {
+  color: var(--text-on-dark);
+  font-size: clamp(1.09375rem, 1.02rem + 0.3vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  margin-bottom: var(--space-3);
+}
+
+.flip-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+}
+
+.flip-card__tag {
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  background-color: var(--ink-soft);
+  color: var(--text-on-dark);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.flip-card__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.flip-card__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-on-dark-muted);
+}
+
+.flip-card__list-icon {
+  color: var(--accent-light);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.flip-card__list-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.flip-card__back-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.flip-card__return {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--ink-soft);
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+
+.flip-card__return:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.flip-card__return svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Reduced-Motion Safe Flip Fallback (Zero 3D Spin) */
+@media (prefers-reduced-motion: reduce) {
+  html.js-ready .flip-card__inner {
+    transition: none;
+    transform: none !important;
+  }
+
+  html.js-ready .flip-card__back {
+    transform: none;
+    display: none;
+  }
+
+  html.js-ready .flip-card.is-flipped .flip-card__front {
+    display: none;
+  }
+
+  html.js-ready .flip-card.is-flipped .flip-card__back {
+    display: flex;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. Single-Product Banner Bullet Points & Fade-In / Fade-Out Image Slider
+   -------------------------------------------------------------------------- */
+.page-banner-card__points {
+  list-style: none;
+  margin: var(--space-4) 0 0 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.page-banner-card__points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: var(--text-label);
+  line-height: 1.45;
+  color: var(--heading);
+  font-weight: 500;
+}
+
+.page-banner-card__point-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: var(--radius-xs);
+  background-color: var(--accent-10);
+  color: var(--cta);
+  flex-shrink: 0;
+}
+
+.page-banner-card__point-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.banner-fade-slider {
+  position: relative;
+}
+
+@media (max-width: 899px) {
+  .banner-fade-slider {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+.banner-fade-slider__slides {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.banner-fade-slider__slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 1;
+  transition: opacity 850ms cubic-bezier(0.22, 1, 0.36, 1),
+              visibility 850ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.banner-fade-slider__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+
+.banner-fade-slider__slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.page-banner-card__caption--slider {
+  z-index: 4;
+  display: flex;
+  flex-direction: row !important;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.page-banner-card__caption-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.banner-fade-slider__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.banner-fade-slider__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background-color: rgba(15, 17, 19, 0.78);
+  color: var(--text-on-dark);
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard);
+}
+
+@media (max-width: 899px) {
+  .banner-fade-slider__btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.banner-fade-slider__btn:hover {
+  background-color: var(--cta);
+}
+
+.banner-fade-slider__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline: 4px;
+}
+
+@media (max-width: 479px) {
+  .banner-fade-slider__dots {
+    display: none;
+  }
+}
+
+.banner-fade-slider__dot {
+  width: 18px;
+  height: 36px;
+  padding: 16px 0;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background-color: rgba(255, 255, 255, 0.38);
+  background-clip: content-box;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard),
+              width var(--transition-fast) var(--ease-standard);
+}
+
+.banner-fade-slider__dot.is-active {
+  width: 26px;
+  background-color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   4. Visual Image Showcase Cards (Single Product & About Page)
+   -------------------------------------------------------------------------- */
+.showcase-img-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+@media (min-width: 640px) {
+  .showcase-img-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1120px) {
+  .showcase-img-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.showcase-img-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-normal) var(--ease-standard),
+              box-shadow var(--transition-normal) var(--ease-standard);
+}
+
+.showcase-img-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.showcase-img-card__media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background-color: var(--ink);
+}
+
+.showcase-img-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow) var(--ease-standard);
+}
+
+.showcase-img-card:hover .showcase-img-card__media img {
+  transform: scale(1.05);
+}
+
+.showcase-img-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding: var(--space-5);
+}
+
+.showcase-img-card__body .sp-kicker {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  color: var(--cta);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.showcase-img-card__title {
+  font-size: clamp(1.09375rem, 1.02rem + 0.3vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  margin-bottom: 10px;
+}
+
+@media (min-width: 1120px) {
+  .showcase-img-card__title {
+    min-height: 2.56em;
+  }
+}
+
+.showcase-img-card__desc {
+  font-size: 0.90625rem;
+  line-height: 1.58;
+  color: var(--text);
+  margin-bottom: var(--space-4);
+}
+
+.showcase-img-card__link {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--cta);
+  text-decoration: none;
+}
+
+.showcase-img-card__link:hover {
+  color: var(--cta-hover);
+}
+
+/* --------------------------------------------------------------------------
+   5. About Page Section 2: Three-Column Triptych
+      (Col 1: Two Stacked Images | Col 2: Content | Col 3: Two Stacked Images)
+   -------------------------------------------------------------------------- */
+.about-triptych {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+@media (min-width: 1024px) {
+  .about-triptych {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.16fr) minmax(0, 0.92fr);
+    gap: clamp(1.5rem, 2.4vw, 2.5rem);
+  }
+}
+
+.about-triptych__stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  .about-triptych__stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .about-triptych__stack {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+}
+
+.about-triptych__media {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  aspect-ratio: 4 / 3;
+}
+
+@media (min-width: 1024px) {
+  .about-triptych__media {
+    flex: 1 1 0;
+    min-height: 220px;
+    aspect-ratio: auto;
+  }
+
+  .about-triptych__media img {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.about-triptych__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow) var(--ease-standard);
+}
+
+.about-triptych__media:hover img {
+  transform: scale(1.04);
+}
+
+.about-triptych__caption {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  background-color: rgba(15, 17, 19, 0.84);
+  color: var(--text-on-dark);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.about-triptych__center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 2.2vw, 2.375rem);
+  border-radius: var(--radius-md);
+  background-color: var(--pearl);
+  box-shadow: var(--shadow-xs);
+}
+
+.about-triptych__facts {
+  display: grid;
+  gap: 10px;
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.about-triptych__fact {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background-color: var(--white);
+  box-shadow: var(--shadow-xs);
+}
+
+.about-triptych__fact-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.about-triptych__fact-val {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.about-triptych__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

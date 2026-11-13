@@ -1,0 +1,110 @@
+/* ==========================================================================
+   Raghushree — Products Archive / Listing Page Styles
+   ========================================================================== */
+
+/* Polymer Category Quick Navigation Pills */
+.category-pills {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: var(--space-2);
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+@media (min-width: 900px) {
+  .category-pills {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 16px;
+  font-size: var(--text-label);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background-color: var(--tint);
+  color: var(--heading);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.category-pill:hover {
+  background-color: var(--ink-soft);
+  color: var(--text-on-dark);
+}
+
+.category-pill.is-active {
+  background-color: var(--cta);
+  color: var(--text-on-dark);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Dynamic Filter & Search Toolbar */
+.products-toolbar {
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
+}
+
+.products-toolbar__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: end;
+}
+
+@media (min-width: 768px) {
+  .products-toolbar__form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .products-toolbar__form {
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)) auto;
+  }
+
+  .products-toolbar__form--compact {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  }
+}
+
+.products-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.products-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-label);
+  font-weight: 500;
+  color: var(--heading);
+}
+
+.products-empty {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  border-radius: var(--radius-md);
+  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.product-card[hidden] {
+  display: none;
+}
