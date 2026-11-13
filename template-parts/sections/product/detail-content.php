@@ -249,7 +249,7 @@ get_template_part(
 		<?php if ( $pack_count && function_exists( 'rgpay_checkout_ready' ) && rgpay_checkout_ready() ) : ?>
 		<form class="product-checkout" hidden>
 			<h3><?php esc_html_e( 'Delivery details', 'raghushree' ); ?></h3>
-			<?php if ( ( rgpay_settings()['mode'] ?? 'test' ) === 'test' ) : ?><p><strong><?php esc_html_e( 'Test mode: no real Shiprocket order will be created.', 'raghushree' ); ?></strong></p><?php endif; ?>
+			<?php if ( ( rgpay_settings()['mode'] ?? 'test' ) === 'test' ) : ?><p><strong><?php esc_html_e( 'Test mode: no real money will be charged and no shipment will be booked.', 'raghushree' ); ?></strong></p><?php endif; ?>
 			<p><?php esc_html_e( 'Enter your delivery details and pay securely with Razorpay. Prepaid orders only.', 'raghushree' ); ?></p>
 			<div class="product-checkout__fields">
 				<label><?php esc_html_e( 'First name', 'raghushree' ); ?><input name="first_name" required maxlength="50" autocomplete="given-name"></label>

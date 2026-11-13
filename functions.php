@@ -21,6 +21,7 @@ $raghushree_includes = array(
 	'inc/admin-meta-boxes.php',
 	'inc/product-master.php',
 	'inc/payment-settings.php',
+	'inc/payment-compat.php',
 	'inc/shipping-quotes.php',
 	'inc/template-functions.php',
 	'inc/seo-meta.php',

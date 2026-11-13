@@ -1,26 +1,27 @@
 <?php
 /**
  * Plugin Name: Raghushree Payments & Orders
- * Description: Custom Razorpay and Shiprocket order integration for the Raghushree product master.
- * Version: 0.1.0
+ * Description: Razorpay checkout with Shiprocket rate quotes and manually managed WordPress orders.
+ * Version: 0.2.0
  * Requires PHP: 8.0
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
+define( 'RGPAY_RATES_ONLY_VERSION', '0.2.0' );
 
 function rgpay_settings() {
 	$value = get_option( 'raghushree_payment_settings', array() );
 	return is_array( $value ) ? $value : array();
 }
 
-/** Fail closed when the theme, keys, webhook secret or pickup name are not ready. */
+/** Fail closed when the theme, payment keys, webhook secret or shipping credentials are not ready. */
 function rgpay_checkout_ready() {
 	$s = rgpay_settings();
 	$mode = isset( $s['mode'] ) ? $s['mode'] : 'test';
 	$prefix = 'live' === $mode ? 'rzp_live_' : 'rzp_test_';
-	return function_exists( 'raghushree_master_variations' ) && function_exists( 'raghushree_fetch_shipping_quote' )
+	return function_exists( 'raghushree_rates_only_theme_ready' ) && function_exists( 'raghushree_master_variations' ) && function_exists( 'raghushree_fetch_shipping_quote' )
 		&& ! empty( $s['checkout_enabled'] ) && ( 'test' === $mode || ( 'live' === $mode && ! empty( $s['allow_live'] ) ) ) && ! empty( $s['razorpay_key_id'] ) && 0 === strpos( $s['razorpay_key_id'], $prefix )
 		&& ! empty( $s['razorpay_key_secret'] ) && ! empty( $s['razorpay_webhook_secret'] )
-		&& ! empty( $s['shiprocket_email'] ) && ! empty( $s['shiprocket_password'] ) && ! empty( $s['pickup_location'] ) && is_ssl();
+		&& ! empty( $s['shiprocket_email'] ) && ! empty( $s['shiprocket_password'] ) && is_ssl();
 }
 
 function rgpay_register_orders() {
@@ -28,10 +29,16 @@ function rgpay_register_orders() {
 }
 add_action( 'init', 'rgpay_register_orders' );
 
+function rgpay_incompatible_theme_notice() {
+	if ( ! current_user_can( 'manage_options' ) || function_exists( 'raghushree_rates_only_theme_ready' ) ) { return; }
+	?><div class="notice notice-error"><p>Update the Raghushree theme to the matching rates-only version. Checkout is disabled until both theme and plugin are updated.</p></div><?php
+}
+add_action( 'admin_notices', 'rgpay_incompatible_theme_notice' );
+
 function rgpay_enqueue() {
 	if ( ! rgpay_checkout_ready() || ! ( is_singular( 'products' ) || is_page_template( 'page-templates/template-product-detail.php' ) ) ) { return; }
 	wp_enqueue_script( 'razorpay-checkout', 'https://checkout.razorpay.com/v1/checkout.js', array(), null, true );
-	wp_enqueue_script( 'raghushree-checkout', plugin_dir_url( __FILE__ ) . 'checkout.js', array( 'razorpay-checkout', 'raghushree-shipping-quote' ), '0.1.0', true );
+	wp_enqueue_script( 'raghushree-checkout', plugin_dir_url( __FILE__ ) . 'checkout.js', array( 'razorpay-checkout', 'raghushree-shipping-quote' ), '0.2.0', true );
 }
 add_action( 'wp_enqueue_scripts', 'rgpay_enqueue', 20 );
 
@@ -41,7 +48,7 @@ function rgpay_quote_snapshot( $quote, $product_id, $option, $pin ) {
 	$packs = raghushree_master_variations( $product_id );
 	if ( empty( $packs[ $option ]['enabled'] ) || (int) $quote['product_paise'] !== (int) $packs[ $option ]['price_paise'] ) { return $quote; }
 	try { $token = bin2hex( random_bytes( 32 ) ); } catch ( Exception $e ) { return $quote; }
-	$snapshot = array( 'product_id' => $product_id, 'option' => $option, 'pin' => $pin, 'quote' => $quote, 'pack' => $packs[ $option ], 'mode' => rgpay_settings()['mode'] ?? 'test', 'pickup_pincode' => rgpay_settings()['pickup_pincode'] ?? '208001', 'pickup_location' => rgpay_settings()['pickup_location'] ?? '' );
+	$snapshot = array( 'product_id' => $product_id, 'option' => $option, 'pin' => $pin, 'quote' => $quote, 'pack' => $packs[ $option ], 'mode' => rgpay_settings()['mode'] ?? 'test', 'pickup_pincode' => rgpay_settings()['pickup_pincode'] ?? '208001', 'quoted_utc' => gmdate( 'Y-m-d H:i:s' ) );
 	if ( set_transient( 'rgpay_q_' . hash( 'sha256', $token ), $snapshot, 15 * MINUTE_IN_SECONDS ) ) { $quote['checkout_token'] = $token; }
 	return $quote;
 }
@@ -62,7 +69,7 @@ function rgpay_start_checkout() {
 	$snapshot = get_transient( 'rgpay_q_' . $hash );
 	if ( ! is_array( $snapshot ) || ! isset( $snapshot['quote'], $snapshot['pack'], $snapshot['product_id'], $snapshot['option'], $snapshot['pin'], $snapshot['mode'] ) ) { rgpay_error( 'Your shipping quote expired. Please check shipping again.' ); }
 	$s = rgpay_settings();
-	if ( ( $s['mode'] ?? 'test' ) !== $snapshot['mode'] || ( $s['pickup_pincode'] ?? '208001' ) !== ( $snapshot['pickup_pincode'] ?? '' ) || ( $s['pickup_location'] ?? '' ) !== ( $snapshot['pickup_location'] ?? '' ) ) { rgpay_error( 'Checkout settings changed. Please check shipping again.' ); }
+	if ( ( $s['mode'] ?? 'test' ) !== $snapshot['mode'] || ( $s['pickup_pincode'] ?? '208001' ) !== ( $snapshot['pickup_pincode'] ?? '' ) ) { rgpay_error( 'Checkout settings changed. Please check shipping again.' ); }
 	$post = get_post( $snapshot['product_id'] );
 	$packs = raghushree_master_variations( $snapshot['product_id'] );
 	if ( ! $post || 'publish' !== $post->post_status || empty( $packs[ $snapshot['option'] ]['enabled'] ) || $packs[ $snapshot['option'] ] !== $snapshot['pack'] ) { rgpay_error( 'Product details changed. Please check shipping again.' ); }
@@ -83,7 +90,7 @@ function rgpay_start_checkout() {
 	$order_id = wp_insert_post( array( 'post_type' => 'rgpay_order', 'post_status' => 'publish', 'post_title' => 'Pending order' ), true );
 	if ( is_wp_error( $order_id ) || ! $order_id ) { rgpay_error( 'Could not create the order. Please check shipping again.', 500 ); }
 	try { $receipt_token = bin2hex( random_bytes( 32 ) ); } catch ( Exception $e ) { rgpay_error( 'Could not start checkout. Please try again.', 500 ); }
-	$record = array( 'snapshot' => $snapshot, 'customer' => $customer, 'total_paise' => $total, 'mode' => $snapshot['mode'], 'pickup_location' => $s['pickup_location'], 'receipt_hash' => hash( 'sha256', $receipt_token ), 'created_utc' => gmdate( 'Y-m-d H:i:s' ), 'shiprocket_reference' => gmdate( 'YmdHis' ) . '-' . $order_id );
+	$record = array( 'snapshot' => $snapshot, 'customer' => $customer, 'total_paise' => $total, 'mode' => $snapshot['mode'], 'receipt_hash' => hash( 'sha256', $receipt_token ), 'created_utc' => gmdate( 'Y-m-d H:i:s' ) );
 	if ( ! add_post_meta( $order_id, '_rgpay_record', $record, true ) || ! add_post_meta( $order_id, '_rgpay_status', 'pending', true ) ) { rgpay_error( 'Could not save the order. Please contact us.', 500 ); }
 	wp_update_post( array( 'ID' => $order_id, 'post_title' => 'Order #' . $order_id ) );
 	$body = array( 'amount' => $total, 'currency' => 'INR', 'receipt' => 'rg-' . gmdate( 'YmdHis' ) . '-' . $order_id, 'notes' => array( 'product' => rgpay_limit( $snapshot['quote']['product_name'] . ' - ' . $snapshot['quote']['option_name'], 240 ), 'internal_order_id' => (string) $order_id ) );
@@ -112,7 +119,6 @@ function rgpay_mark_paid( $order_id, $payment_id ) {
 	}
 	update_post_meta( $order_id, '_rgpay_status', 'paid' );
 	if ( 'paid' !== get_post_meta( $order_id, '_rgpay_status', true ) ) { return false; }
-	if ( ! wp_next_scheduled( 'rgpay_fulfil_order', array( $order_id ) ) && ! wp_schedule_single_event( time() + 5, 'rgpay_fulfil_order', array( $order_id ) ) ) { return false; }
 	return true;
 }
 
@@ -127,7 +133,7 @@ function rgpay_entities_match( $record, $rz_order_id, $order, $payment ) {
 		&& (int) ( $payment['amount'] ?? -1 ) === (int) $record['total_paise'];
 }
 
-/** Razorpay webhook: authenticate raw body, store paid state, queue work, respond quickly. */
+/** Razorpay webhook: authenticate raw body and store paid state for manual fulfilment. */
 function rgpay_webhook( $request ) {
 	$s = rgpay_settings(); $raw = $request->get_body(); $signature = $request->get_header( 'x-razorpay-signature' );
 	if ( empty( $s['razorpay_webhook_secret'] ) || ! is_string( $signature ) || ! hash_equals( hash_hmac( 'sha256', $raw, $s['razorpay_webhook_secret'] ), $signature ) ) { return new WP_REST_Response( array( 'error' => 'Invalid signature' ), 401 ); }
@@ -157,87 +163,82 @@ function rgpay_verify_checkout() {
 	$payment = json_decode( wp_remote_retrieve_body( $payment_response ), true ); $order = json_decode( wp_remote_retrieve_body( $order_response ), true );
 	if ( ! rgpay_entities_match( $record, $rz_order, $order, $payment ) || ( $payment['id'] ?? '' ) !== $payment_id ) { wp_send_json_success( array( 'status' => 'pending', 'message' => 'Payment confirmation is pending. Do not pay again; please contact us if it does not update.' ) ); }
 	if ( ! rgpay_mark_paid( $id, $payment_id ) ) { rgpay_error( 'Payment needs manual review. Please contact us.', 400 ); }
-	wp_send_json_success( array( 'status' => 'paid', 'message' => 'test' === $record['mode'] ? 'Test payment confirmed. No real Shiprocket order is created in test mode.' : 'Payment confirmed. Your order is being processed.' ) );
+	wp_send_json_success( array( 'status' => 'paid', 'message' => 'test' === $record['mode'] ? 'Test payment confirmed. This is a test order; no real shipment will be booked.' : 'Payment confirmed. Your order will be fulfilled manually.' ) );
 }
 add_action( 'wp_ajax_rgpay_verify_checkout', 'rgpay_verify_checkout' );
 add_action( 'wp_ajax_nopriv_rgpay_verify_checkout', 'rgpay_verify_checkout' );
 
-/** Never automatically repeat a create request once it might have reached Shiprocket. */
-function rgpay_fulfil_order( $order_id ) {
-	$order_id = absint( $order_id );
-	$record = get_post_meta( $order_id, '_rgpay_record', true );
-	if ( ! is_array( $record ) || 'paid' !== get_post_meta( $order_id, '_rgpay_status', true ) ) { return; }
-	$lock = 'rgpay_ship_' . $order_id;
-	if ( ! add_option( $lock, gmdate( 'c' ), '', false ) ) { return; }
-	if ( 'test' === $record['mode'] ) {
-		update_post_meta( $order_id, '_rgpay_fulfilment', 'test_simulated' );
-		return; // Razorpay test payments must never create real Shiprocket orders.
-	}
-	$s = rgpay_settings();
-	if ( ( $s['mode'] ?? 'test' ) !== 'live' || empty( $s['shiprocket_email'] ) || empty( $s['shiprocket_password'] ) || empty( $record['pickup_location'] ) || empty( $record['shiprocket_reference'] ) ) {
-		update_post_meta( $order_id, '_rgpay_fulfilment', 'configuration_error' );
-		delete_option( $lock );
-		wp_mail( get_option( 'admin_email' ), 'Paid order needs attention', 'Order #' . $order_id . ' is paid but Shiprocket configuration is missing or the mode changed. Check the Orders screen.' );
-		return;
-	}
-	$auth = wp_remote_post( 'https://apiv2.shiprocket.in/v1/external/auth/login', array( 'timeout' => 15, 'redirection' => 0, 'headers' => array( 'Content-Type' => 'application/json' ), 'body' => wp_json_encode( array( 'email' => $s['shiprocket_email'], 'password' => $s['shiprocket_password'] ) ) ) );
-	$auth_body = ! is_wp_error( $auth ) && 200 === wp_remote_retrieve_response_code( $auth ) ? json_decode( wp_remote_retrieve_body( $auth ), true ) : null;
-	if ( ! is_array( $auth_body ) || empty( $auth_body['token'] ) || ! is_string( $auth_body['token'] ) ) {
-		update_post_meta( $order_id, '_rgpay_fulfilment', 'authentication_error' );
-		delete_option( $lock ); // No create request was sent, so an admin may safely retry.
-		wp_mail( get_option( 'admin_email' ), 'Paid order needs attention', 'Order #' . $order_id . ' is paid but Shiprocket authentication failed. Check the Orders screen.' );
-		return;
-	}
-	$c = $record['customer']; $snapshot = $record['snapshot']; $pack = $snapshot['pack']; $quote = $snapshot['quote'];
-	$payload = array(
-		'order_id' => $record['shiprocket_reference'], 'order_date' => get_date_from_gmt( $record['created_utc'], 'Y-m-d H:i' ), 'pickup_location' => $record['pickup_location'],
-		'billing_customer_name' => $c['first_name'], 'billing_last_name' => $c['last_name'], 'billing_address' => $c['address'], 'billing_address_2' => $c['address_2'],
-		'billing_city' => $c['city'], 'billing_state' => $c['state'], 'billing_pincode' => $c['pincode'], 'billing_country' => 'India', 'billing_email' => $c['email'], 'billing_phone' => $c['phone'], 'shipping_is_billing' => true,
-		'order_items' => array( array( 'name' => rgpay_limit( $quote['product_name'] . ' - ' . $quote['option_name'], 120 ), 'sku' => 'RG-' . $snapshot['product_id'] . '-' . $snapshot['option'], 'units' => 1, 'selling_price' => (int) $quote['product_paise'] / 100 ) ),
-		'payment_method' => 'Prepaid', 'shipping_charges' => (int) $quote['rate_paise'] / 100, 'sub_total' => (int) $quote['product_paise'] / 100,
-		'length' => (float) $pack['length_cm'], 'breadth' => (float) $pack['width_cm'], 'height' => (float) $pack['height_cm'], 'weight' => (float) $pack['weight_kg'],
-	);
-	// Persist the attempt before sending; a timeout or crash requires manual reconciliation.
-	update_post_meta( $order_id, '_rgpay_fulfilment', 'sending_check_shiprocket' );
-	if ( 'sending_check_shiprocket' !== get_post_meta( $order_id, '_rgpay_fulfilment', true ) ) { wp_mail( get_option( 'admin_email' ), 'Paid order needs attention', 'Could not record the Shiprocket send attempt for order #' . $order_id . '. No request was sent. Check the Orders screen.' ); return; }
-	$response = wp_remote_post( 'https://apiv2.shiprocket.in/v1/external/orders/create/adhoc', array( 'timeout' => 25, 'redirection' => 0, 'headers' => array( 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' . $auth_body['token'] ), 'body' => wp_json_encode( $payload ) ) );
-	$result = ! is_wp_error( $response ) && in_array( wp_remote_retrieve_response_code( $response ), array( 200, 201 ), true ) ? json_decode( wp_remote_retrieve_body( $response ), true ) : null;
-	if ( is_array( $result ) && ! empty( $result['order_id'] ) && ! empty( $result['shipment_id'] ) ) {
-		update_post_meta( $order_id, '_rgpay_shiprocket_order', sanitize_text_field( (string) $result['order_id'] ) );
-		update_post_meta( $order_id, '_rgpay_shiprocket_shipment', sanitize_text_field( (string) $result['shipment_id'] ) );
-		update_post_meta( $order_id, '_rgpay_fulfilment', 'created' );
-		return; // The merchant processes courier selection, AWB and pickup in Shiprocket.
-	}
-	update_post_meta( $order_id, '_rgpay_fulfilment', 'uncertain_check_shiprocket' );
-	wp_mail( get_option( 'admin_email' ), 'Paid order needs Shiprocket review', 'Order #' . $order_id . ' is paid but the Shiprocket create response was not confirmed. Check Shiprocket for reference ' . $record['shiprocket_reference'] . ' before taking any action; do not blindly retry.' );
-}
-add_action( 'rgpay_fulfil_order', 'rgpay_fulfil_order' );
-
+/**
+ * No fulfilment worker is registered: Shiprocket is used only for quotes.
+ * Old scheduled rgpay_fulfil_order events therefore cannot create orders after upgrade.
+ * Existing records/Shiprocket IDs are retained and shown for manual reconciliation.
+ */
 function rgpay_admin_menu() {
 	add_submenu_page( 'edit.php?post_type=products', 'Payment Orders', 'Payment Orders', 'manage_options', 'rgpay-orders', 'rgpay_orders_screen' );
 }
 add_action( 'admin_menu', 'rgpay_admin_menu' );
 
-function rgpay_admin_process() {
-	if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Permission denied.' ); }
-	$id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
-	check_admin_referer( 'rgpay_process_' . $id );
-	if ( get_post_type( $id ) === 'rgpay_order' && get_post_meta( $id, '_rgpay_status', true ) === 'paid' ) { rgpay_fulfil_order( $id ); }
-	wp_safe_redirect( add_query_arg( array( 'post_type' => 'products', 'page' => 'rgpay-orders' ), admin_url( 'edit.php' ) ) ); exit;
+/** Manual delivery state is independent of payment state and never calls Shiprocket. */
+function rgpay_set_manual_delivery( $id, $status, $courier, $tracking ) {
+	if ( get_post_type( $id ) !== 'rgpay_order' || 'paid' !== get_post_meta( $id, '_rgpay_status', true ) || ! in_array( $status, array( 'awaiting', 'fulfilled' ), true ) ) { return false; }
+	update_post_meta( $id, '_rgpay_manual_courier', rgpay_limit( sanitize_text_field( $courier ), 100 ) );
+	update_post_meta( $id, '_rgpay_manual_tracking', rgpay_limit( sanitize_text_field( $tracking ), 120 ) );
+	update_post_meta( $id, '_rgpay_manual_status', $status );
+	return get_post_meta( $id, '_rgpay_manual_status', true ) === $status;
 }
-add_action( 'admin_post_rgpay_process', 'rgpay_admin_process' );
+
+function rgpay_admin_update_delivery() {
+	if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Permission denied.' ); }
+	$id = absint( rgpay_post_value( 'order_id' ) );
+	check_admin_referer( 'rgpay_delivery_' . $id );
+	$ok = rgpay_set_manual_delivery( $id, rgpay_post_value( 'delivery_status' ), rgpay_post_value( 'delivery_courier' ), rgpay_post_value( 'delivery_tracking' ) );
+	wp_safe_redirect( add_query_arg( array( 'post_type' => 'products', 'page' => 'rgpay-orders', 'delivery_result' => $ok ? 'saved' : 'error' ), admin_url( 'edit.php' ) ) );
+	exit;
+}
+add_action( 'admin_post_rgpay_update_delivery', 'rgpay_admin_update_delivery' );
 
 function rgpay_orders_screen() {
 	if ( ! current_user_can( 'manage_options' ) ) { return; }
-	$orders = get_posts( array( 'post_type' => 'rgpay_order', 'post_status' => 'publish', 'posts_per_page' => 100, 'orderby' => 'ID', 'order' => 'DESC' ) );
-	?><div class="wrap"><h1>Payment Orders</h1><p>Test payments do not create real Shiprocket orders. Live paid orders are sent to Shiprocket once; courier selection and pickup are handled there. If a send is uncertain, check Shiprocket before creating anything manually. Configure a real server cron for WordPress scheduled events.</p><table class="widefat striped"><thead><tr><th>Order</th><th>Customer / product</th><th>Payment</th><th>Shiprocket</th><th>Action</th></tr></thead><tbody><?php
-	foreach ( $orders as $order ) {
-		$id = $order->ID; $r = get_post_meta( $id, '_rgpay_record', true );
-		if ( ! is_array( $r ) ) { continue; }
-		$c = $r['customer']; $q = $r['snapshot']['quote']; $fulfil = get_post_meta( $id, '_rgpay_fulfilment', true ); $locked = false !== get_option( 'rgpay_ship_' . $id, false );
-		?><tr><td>#<?php echo esc_html( $id ); ?><br><?php echo esc_html( $r['mode'] ); ?><br><?php echo esc_html( $r['created_utc'] ); ?> UTC</td><td><?php echo esc_html( $c['first_name'] . ' ' . $c['last_name'] ); ?><br><?php echo esc_html( $c['email'] . ' / ' . $c['phone'] ); ?><br><?php echo esc_html( $c['address'] . ', ' . $c['address_2'] . ', ' . $c['city'] . ', ' . $c['state'] . ' ' . $c['pincode'] ); ?><br><?php echo esc_html( $q['product_name'] . ' — ' . $q['option_name'] ); ?></td><td><?php echo esc_html( get_post_meta( $id, '_rgpay_status', true ) ); ?><br>₹<?php echo esc_html( number_format( $r['total_paise'] / 100, 2 ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_razorpay_order', true ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_payment_id', true ) ); ?></td><td><?php echo esc_html( $fulfil ? $fulfil : ( $locked ? 'locked — check Shiprocket before action' : 'not yet sent' ) ); ?><br><?php echo esc_html( 'Reference: ' . ( $r['shiprocket_reference'] ?? '' ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_shiprocket_order', true ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_shiprocket_shipment', true ) ); ?><br><?php echo esc_html( 'Quoted: ' . $q['courier_name'] . ' / ₹' . number_format( $q['rate_paise'] / 100, 2 ) ); ?></td><td><?php if ( 'paid' === get_post_meta( $id, '_rgpay_status', true ) && ! $locked && in_array( $fulfil, array( '', 'configuration_error', 'authentication_error' ), true ) ) : ?><form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"><input type="hidden" name="action" value="rgpay_process"><input type="hidden" name="order_id" value="<?php echo esc_attr( $id ); ?>"><?php wp_nonce_field( 'rgpay_process_' . $id ); ?><button type="submit" class="button">Process paid order</button></form><?php endif; ?></td></tr><?php
-	}
-	?></tbody></table></div><?php
+	$page = isset( $_GET['order_page'] ) && is_scalar( $_GET['order_page'] ) ? max( 1, absint( $_GET['order_page'] ) ) : 1;
+	$query = new WP_Query( array( 'post_type' => 'rgpay_order', 'post_status' => 'publish', 'posts_per_page' => 25, 'paged' => $page, 'orderby' => 'ID', 'order' => 'DESC' ) );
+	$result = isset( $_GET['delivery_result'] ) && is_scalar( $_GET['delivery_result'] ) ? sanitize_key( wp_unslash( $_GET['delivery_result'] ) ) : '';
+	?>
+	<div class="wrap"><h1>Payment Orders</h1>
+	<p>Shiprocket is used for shipping quotes only. No orders, courier bookings or pickups are sent to Shiprocket by this version. Only fulfil orders marked paid; test orders are not real payments.</p>
+	<div class="notice notice-warning inline"><p>Orders from an older version may already have been sent to Shiprocket, or the outcome may be uncertain. Check the legacy status and Shiprocket before creating a manual shipment, to avoid duplicates.</p></div>
+	<?php if ( 'saved' === $result ) : ?><div class="notice notice-success"><p>Manual delivery details saved.</p></div><?php elseif ( 'error' === $result ) : ?><div class="notice notice-error"><p>Could not update delivery. Only paid orders can be updated.</p></div><?php endif; ?>
+	<div style="overflow-x:auto"><table class="widefat striped"><thead><tr><th>Order</th><th>Customer / product</th><th>Payment</th><th>Shipping quote</th><th>Manual delivery</th></tr></thead><tbody>
+	<?php foreach ( $query->posts as $order ) :
+		$id = $order->ID;
+		$r = get_post_meta( $id, '_rgpay_record', true );
+		if ( ! is_array( $r ) || empty( $r['customer'] ) || empty( $r['snapshot']['quote'] ) ) { continue; }
+		$c = $r['customer']; $q = $r['snapshot']['quote']; $pack = $r['snapshot']['pack'] ?? array();
+		$payment_status = get_post_meta( $id, '_rgpay_status', true );
+		$manual_status = get_post_meta( $id, '_rgpay_manual_status', true );
+		if ( ! $manual_status ) { $manual_status = 'awaiting'; }
+		$legacy = get_post_meta( $id, '_rgpay_fulfilment', true );
+		$legacy_id = get_post_meta( $id, '_rgpay_shiprocket_order', true );
+		$legacy_shipment = get_post_meta( $id, '_rgpay_shiprocket_shipment', true );
+		$legacy_lock = false !== get_option( 'rgpay_ship_' . $id, false );
+		?>
+		<tr>
+		<td><strong>#<?php echo esc_html( $id ); ?></strong><br><?php echo esc_html( strtoupper( $r['mode'] ?? '' ) ); ?><br><?php echo esc_html( $r['created_utc'] ?? '' ); ?> UTC</td>
+		<td><?php echo esc_html( ( $c['first_name'] ?? '' ) . ' ' . ( $c['last_name'] ?? '' ) ); ?><br><?php echo esc_html( ( $c['email'] ?? '' ) . ' / ' . ( $c['phone'] ?? '' ) ); ?><br><?php echo esc_html( ( $c['address'] ?? '' ) . ', ' . ( $c['address_2'] ?? '' ) . ', ' . ( $c['city'] ?? '' ) . ', ' . ( $c['state'] ?? '' ) . ' ' . ( $c['pincode'] ?? '' ) ); ?><br><strong><?php echo esc_html( ( $q['product_name'] ?? '' ) . ' — ' . ( $q['option_name'] ?? '' ) ); ?></strong><br><?php echo esc_html( sprintf( 'Packed: %s kg; %s × %s × %s cm', $pack['weight_kg'] ?? '—', $pack['length_cm'] ?? '—', $pack['width_cm'] ?? '—', $pack['height_cm'] ?? '—' ) ); ?></td>
+		<td><strong><?php echo esc_html( $payment_status ); ?></strong><br><?php echo esc_html( sprintf( 'Product: ₹%s', number_format( (int) ( $q['product_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php echo esc_html( sprintf( 'Shipping: ₹%s', number_format( (int) ( $q['rate_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php echo esc_html( sprintf( 'Total: ₹%s', number_format( (int) ( $r['total_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_razorpay_order', true ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_payment_id', true ) ); ?></td>
+		<td><?php echo esc_html( $q['courier_name'] ?? '—' ); ?><br><?php echo esc_html( 'Courier ID: ' . ( $q['courier_id'] ?? '—' ) ); ?><br><?php echo esc_html( 'Pickup PIN: ' . ( $r['snapshot']['pickup_pincode'] ?? '—' ) ); ?><br><?php echo esc_html( 'Quoted UTC: ' . ( $r['snapshot']['quoted_utc'] ?? 'Not recorded' ) ); ?><?php if ( $legacy || $legacy_id || $legacy_shipment || $legacy_lock ) : ?><hr><strong>Previous Shiprocket integration — check before dispatch:</strong><br><?php echo esc_html( 'Status: ' . ( $legacy ? $legacy : 'unknown' ) ); ?><br><?php echo esc_html( 'Reference: ' . ( $r['shiprocket_reference'] ?? '—' ) ); ?><br><?php echo esc_html( 'Shiprocket order: ' . ( $legacy_id ? $legacy_id : '—' ) ); ?><br><?php echo esc_html( 'Shipment: ' . ( $legacy_shipment ? $legacy_shipment : '—' ) ); ?><?php endif; ?></td>
+		<td><?php if ( 'paid' === $payment_status ) : ?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="rgpay_update_delivery"><input type="hidden" name="order_id" value="<?php echo esc_attr( $id ); ?>"><?php wp_nonce_field( 'rgpay_delivery_' . $id ); ?>
+			<label for="delivery-status-<?php echo esc_attr( $id ); ?>">Status</label><br><select id="delivery-status-<?php echo esc_attr( $id ); ?>" name="delivery_status"><option value="awaiting" <?php selected( $manual_status, 'awaiting' ); ?>>Awaiting manual fulfilment</option><option value="fulfilled" <?php selected( $manual_status, 'fulfilled' ); ?>>Fulfilled manually</option></select><br>
+			<label for="delivery-courier-<?php echo esc_attr( $id ); ?>">Courier (optional)</label><br><input id="delivery-courier-<?php echo esc_attr( $id ); ?>" name="delivery_courier" maxlength="100" value="<?php echo esc_attr( get_post_meta( $id, '_rgpay_manual_courier', true ) ); ?>"><br>
+			<label for="delivery-tracking-<?php echo esc_attr( $id ); ?>">Tracking reference (optional)</label><br><input id="delivery-tracking-<?php echo esc_attr( $id ); ?>" name="delivery_tracking" maxlength="120" value="<?php echo esc_attr( get_post_meta( $id, '_rgpay_manual_tracking', true ) ); ?>"><br><button class="button" type="submit">Save delivery</button>
+		</form><?php else : ?>Not available until payment is confirmed.<?php endif; ?></td>
+		</tr>
+	<?php endforeach; ?>
+	<?php if ( empty( $query->posts ) ) : ?><tr><td colspan="5">No orders found.</td></tr><?php endif; ?>
+	</tbody></table></div>
+	<?php if ( $query->max_num_pages > 1 ) : ?><div class="tablenav"><div class="tablenav-pages"><?php echo wp_kses_post( paginate_links( array( 'base' => add_query_arg( array( 'post_type' => 'products', 'page' => 'rgpay-orders', 'order_page' => '%#%' ), admin_url( 'edit.php' ) ), 'format' => '', 'current' => $page, 'total' => $query->max_num_pages ) ) ); ?></div></div><?php endif; ?>
+	</div><?php
 }
 
 add_action( 'rgpay_cleanup_quote_claim', function ( $claim ) { if ( is_string( $claim ) && preg_match( '/^rgpay_quote_[a-f0-9]{64}$/D', $claim ) ) { delete_option( $claim ); } } );
