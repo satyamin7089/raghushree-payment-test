@@ -1,5 +1,5 @@
 <?php
-/** Admin-only credential storage for a future payment integration. */
+/** Admin-only payment and shipping settings and diagnostics. */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 function raghushree_payment_settings_menu() {
@@ -43,6 +43,28 @@ function raghushree_payment_settings_save() {
 }
 add_action( 'admin_post_raghushree_payment_settings_save', 'raghushree_payment_settings_save' );
 
+/** Convert internal diagnostic codes to fixed administrator-facing guidance. */
+function raghushree_shiprocket_diagnostic_message( $code, $status = 0 ) {
+	$messages = array(
+		'config' => __( 'Shiprocket API-user credentials are not saved.', 'raghushree' ),
+		'product' => __( 'Use the ID of a published product or Product Detail page.', 'raghushree' ),
+		'variation' => __( 'The selected pack is not enabled on this product.', 'raghushree' ),
+		'pincode' => __( 'Enter a valid six-digit delivery PIN.', 'raghushree' ),
+		'pickup' => __( 'Save a valid pickup PIN in Payment & Shipping Setup.', 'raghushree' ),
+		'package' => __( 'Save a positive packed weight and all three dimensions for this pack.', 'raghushree' ),
+		'auth_network' => __( 'WordPress could not connect to Shiprocket authentication. Check outbound HTTPS, DNS, TLS and the hosting firewall.', 'raghushree' ),
+		'auth_http' => __( 'Shiprocket authentication returned an HTTP error. Check API-user credentials and account access; ask your host or Shiprocket support if it persists.', 'raghushree' ),
+		'auth_response' => __( 'Shiprocket authentication returned an unexpected response without a usable token.', 'raghushree' ),
+		'courier_network' => __( 'WordPress could not connect to Shiprocket courier serviceability. Check outbound HTTPS, DNS, TLS and the hosting firewall.', 'raghushree' ),
+		'courier_http' => __( 'Shiprocket courier serviceability returned an HTTP error. Check the API user Courier access, PINs and package details; ask Shiprocket support if it persists.', 'raghushree' ),
+		'courier_response' => __( 'Shiprocket courier serviceability returned an unexpected response.', 'raghushree' ),
+		'no_rate' => __( 'No usable recommended courier rate was returned. Check prepaid serviceability and courier recommendation settings for these PINs and package.', 'raghushree' ),
+	);
+	$message = isset( $messages[ $code ] ) ? $messages[ $code ] : __( 'The test could not be completed. Check the saved configuration and try again.', 'raghushree' );
+	if ( in_array( $code, array( 'auth_http', 'courier_http' ), true ) && $status >= 100 && $status <= 599 ) { $message .= ' ' . sprintf( __( 'HTTP status: %d.', 'raghushree' ), $status ); }
+	return $message;
+}
+
 function raghushree_payment_settings_render() {
 	if ( ! current_user_can( 'manage_options' ) ) { return; }
 	$settings = get_option( 'raghushree_payment_settings', array() );
@@ -54,9 +76,23 @@ function raghushree_payment_settings_render() {
 	// Only display fixed messages; API responses and credentials are never displayed.
 	$connection = isset( $_GET['connection'] ) && is_scalar( $_GET['connection'] ) ? sanitize_key( wp_unslash( $_GET['connection'] ) ) : '';
 	$service = isset( $_GET['service'] ) && is_scalar( $_GET['service'] ) ? sanitize_key( wp_unslash( $_GET['service'] ) ) : '';
+	if ( 'shiprocket' === $service && 'failed' === $connection ) {
+		$diagnostic = get_transient( 'raghushree_sr_auth_' . get_current_user_id() );
+		delete_transient( 'raghushree_sr_auth_' . get_current_user_id() );
+	}
 	if ( in_array( $service, array( 'razorpay', 'shiprocket' ), true ) && in_array( $connection, array( 'success', 'failed', 'mode_mismatch' ), true ) ) :
 		$message = 'success' === $connection ? __( 'Authentication test succeeded. This does not test checkout, the webhook or order creation.', 'raghushree' ) : ( 'mode_mismatch' === $connection ? __( 'The Razorpay key does not match the selected test/live mode.', 'raghushree' ) : __( 'Authentication test failed. Check saved credentials, API permissions and server connectivity.', 'raghushree' ) );
+		if ( 'shiprocket' === $service && 'failed' === $connection && is_array( $diagnostic ?? null ) ) { $message = raghushree_shiprocket_diagnostic_message( $diagnostic['code'] ?? '', (int) ( $diagnostic['status'] ?? 0 ) ); }
 		?><div class="notice <?php echo 'success' === $connection ? 'notice-success' : 'notice-error'; ?>"><p><?php echo esc_html( ucfirst( $service ) . ': ' . $message ); ?></p></div><?php
+	endif;
+	?>
+	<?php
+	$courier_test = get_transient( 'raghushree_sr_courier_' . get_current_user_id() );
+	delete_transient( 'raghushree_sr_courier_' . get_current_user_id() );
+	if ( is_array( $courier_test ) ) :
+		$success = ! empty( $courier_test['success'] );
+		$message = $success ? sprintf( __( 'Courier rate test succeeded: %1$s, estimated shipping ₹%2$s. No shipment was created.', 'raghushree' ), $courier_test['courier'] ?: __( 'Recommended courier', 'raghushree' ), number_format_i18n( (int) $courier_test['rate_paise'] / 100, 2 ) ) : raghushree_shiprocket_diagnostic_message( $courier_test['code'] ?? '', (int) ( $courier_test['status'] ?? 0 ) );
+		?><div class="notice <?php echo $success ? 'notice-success' : 'notice-error'; ?>"><p><?php echo esc_html( $message ); ?></p></div><?php
 	endif;
 	?>
 	<div class="notice notice-warning"><p><?php esc_html_e( 'Checkout is disabled by default. Install and activate the updated Raghushree Payments & Orders plugin, configure the webhook, then test on staging before enabling it. Shiprocket is used for rates only; orders are managed manually in WordPress in both modes.', 'raghushree' ); ?></p></div>
@@ -80,7 +116,16 @@ function raghushree_payment_settings_render() {
 		<input type="hidden" name="action" value="raghushree_test_service_connection"><input type="hidden" name="service" value="<?php echo esc_attr( $service_key ); ?>"><?php wp_nonce_field( 'raghushree_test_service_connection' ); ?>
 		<?php submit_button( sprintf( __( 'Test %s', 'raghushree' ), $service_label ), 'secondary', 'submit', false ); ?>
 	</form>
-	<?php endforeach; ?></div>
+	<?php endforeach; ?>
+	<h2><?php esc_html_e( 'Test Shiprocket courier rate', 'raghushree' ); ?></h2>
+	<p><?php esc_html_e( 'Save credentials and pickup PIN first. Enter a published product ID (the number after post= in its edit URL), an enabled pack with saved dimensions, and a delivery PIN. This contacts your configured Shiprocket account for a prepaid rate only; it does not create an order or pickup. The Courier API-user module may be required; confirm permissions with Shiprocket if access is denied.', 'raghushree' ); ?></p>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<input type="hidden" name="action" value="raghushree_test_courier_rate"><?php wp_nonce_field( 'raghushree_test_courier_rate' ); ?>
+		<label for="sr-product-id"><?php esc_html_e( 'Product ID', 'raghushree' ); ?></label> <input id="sr-product-id" name="product_id" type="number" min="1" required>
+		<label for="sr-option"><?php esc_html_e( 'Pack', 'raghushree' ); ?></label> <select id="sr-option" name="option"><?php foreach ( raghushree_master_defaults() as $key => $row ) : ?><option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $row['label'] ); ?></option><?php endforeach; ?></select>
+		<label for="sr-destination"><?php esc_html_e( 'Delivery PIN', 'raghushree' ); ?></label> <input id="sr-destination" name="pincode" type="text" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" required>
+		<?php submit_button( __( 'Test courier rate', 'raghushree' ), 'secondary', 'submit', false ); ?>
+	</form></div>
 	<?php
 }
 
@@ -102,18 +147,28 @@ function raghushree_test_service_connection() {
 			) );
 			if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) { $result = 'success'; }
 		} else { $result = 'mode_mismatch'; }
-	} elseif ( 'shiprocket' === $service && ! empty( $settings['shiprocket_email'] ) && ! empty( $settings['shiprocket_password'] ) ) {
-		$response = wp_remote_post( 'https://apiv2.shiprocket.in/v1/external/auth/login', array(
-			'timeout' => 15, 'redirection' => 0,
-			'headers' => array( 'Content-Type' => 'application/json' ),
-			'body' => wp_json_encode( array( 'email' => $settings['shiprocket_email'], 'password' => $settings['shiprocket_password'] ) ),
-		) );
-		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
-			$body = json_decode( wp_remote_retrieve_body( $response ), true );
-			if ( is_array( $body ) && ! empty( $body['token'] ) ) { $result = 'success'; }
-		}
+	} elseif ( 'shiprocket' === $service ) {
+		$token = raghushree_shiprocket_authenticate( $settings );
+		if ( is_wp_error( $token ) ) {
+			set_transient( 'raghushree_sr_auth_' . get_current_user_id(), array( 'code' => $token->get_error_code(), 'status' => (int) $token->get_error_data() ), 5 * MINUTE_IN_SECONDS );
+		} else { $result = 'success'; }
 	}
 	wp_safe_redirect( add_query_arg( array( 'post_type' => 'products', 'page' => 'raghushree-payment-setup', 'connection' => $result, 'service' => $service ), admin_url( 'edit.php' ) ) );
 	exit;
 }
 add_action( 'admin_post_raghushree_test_service_connection', 'raghushree_test_service_connection' );
+
+/** Exercise the same prepaid serviceability path as the product page, without starting checkout. */
+function raghushree_test_courier_rate() {
+	if ( ! current_user_can( 'manage_options' ) ) { wp_die( esc_html__( 'Permission denied.', 'raghushree' ) ); }
+	check_admin_referer( 'raghushree_test_courier_rate' );
+	$id = isset( $_POST['product_id'] ) && is_scalar( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+	$option = isset( $_POST['option'] ) && is_scalar( $_POST['option'] ) ? sanitize_key( wp_unslash( $_POST['option'] ) ) : '';
+	$pin = isset( $_POST['pincode'] ) && is_scalar( $_POST['pincode'] ) ? trim( wp_unslash( $_POST['pincode'] ) ) : '';
+	$quote = raghushree_fetch_shipping_quote( $id, $option, $pin );
+	$result = is_wp_error( $quote ) ? array( 'success' => false, 'code' => $quote->get_error_code(), 'status' => (int) $quote->get_error_data() ) : array( 'success' => true, 'courier' => $quote['courier_name'], 'rate_paise' => $quote['rate_paise'] );
+	set_transient( 'raghushree_sr_courier_' . get_current_user_id(), $result, 5 * MINUTE_IN_SECONDS );
+	wp_safe_redirect( add_query_arg( array( 'post_type' => 'products', 'page' => 'raghushree-payment-setup' ), admin_url( 'edit.php' ) ) );
+	exit;
+}
+add_action( 'admin_post_raghushree_test_courier_rate', 'raghushree_test_courier_rate' );
