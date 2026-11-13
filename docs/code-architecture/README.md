@@ -56,7 +56,7 @@ The browser collects selections and displays the results; the WordPress server v
 | [`template-parts/sections/product/detail-content.php`](../../template-parts/sections/product/detail-content.php) | Existing product layout, pack cards, quote form and conditional checkout form. | Product master, theme quote JS and plugin readiness check. |
 | [`inc/enqueue.php`](../../inc/enqueue.php) | Enqueues product-page scripts and styles. | [`assets/js/shipping-quote.js`](../../assets/js/shipping-quote.js), product styling and other theme assets. |
 | [`inc/shipping-quotes.php`](../../inc/shipping-quotes.php) | Validates the quote request and calls Shiprocket. | WordPress AJAX, Shiprocket API, plugin's quote filter. |
-| [`inc/payment-settings.php`](../../inc/payment-settings.php) | Admin settings and authentication-only test buttons. | Settings option, Razorpay and Shiprocket authentication tests. |
+| [`inc/payment-settings.php`](../../inc/payment-settings.php) | Admin settings, authentication tests and courier-rate diagnostic. | Settings option, Razorpay and Shiprocket authentication tests. |
 | [`inc/payment-compat.php`](../../inc/payment-compat.php) | Theme-side guard against an outdated automatic-shipment plugin. | Plugin hooks and version marker. |
 | [`integrations/raghushree-payments/raghushree-payments.php`](../../integrations/raghushree-payments/raghushree-payments.php) | Checkout, Razorpay verification, webhook, order storage and manual-delivery admin. | Theme functions, WordPress AJAX/REST, Razorpay API. |
 | [`integrations/raghushree-payments/checkout.js`](../../integrations/raghushree-payments/checkout.js) | Receives quote events and opens Razorpay Checkout. | Theme quote form, WordPress AJAX and Razorpay's browser script. |
@@ -101,7 +101,7 @@ The meta box also appears on a Page using the Product Detail template after the 
 
 `inc/payment-settings.php` registers **Products → Payment & Shipping Setup**. `raghushree_payment_settings_save()` checks the administrator capability and nonce, then stores `raghushree_payment_settings` as a site-wide WordPress option. It includes mode, pickup PIN, enabled flags, Razorpay keys/webhook secret and Shiprocket API-user credentials. Blank secret fields retain existing values; a clear checkbox removes them.
 
-The option is kept out of the autoloaded options cache, but **the credentials are not encrypted by this application**. Restrict database, administrator and backup access; use HTTPS and never commit credentials to the repository. The admin test buttons authenticate against the providers only; they do not test payment, webhook delivery or a shipping quote.
+The option is kept out of the autoloaded options cache, but **the credentials are not encrypted by this application**. Restrict database, administrator and backup access; use HTTPS and never commit credentials to the repository. The Test Razorpay and Test Shiprocket buttons authenticate only. A separate administrator-only Test courier rate form calls the same product quote function with a published product ID, enabled pack and destination PIN; it does not create a shipment or test payment or webhooks. It reports fixed safe messages and HTTP status when available, never provider response bodies or credentials.
 
 `rgpay_checkout_ready()` checks for the matching theme functions, enabled checkout, test/live mode, appropriate Razorpay key prefix, API and webhook secrets, Shiprocket credentials and `is_ssl()`. Live mode additionally needs `allow_live`. This is a configuration gate, **not** proof of correct credentials, a working webhook or successful end-to-end checkout.
 
@@ -192,6 +192,7 @@ Submitting the form invokes `admin_post_rgpay_update_delivery`. The handler requ
 | `save_post_products`, `save_post_page` | `raghushree_master_box_save` | Validate and save the master data. |
 | `admin_post_raghushree_payment_settings_save` | `raghushree_payment_settings_save` | Save admin settings. |
 | `admin_post_raghushree_test_service_connection` | `raghushree_test_service_connection` | Test saved provider authentication. |
+| `admin_post_raghushree_test_courier_rate` | `raghushree_test_courier_rate` | Administrator-only prepaid courier quote diagnostic; no checkout or shipment. |
 | `wp_ajax[_nopriv]_raghushree_shipping_quote` | `raghushree_ajax_shipping_quote` | Get a recommended prepaid quote. |
 | `raghushree_quote_result` filter | `rgpay_quote_snapshot` | Attach a checkout token to a successful quote when ready. |
 | `wp_ajax[_nopriv]_rgpay_start_checkout` | `rgpay_start_checkout` | Claim quote and create internal/Razorpay orders. |
@@ -209,6 +210,7 @@ The following are standalone PHP smoke tests with mocked WordPress/provider beha
 ```bash
 php tests/product-master-test.php
 php tests/shipping-quotes-test.php
+php tests/courier-diagnostics-test.php
 php tests/checkout-create-test.php
 php tests/payment-flow-test.php
 php tests/payment-compat-test.php

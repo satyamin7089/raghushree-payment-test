@@ -4,15 +4,32 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /** Read only a rate for the explicitly recommended courier; never silently choose another. */
 function raghushree_recommended_shipping_rate( $data ) {
-	if ( ! is_array( $data ) || empty( $data['recommended_courier_company_id'] ) || empty( $data['available_courier_companies'] ) || ! is_array( $data['available_courier_companies'] ) ) { return false; }
+	if ( ! is_array( $data ) || empty( $data['recommended_courier_company_id'] ) || ! is_scalar( $data['recommended_courier_company_id'] ) || empty( $data['available_courier_companies'] ) || ! is_array( $data['available_courier_companies'] ) ) { return false; }
 	$recommended_id = (string) $data['recommended_courier_company_id'];
 	foreach ( $data['available_courier_companies'] as $courier ) {
-		if ( ! is_array( $courier ) || ! isset( $courier['courier_company_id'], $courier['rate'] ) || (string) $courier['courier_company_id'] !== $recommended_id || ! is_numeric( $courier['rate'] ) ) { continue; }
+		if ( ! is_array( $courier ) || ! isset( $courier['courier_company_id'], $courier['rate'] ) || ! is_scalar( $courier['courier_company_id'] ) || (string) $courier['courier_company_id'] !== $recommended_id || ! is_numeric( $courier['rate'] ) ) { continue; }
 		$rate = (float) $courier['rate'];
-		if ( ! is_finite( $rate ) || $rate <= 0 || $rate > 10000000 ) { return false; }
+		if ( ! is_finite( $rate ) || $rate < 0.005 || $rate > 10000000 ) { return false; }
 		return array( 'courier_id' => $recommended_id, 'courier_name' => isset( $courier['courier_name'] ) && is_scalar( $courier['courier_name'] ) ? sanitize_text_field( (string) $courier['courier_name'] ) : '', 'rate_paise' => (int) round( $rate * 100 ) );
 	}
 	return false;
+}
+
+/**
+ * Authenticate with the documented Shiprocket API. Error data is restricted to an
+ * HTTP status so administrators can troubleshoot without exposing response bodies.
+ */
+function raghushree_shiprocket_authenticate( $settings ) {
+	if ( ! is_array( $settings ) || empty( $settings['shiprocket_email'] ) || empty( $settings['shiprocket_password'] ) ) {
+		return new WP_Error( 'config', __( 'Shipping quotes are not configured. Please contact us.', 'raghushree' ) );
+	}
+	$response = wp_remote_post( 'https://apiv2.shiprocket.in/v1/external/auth/login', array( 'timeout' => 15, 'redirection' => 0, 'headers' => array( 'Content-Type' => 'application/json', 'Accept' => 'application/json' ), 'body' => wp_json_encode( array( 'email' => $settings['shiprocket_email'], 'password' => $settings['shiprocket_password'] ) ) ) );
+	if ( is_wp_error( $response ) ) { return new WP_Error( 'auth_network', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	$status = (int) wp_remote_retrieve_response_code( $response );
+	if ( 200 !== $status ) { return new WP_Error( 'auth_http', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ), $status ); }
+	$body = json_decode( wp_remote_retrieve_body( $response ), true );
+	if ( ! is_array( $body ) || empty( $body['token'] ) || ! is_string( $body['token'] ) ) { return new WP_Error( 'auth_response', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	return $body['token'];
 }
 
 /** Fetch a quote using stored credentials and a validated product snapshot. */
@@ -30,18 +47,19 @@ function raghushree_fetch_shipping_quote( $product_id, $option, $destination ) {
 	if ( ! is_array( $settings ) || empty( $settings['shiprocket_email'] ) || empty( $settings['shiprocket_password'] ) ) { return new WP_Error( 'config', __( 'Shipping quotes are not configured. Please contact us.', 'raghushree' ) ); }
 	$pickup = isset( $settings['pickup_pincode'] ) ? $settings['pickup_pincode'] : '208001';
 	if ( ! preg_match( '/^[1-9][0-9]{5}$/D', $pickup ) ) { return new WP_Error( 'pickup', __( 'Pickup details are not configured. Please contact us.', 'raghushree' ) ); }
-	$auth = wp_remote_post( 'https://apiv2.shiprocket.in/v1/external/auth/login', array( 'timeout' => 15, 'redirection' => 0, 'headers' => array( 'Content-Type' => 'application/json' ), 'body' => wp_json_encode( array( 'email' => $settings['shiprocket_email'], 'password' => $settings['shiprocket_password'] ) ) ) );
-	if ( is_wp_error( $auth ) || 200 !== wp_remote_retrieve_response_code( $auth ) ) { return new WP_Error( 'shipping_unavailable', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
-	$auth_body = json_decode( wp_remote_retrieve_body( $auth ), true );
-	if ( ! is_array( $auth_body ) || empty( $auth_body['token'] ) || ! is_string( $auth_body['token'] ) ) { return new WP_Error( 'shipping_unavailable', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	$token = raghushree_shiprocket_authenticate( $settings );
+	if ( is_wp_error( $token ) ) { return $token; }
 	$query = array(
 		'pickup_postcode' => $pickup, 'delivery_postcode' => $destination, 'cod' => 0,
 		'weight' => $pack['weight_kg'], 'length' => $pack['length_cm'], 'breadth' => $pack['width_cm'], 'height' => $pack['height_cm'],
 		'declared_value' => number_format( (int) $pack['price_paise'] / 100, 2, '.', '' ),
 	);
-	$response = wp_remote_get( add_query_arg( $query, 'https://apiv2.shiprocket.in/v1/external/courier/serviceability/' ), array( 'timeout' => 15, 'redirection' => 0, 'headers' => array( 'Authorization' => 'Bearer ' . $auth_body['token'], 'Accept' => 'application/json' ) ) );
-	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) { return new WP_Error( 'shipping_unavailable', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	$response = wp_remote_get( add_query_arg( $query, 'https://apiv2.shiprocket.in/v1/external/courier/serviceability/' ), array( 'timeout' => 15, 'redirection' => 0, 'headers' => array( 'Authorization' => 'Bearer ' . $token, 'Accept' => 'application/json' ) ) );
+	if ( is_wp_error( $response ) ) { return new WP_Error( 'courier_network', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	$status = (int) wp_remote_retrieve_response_code( $response );
+	if ( 200 !== $status ) { return new WP_Error( 'courier_http', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ), $status ); }
 	$body = json_decode( wp_remote_retrieve_body( $response ), true );
+	if ( ! is_array( $body ) || ! isset( $body['data'] ) || ! is_array( $body['data'] ) ) { return new WP_Error( 'courier_response', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
 	$rate = raghushree_recommended_shipping_rate( isset( $body['data'] ) ? $body['data'] : null );
 	if ( false === $rate ) { return new WP_Error( 'no_rate', __( 'No recommended prepaid shipping rate is available for this PIN code. Please contact us.', 'raghushree' ) ); }
 	return array( 'rate_paise' => $rate['rate_paise'], 'courier_name' => $rate['courier_name'], 'courier_id' => $rate['courier_id'], 'product_paise' => (int) $pack['price_paise'], 'product_name' => get_the_title( $post ), 'option_name' => $pack['label'] );

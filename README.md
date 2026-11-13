@@ -459,7 +459,9 @@ Click **Save Changes**. Saved secrets are not shown again: a blank field preserv
 
 For Shiprocket, create an API user under the dashboard's **Settings → API** area and grant the relevant API access. Set the account's courier priority to **Recommended by Shiprocket**. The code uses the configured Shiprocket production API endpoint for quotes in both Razorpay modes; it does **not** provide a Shiprocket sandbox or a simulated shipping-rate option. A working Shiprocket API user and rate response are therefore required even for the Razorpay test checkout.
 
-After saving, click **Test Razorpay** and **Test Shiprocket**. These buttons check authentication only: green success does **not** prove that the webhook, shipping quote, product page or complete payment flow works.
+After saving, click **Test Razorpay** and **Test Shiprocket**. These buttons check authentication only: green success does **not** prove that the webhook, shipping quote, product page or complete payment flow works. For Shiprocket, the API user should have the **Courier** module enabled; Shiprocket must confirm the exact permission mapping for your account if serviceability is denied.
+
+To test the courier endpoint separately, use **Test Shiprocket courier rate** on the same settings page: enter a published product ID (the number after `post=` in its WordPress edit URL), select an enabled pack with saved measurements, and enter a delivery PIN. Click **Test courier rate**. This uses the same prepaid rate lookup as the product page, without creating a Shiprocket order or pickup. It will show an estimated recommended-courier rate or a safe diagnostic stage and, when available, an HTTP status. It does not display credentials, tokens or provider response bodies. HTTP 401/403 may indicate credentials or access, but the status alone does not prove the cause. If there is no recommendation, the test fails rather than selecting another courier. This is not an end-to-end checkout test and still contacts the configured Shiprocket account in Razorpay test mode.
 
 ### 26.6 Configure the Razorpay webhook
 
@@ -539,6 +541,7 @@ Open **Products → Payment Orders**. The paginated screen shows the internal or
 ```bash
 php tests/product-master-test.php
 php tests/shipping-quotes-test.php
+php tests/courier-diagnostics-test.php
 php tests/checkout-create-test.php
 php tests/payment-flow-test.php
 php tests/payment-compat-test.php
