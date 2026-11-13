@@ -1,5 +1,5 @@
 <?php
-/** Product master foundation. Checkout and shipping are deliberately not enabled. */
+/** Product master for the custom checkout and shipping quote integration. */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /** Defaults apply until an administrator saves product-specific values. */
@@ -51,7 +51,7 @@ function raghushree_master_box_render( $post ) {
 	$variations = raghushree_master_variations( $post->ID );
 	wp_nonce_field( 'raghushree_master_save', 'raghushree_master_nonce' );
 	?>
-	<p><?php esc_html_e( 'Enter the actual packed weight and outer dimensions for each option, including the sample. Prices exclude shipping. Checkout and shipping quotes are not active yet.', 'raghushree' ); ?></p>
+	<p><?php esc_html_e( 'Enter the actual packed weight and outer dimensions for each option, including the sample. Prices exclude shipping; configure and test checkout separately.', 'raghushree' ); ?></p>
 	<div style="overflow-x:auto"><table class="widefat striped"><thead><tr><th><?php esc_html_e( 'Option', 'raghushree' ); ?></th><th><?php esc_html_e( 'Price (INR)', 'raghushree' ); ?></th><?php foreach ( raghushree_master_shipping_fields() as $label ) : ?><th><?php echo esc_html( $label ); ?></th><?php endforeach; ?><th><?php esc_html_e( 'Display', 'raghushree' ); ?></th></tr></thead><tbody>
 	<?php foreach ( $variations as $key => $row ) : ?>
 		<tr><td><?php echo esc_html( $row['label'] ); ?></td><td>
