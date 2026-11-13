@@ -29,19 +29,14 @@ if ( empty( $prod['id'] ) ) {
 	return;
 }
 
-// Both Banner CTA buttons link to Contact Us with contextual pre-filled query args
+// Enquiry remains available; Buy Now points to the pack options on this page.
 $enquire_now_url = raghushree_get_enquiry_url(
 	array(
 		'material'     => $prod['title'],
 		'enquiry_type' => 'Request a Quotation',
 	)
 );
-$buy_now_url     = raghushree_get_enquiry_url(
-	array(
-		'material'     => $prod['title'],
-		'enquiry_type' => 'Bulk Order Enquiry',
-	)
-);
+$buy_now_url = '#product-purchase';
 $enquire_url     = raghushree_get_enquiry_url(
 	array(
 		'material'     => $prod['title'],
@@ -222,6 +217,56 @@ get_template_part(
 				<li><a class="product-subnav__link" href="#enquiry"><?php esc_html_e( 'Enquiry', 'raghushree' ); ?></a></li>
 			</ul>
 		</nav>
+	</div>
+</section>
+
+<!-- Product master pack options and optional custom checkout. -->
+<section class="section surface--white single-product-section product-purchase" id="product-purchase">
+	<div class="container">
+		<div class="eyebrow"><?php esc_html_e( 'Pack options', 'raghushree' ); ?></div>
+		<h2><?php esc_html_e( 'Pack and sample options', 'raghushree' ); ?></h2>
+		<p><?php echo esc_html( function_exists( 'rgpay_checkout_ready' ) && rgpay_checkout_ready() ? __( 'Select a pack and check shipping to continue to prepaid checkout.', 'raghushree' ) : __( 'Check an estimated Shiprocket rate below. Online checkout is not currently available.', 'raghushree' ) ); ?></p>
+		<div class="product-purchase__cards">
+			<?php $pack_count = 0; foreach ( raghushree_master_variations( $post_id ) as $pack ) : if ( empty( $pack['enabled'] ) ) { continue; } ++$pack_count; ?>
+			<article class="product-purchase__card">
+				<h3><?php echo esc_html( $pack['label'] ); ?></h3>
+				<p class="product-purchase__price">₹<?php echo esc_html( number_format_i18n( (int) $pack['price_paise'] / 100, 2 ) ); ?></p>
+				<p><?php echo esc_html( 0 === (int) $pack['price_paise'] ? __( 'Free sample — pay shipping only', 'raghushree' ) : __( 'Shipping calculated separately', 'raghushree' ) ); ?></p>
+			</article>
+			<?php endforeach; ?>
+		</div>
+		<?php if ( ! $pack_count ) : ?><p><?php esc_html_e( 'No pack options are currently available.', 'raghushree' ); ?></p><?php endif; ?>
+		<?php if ( $pack_count ) : ?>
+		<form class="product-quote" data-endpoint="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" data-product="<?php echo esc_attr( $post_id ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'raghushree_shipping_quote' ) ); ?>">
+			<label for="quote-pack"><?php esc_html_e( 'Pack option', 'raghushree' ); ?></label>
+			<select id="quote-pack" name="option" required><?php foreach ( raghushree_master_variations( $post_id ) as $key => $pack ) : if ( empty( $pack['enabled'] ) ) { continue; } ?><option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $pack['label'] ); ?></option><?php endforeach; ?></select>
+			<label for="quote-pincode"><?php esc_html_e( 'Delivery PIN code', 'raghushree' ); ?></label>
+			<input id="quote-pincode" name="pincode" type="text" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" required>
+			<button type="submit"><?php esc_html_e( 'Check shipping', 'raghushree' ); ?></button>
+			<p class="product-quote__result" role="status" aria-live="polite"></p>
+		</form>
+		<?php endif; ?>
+		<?php if ( $pack_count && function_exists( 'rgpay_checkout_ready' ) && rgpay_checkout_ready() ) : ?>
+		<form class="product-checkout" hidden>
+			<h3><?php esc_html_e( 'Delivery details', 'raghushree' ); ?></h3>
+			<?php if ( ( rgpay_settings()['mode'] ?? 'test' ) === 'test' ) : ?><p><strong><?php esc_html_e( 'Test mode: no real Shiprocket order will be created.', 'raghushree' ); ?></strong></p><?php endif; ?>
+			<p><?php esc_html_e( 'Enter your delivery details and pay securely with Razorpay. Prepaid orders only.', 'raghushree' ); ?></p>
+			<div class="product-checkout__fields">
+				<label><?php esc_html_e( 'First name', 'raghushree' ); ?><input name="first_name" required maxlength="50" autocomplete="given-name"></label>
+				<label><?php esc_html_e( 'Last name', 'raghushree' ); ?><input name="last_name" required maxlength="50" autocomplete="family-name"></label>
+				<label><?php esc_html_e( 'Email', 'raghushree' ); ?><input name="email" type="email" required maxlength="100" autocomplete="email"></label>
+				<label><?php esc_html_e( 'Mobile number', 'raghushree' ); ?><input name="phone" type="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" required autocomplete="tel-national"></label>
+				<label><?php esc_html_e( 'Address', 'raghushree' ); ?><input name="address" required maxlength="100" autocomplete="address-line1"></label>
+				<label><?php esc_html_e( 'Address line 2 (optional)', 'raghushree' ); ?><input name="address_2" maxlength="100" autocomplete="address-line2"></label>
+				<label><?php esc_html_e( 'City', 'raghushree' ); ?><input name="city" required maxlength="30" autocomplete="address-level2"></label>
+				<label><?php esc_html_e( 'State', 'raghushree' ); ?><input name="state" required maxlength="50" autocomplete="address-level1"></label>
+			</div>
+			<p><?php esc_html_e( 'Delivery PIN is taken from the shipping quote above. Shipping rates are estimates and may change before booking.', 'raghushree' ); ?></p>
+			<button type="submit"><?php esc_html_e( 'Pay with Razorpay', 'raghushree' ); ?></button>
+			<p class="product-checkout__status" role="status" aria-live="polite"></p>
+		</form>
+		<?php endif; ?>
+		<p><a href="<?php echo esc_url( $enquire_now_url ); ?>"><?php esc_html_e( 'Contact us to enquire about this product', 'raghushree' ); ?> →</a></p>
 	</div>
 </section>
 

@@ -599,3 +599,32 @@
 .sp-grade-card__title, .sp-tech-item__title, .sp-logistics-card__val { font-size: clamp(1.03125rem, 0.98rem + 0.22vw, 1.125rem); font-weight: 600; line-height: 1.3; }
 main .sp-grade-card__desc, main .sp-tech-item__desc, main .sp-logistics-card__desc { font-size: 0.90625rem; line-height: 1.58; }
 @media (min-width: 1200px) { .sp-logistics-card__val, .sp-tech-item__title, .sp-grade-card__title { min-height: 2.6em; } }
+
+/* Product master pack options */
+.product-purchase__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 20px;
+  margin: 28px 0;
+}
+.product-purchase__card {
+  padding: 24px;
+  background: var(--accent-06);
+  border-radius: var(--radius-sm);
+}
+.product-purchase__card h3 { margin: 0 0 10px; }
+.product-purchase__price { font-size: 1.8rem; font-weight: 700; color: var(--cta); margin: 0 0 8px; }
+.product-purchase__card p:last-child { margin-bottom: 0; }
+.product-quote { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 24px 0; }
+.product-quote label { font-weight: 600; }
+.product-quote select, .product-quote input { min-height: 44px; padding: 8px 12px; border: 1px solid #bbb; background: white; }
+.product-quote button { min-height: 44px; padding: 10px 18px; border: 0; background: var(--cta); color: white; cursor: pointer; }
+.product-quote button:disabled { opacity: .6; cursor: wait; }
+.product-quote__result { flex-basis: 100%; margin: 0; }
+.product-checkout { max-width: 760px; margin: 32px 0; padding: 24px; background: var(--accent-06); }
+.product-checkout[hidden] { display: none; }
+.product-checkout__fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; }
+.product-checkout__fields label { display: grid; gap: 6px; font-weight: 600; }
+.product-checkout__fields input { min-height: 44px; padding: 8px 12px; border: 1px solid #bbb; background: white; }
+.product-checkout button { min-height: 44px; padding: 10px 18px; border: 0; background: var(--cta); color: white; cursor: pointer; }
+.product-checkout button:disabled { opacity: .6; cursor: wait; }

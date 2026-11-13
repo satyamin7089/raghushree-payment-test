@@ -194,6 +194,7 @@ function raghushree_enqueue_assets() {
 	}
 
 	if ( $is_single_product ) {
+		wp_enqueue_script( 'raghushree-shipping-quote', $uri . '/assets/js/shipping-quote.js', array(), raghushree_asset_version( 'assets/js/shipping-quote.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
 		wp_enqueue_style(
 			'raghushree-product-single',
 			$uri . '/assets/css/product-single.css',
