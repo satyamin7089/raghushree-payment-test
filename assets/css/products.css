@@ -129,4 +129,30 @@
 .catalog-pagination a { padding: 8px 14px; border-radius: 8px; background: #fff; }
 .catalog-pagination a[aria-current] { background: var(--cta); color: #fff; }
 @media (min-width: 900px) { .catalog-layout { grid-template-columns: 250px minmax(0, 1fr); gap: 36px; } .catalog-sidebar { position: sticky; top: 110px; } }
-.catalog-group .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 20px; }
+/* Keep two equal tracks, even when the final row contains only one product. */
+.catalog-main { min-width: 0; }
+.catalog-group .product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+  align-items: stretch;
+}
+.catalog-group .product-card__badge {
+  max-width: calc(100% - 16px);
+  overflow-wrap: anywhere;
+}
+.catalog-group .product-card__desc { overflow-wrap: anywhere; }
+/* Two columns on narrow phones need compact cards and full-width touch targets. */
+@media (max-width: 767px) {
+  .catalog-group .product-card__body { padding: 14px 12px; }
+  main .catalog-group .product-card__title { font-size: 1rem; line-height: 1.3; }
+  main .catalog-group .product-card__desc { font-size: .875rem; line-height: 1.5; }
+  main .catalog-group .product-card__badge { top: 8px; left: 8px; padding: 4px 7px; font-size: .75rem; line-height: 1.3; }
+  main .catalog-group .product-card__tags .tag { font-size: .8rem; }
+  .catalog-group .product-card__actions { grid-template-columns: minmax(0, 1fr); }
+  .catalog-group .product-card__actions .btn { white-space: normal; overflow-wrap: anywhere; padding: 9px 8px; }
+}
+/* The sidebar leaves less room for each button on small desktops. */
+@media (min-width: 900px) and (max-width: 1150px) {
+  .catalog-group .product-card__actions { grid-template-columns: minmax(0, 1fr); }
+}

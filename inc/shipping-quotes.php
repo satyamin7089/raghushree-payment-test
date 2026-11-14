@@ -27,11 +27,11 @@ function raghushree_shiprocket_authenticate( $settings ) {
 		return new WP_Error( 'config', __( 'Shipping quotes are not configured. Please contact us.', 'raghushree' ) );
 	}
 	$response = wp_remote_post( 'https://apiv2.shiprocket.in/v1/external/auth/login', array( 'timeout' => 15, 'redirection' => 0, 'headers' => array( 'Content-Type' => 'application/json', 'Accept' => 'application/json' ), 'body' => wp_json_encode( array( 'email' => $settings['shiprocket_email'], 'password' => $settings['shiprocket_password'] ) ) ) );
-	if ( is_wp_error( $response ) ) { return new WP_Error( 'auth_network', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	if ( is_wp_error( $response ) ) { return new WP_Error( 'auth_network', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ) ); }
 	$status = (int) wp_remote_retrieve_response_code( $response );
-	if ( 200 !== $status ) { return new WP_Error( 'auth_http', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ), $status ); }
+	if ( 200 !== $status ) { return new WP_Error( 'auth_http', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ), $status ); }
 	$body = json_decode( wp_remote_retrieve_body( $response ), true );
-	if ( ! is_array( $body ) || empty( $body['token'] ) || ! is_string( $body['token'] ) ) { return new WP_Error( 'auth_response', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	if ( ! is_array( $body ) || empty( $body['token'] ) || ! is_string( $body['token'] ) ) { return new WP_Error( 'auth_response', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ) ); }
 	return $body['token'];
 }
 
@@ -60,11 +60,11 @@ function raghushree_fetch_shipping_quote( $product_id, $option, $destination ) {
 		'declared_value' => number_format( (int) $pack['price_paise'] / 100, 2, '.', '' ),
 	);
 	$response = wp_remote_get( add_query_arg( $query, 'https://apiv2.shiprocket.in/v1/external/courier/serviceability/' ), array( 'timeout' => 15, 'redirection' => 0, 'headers' => array( 'Authorization' => 'Bearer ' . $token, 'Accept' => 'application/json' ) ) );
-	if ( is_wp_error( $response ) ) { return new WP_Error( 'courier_network', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	if ( is_wp_error( $response ) ) { return new WP_Error( 'courier_network', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ) ); }
 	$status = (int) wp_remote_retrieve_response_code( $response );
-	if ( 200 !== $status ) { return new WP_Error( 'courier_http', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ), $status ); }
+	if ( 200 !== $status ) { return new WP_Error( 'courier_http', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ), $status ); }
 	$body = json_decode( wp_remote_retrieve_body( $response ), true );
-	if ( ! is_array( $body ) || ! isset( $body['data'] ) || ! is_array( $body['data'] ) || ( isset( $body['currency'] ) && 'INR' !== $body['currency'] ) ) { return new WP_Error( 'courier_response', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	if ( ! is_array( $body ) || ! isset( $body['data'] ) || ! is_array( $body['data'] ) || ( isset( $body['currency'] ) && 'INR' !== $body['currency'] ) ) { return new WP_Error( 'courier_response', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ) ); }
 	$rate = raghushree_lowest_shipping_rate( isset( $body['data'] ) ? $body['data'] : null );
 	if ( false === $rate ) { return new WP_Error( 'no_rate', __( 'No prepaid shipping rate is available for this PIN code. Please contact us.', 'raghushree' ) ); }
 	$product_paise = (int) $pack['price_paise'];

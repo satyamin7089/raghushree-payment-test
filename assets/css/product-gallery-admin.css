@@ -1,0 +1,6 @@
+.rg-gallery-preview { display: flex; flex-wrap: wrap; gap: 12px; }
+.rg-gallery-item { width: 150px; padding: 8px; border: 1px solid #dcdcde; background: #fff; }
+.rg-gallery-item img { display: block; width: 100%; height: 110px; object-fit: cover; }
+.rg-gallery-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.rg-gallery-actions .button { font-size: 12px; padding: 0 6px; }
+.rg-gallery-editor [hidden] { display: none; }
