@@ -414,3 +414,13 @@ The product page shows a breakdown alongside delivery details. The amount and ta
 - A known reconciliation risk remains: an unknown Razorpay order webhook is acknowledged with HTTP 200, including if it arrives before its order ID has been stored. A delivered webhook alone is not proof of a paid WordPress order. Manually reconcile uncertain payments with Razorpay; do not ask a customer to pay twice or ship until resolved.
 
 For implementation details, see the [code architecture README](docs/code-architecture/README.md). The repository includes mocked smoke tests; they are not a real WordPress or provider end-to-end test. Consult the [Razorpay documentation](https://razorpay.com/docs/home/) and [Shiprocket API documentation](https://apidocs.shiprocket.in/) as provider sources of truth.
+
+### Restricted Product Manager access
+
+The optional **Raghushree Product Access** plugin uses the existing WordPress Products list and editor; it does not install a replacement dashboard. To set it up:
+
+1. Back up the site and test on staging first. Download `plugin-download/raghushree-product-access.zip` from this repository, then in WordPress go to **Plugins → Add New → Upload Plugin**, install and activate it. The active Raghushree theme must register the `products` post type. On multisite, activate it separately on each site where it is used (not network-wide).
+2. In **Users**, create or edit a dedicated client account and assign **Product Manager (restricted)** as its only role. Do not assign it to a multisite super administrator or combine it with another role. Test by signing in as that account before sharing access.
+3. The account lands on **Products**. It can create, edit, publish, trash and permanently delete any Product, assign existing product taxonomy terms, edit product prices/GST and shipping measurements, and choose existing media or upload images through the editor. Existing Media Library items are visible in the picker; media metadata editing is limited to the client's own uploaded images. It cannot manage taxonomy terms, other post types (including Product Detail pages), site settings, orders, Payment & Shipping Setup, or New Catalog Setup.
+
+Keep the plugin active while these accounts are in use. Deactivation removes the role's capabilities; reactivation restores the role and its existing user assignments. Never replace this restriction with menu hiding alone. Other plugins/custom endpoints may have their own permissions and should be reviewed on the deployed site. To rebuild the ZIP after changing the plugin source, run `python3 scripts/package-product-access-plugin.py`.
