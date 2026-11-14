@@ -69,4 +69,14 @@ $pipe = raghushree_fetch_shipping_quote( 42, 'packet_1', '226001' );
 check( $pipe['product_gst_paise'] === 1200 && $pipe['shipping_gst_paise'] === 801 && $pipe['total_paise'] === 16451, 'product and shipping GST are calculated separately' );
 $GLOBALS['packs']['packet_1']['weight_kg'] = '30.001'; $calls = count( $GLOBALS['http_calls'] );
 check( raghushree_fetch_shipping_quote( 42, 'packet_1', '226001' )->get_error_code() === 'weight_limit' && count( $GLOBALS['http_calls'] ) === $calls, 'pipe weight above 30kg blocked before provider request' );
+// Exercise each heavier polymer option with distinct saved weights and dimensions.
+foreach ( array( 5, 10, 15, 20, 25 ) as $kg ) {
+ $key = $kg . 'kg';
+ $GLOBALS['packs'][$key] = array( 'label' => $key, 'enabled' => true, 'price_paise' => $kg * 25000, 'weight_kg' => (string) ( $kg + 0.25 ), 'length_cm' => (string) ( 30 + $kg ), 'width_cm' => '22', 'height_cm' => '18', 'gst_bps' => 1800, 'hsn' => '3901', 'product_type' => 'polymer' );
+ $result = raghushree_fetch_shipping_quote( 42, $key, '226001' );
+ check( ! is_wp_error( $result ) && $result['product_paise'] === $kg * 25000, $key . ' gets a provider quote and correct price' );
+ $last = $GLOBALS['http_calls'][count( $GLOBALS['http_calls'] ) - 1][0]; parse_str( parse_url( $last, PHP_URL_QUERY ), $query );
+ check( $query['weight'] === (string) ( $kg + 0.25 ) && $query['length'] === (string) ( 30 + $kg ) && $query['breadth'] === '22' && $query['height'] === '18', $key . ' sends its own packed measurements' );
+ check( $query['declared_value'] === number_format( $kg * 250, 2, '.', '' ), 'declared value is numeric without thousands separators' );
+}
 echo "Shipping quote smoke tests passed.\n";

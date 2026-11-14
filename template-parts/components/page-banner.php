@@ -28,7 +28,7 @@ $image_slot    = ! empty( $args['image_slot'] ) ? $args['image_slot'] : 'about_h
 $slider_slides = ( ! empty( $args['slider_slides'] ) && is_array( $args['slider_slides'] ) ) ? $args['slider_slides'] : array();
 $post_id       = ! empty( $args['post_id'] ) ? (int) $args['post_id'] : 0;
 $caption_title = ! empty( $args['caption_title'] ) ? $args['caption_title'] : __( 'Industrial Polymer Raw Material Supply', 'raghushree' );
-$caption_sub   = ! empty( $args['caption_sub'] ) ? $args['caption_sub'] : __( 'Bulk orders, grade consultation & sample enquiries', 'raghushree' );
+$caption_sub   = array_key_exists( 'caption_sub', $args ) ? (string) $args['caption_sub'] : __( 'Bulk orders, grade consultation & sample enquiries', 'raghushree' );
 $has_slider    = count( $slider_slides ) > 1;
 ?>
 <section class="section section--hero page-banner-section"<?php echo '' !== $section_id ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
@@ -183,15 +183,15 @@ $has_slider    = count( $slider_slides ) > 1;
 						</div>
 					<?php else : ?>
 						<?php
-						raghushree_render_image(
-							$image_slot,
-							array(
-								'post_id'  => $post_id,
-								'size'     => 'raghushree-hero',
-								'sizes'    => '(min-width: 900px) 520px, 100vw',
-								'priority' => true,
-							)
-						);
+						if ( ! empty( $args['empty_image'] ) ) {
+							?><div class="product-image-empty" role="img" aria-label="<?php esc_attr_e( 'Product image not available', 'raghushree' ); ?>"><?php esc_html_e( 'Product image', 'raghushree' ); ?></div><?php
+						} else {
+							raghushree_render_image( $image_slot, array(
+								'attachment_id' => ! empty( $slider_slides[0]['attachment_id'] ) ? (int) $slider_slides[0]['attachment_id'] : 0,
+								'post_id' => $post_id, 'size' => 'raghushree-hero',
+								'sizes' => '(min-width: 900px) 520px, 100vw', 'priority' => true,
+							) );
+						}
 						?>
 						<div class="page-banner-card__caption">
 							<span class="page-banner-card__caption-title"><?php echo esc_html( $caption_title ); ?></span>

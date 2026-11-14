@@ -122,8 +122,11 @@ function raghushree_payment_settings_render() {
 	<?php endforeach; ?>
 	<h2><?php esc_html_e( 'Test Shiprocket courier rate', 'raghushree' ); ?></h2>
 	<p><?php esc_html_e( 'Save credentials and pickup PIN first. Enter a published product ID (the number after post= in its edit URL), an enabled pack with saved dimensions, and a delivery PIN. This contacts your configured Shiprocket account for the lowest available prepaid rate only; it does not create an order or pickup. The Courier API-user module may be required; confirm permissions with Shiprocket if access is denied.', 'raghushree' ); ?></p>
+	<?php $diagnostic_products = get_posts( array( 'post_type' => 'products', 'post_status' => 'publish', 'posts_per_page' => 200, 'orderby' => 'title', 'order' => 'ASC' ) ); ?>
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 		<input type="hidden" name="action" value="raghushree_test_courier_rate"><?php wp_nonce_field( 'raghushree_test_courier_rate' ); ?>
+		<div class="raghushree-courier-pickers" hidden><p><label for="sr-product-picker"><?php esc_html_e( 'Choose a product', 'raghushree' ); ?></label> <select id="sr-product-picker"><option value=""><?php esc_html_e( 'Select a product', 'raghushree' ); ?></option><?php foreach ( $diagnostic_products as $product ) : $packs = array_filter( raghushree_master_variations( $product->ID ), function ( $pack ) { return ! empty( $pack['enabled'] ); } ); $choices = array(); foreach ( $packs as $key => $pack ) { $choices[] = array( 'key' => $key, 'label' => $pack['label'] ); } ?><option value="<?php echo esc_attr( $product->ID ); ?>" data-packs="<?php echo esc_attr( wp_json_encode( $choices ) ); ?>"><?php echo esc_html( get_the_title( $product ) ); ?></option><?php endforeach; ?></select>
+		<label for="sr-pack-picker"><?php esc_html_e( 'Choose a pack', 'raghushree' ); ?></label> <select id="sr-pack-picker"><option value=""><?php esc_html_e( 'Select a product first', 'raghushree' ); ?></option></select></p><p class="description"><?php esc_html_e( 'The first 200 published products are listed. If yours is not listed, enter its ID and pack key below.', 'raghushree' ); ?></p></div>
 		<label for="sr-product-id"><?php esc_html_e( 'Product ID', 'raghushree' ); ?></label> <input id="sr-product-id" name="product_id" type="number" min="1" required>
 		<label for="sr-option"><?php esc_html_e( 'Pack', 'raghushree' ); ?></label> <input id="sr-option" name="option" type="text" placeholder="10kg or packet_1" required>
 		<label for="sr-destination"><?php esc_html_e( 'Delivery PIN', 'raghushree' ); ?></label> <input id="sr-destination" name="pincode" type="text" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" required>
@@ -175,3 +178,10 @@ function raghushree_test_courier_rate() {
 	exit;
 }
 add_action( 'admin_post_raghushree_test_courier_rate', 'raghushree_test_courier_rate' );
+
+/** Enhance the optional courier diagnostic without changing its server-side checks. */
+function raghushree_courier_test_admin_assets( $hook ) {
+	if ( ! isset( $_GET['page'] ) || ! is_scalar( $_GET['page'] ) || 'raghushree-payment-setup' !== sanitize_key( wp_unslash( $_GET['page'] ) ) ) { return; }
+	wp_enqueue_script( 'raghushree-courier-test', get_template_directory_uri() . '/assets/js/courier-test-admin.js', array(), raghushree_asset_version( 'assets/js/courier-test-admin.js' ), true );
+}
+add_action( 'admin_enqueue_scripts', 'raghushree_courier_test_admin_assets' );

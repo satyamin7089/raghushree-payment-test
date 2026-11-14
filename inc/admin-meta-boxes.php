@@ -34,6 +34,22 @@ function raghushree_register_admin_meta_boxes() {
 	);
 }
 add_action( 'add_meta_boxes', 'raghushree_register_admin_meta_boxes' );
+function raghushree_register_page_product_content_box( $post ) {
+	if ( 'page-templates/template-product-detail.php' === get_page_template_slug( $post ) ) {
+		add_meta_box( 'raghushree_product_specs_box', __( 'Product Content & Images', 'raghushree' ), 'raghushree_render_product_meta_box', 'page', 'normal', 'high' );
+	}
+}
+add_action( 'add_meta_boxes_page', 'raghushree_register_page_product_content_box' );
+function raghushree_product_content_admin_assets( $hook ) {
+	if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) { return; }
+	$screen = get_current_screen();
+	if ( ! $screen || ! in_array( $screen->post_type, array( 'products', 'page' ), true ) ) { return; }
+	if ( 'page' === $screen->post_type ) { $post_id = isset( $_GET['post'] ) && is_scalar( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; if ( ! $post_id || 'page-templates/template-product-detail.php' !== get_page_template_slug( $post_id ) ) { return; } }
+	wp_enqueue_media();
+	wp_enqueue_script( 'raghushree-product-gallery-editor', get_template_directory_uri() . '/assets/js/product-gallery-admin.js', array( 'media-views' ), raghushree_asset_version( 'assets/js/product-gallery-admin.js' ), true );
+	wp_enqueue_style( 'raghushree-product-gallery-editor', get_template_directory_uri() . '/assets/css/product-gallery-admin.css', array(), raghushree_asset_version( 'assets/css/product-gallery-admin.css' ) );
+}
+add_action( 'admin_enqueue_scripts', 'raghushree_product_content_admin_assets' );
 
 /**
  * Render the Product Meta Box in WP Admin.
@@ -48,6 +64,7 @@ function raghushree_render_product_meta_box( $post ) {
 		'polymer_code'      => get_post_meta( $post->ID, '_raghushree_polymer_code', true ),
 		'image_slot'        => get_post_meta( $post->ID, '_raghushree_image_slot', true ),
 		'short_desc'        => get_post_meta( $post->ID, '_raghushree_short_desc', true ),
+		'highlights'        => get_post_meta( $post->ID, '_raghushree_highlights', true ),
 		'grades_notes'      => get_post_meta( $post->ID, '_raghushree_grades_notes', true ),
 		'grades_rows'       => get_post_meta( $post->ID, '_raghushree_grades_rows', true ),
 		'applications_rows' => get_post_meta( $post->ID, '_raghushree_applications_rows', true ),
@@ -67,6 +84,22 @@ function raghushree_render_product_meta_box( $post ) {
 	<p class="description">
 		<?php esc_html_e( 'Leave any unverified field blank — empty fields are automatically hidden on the frontend rather than displaying placeholder claims.', 'raghushree' ); ?>
 	</p>
+	<p><label for="raghushree_short_desc"><strong><?php esc_html_e( 'Short card and product introduction', 'raghushree' ); ?></strong></label><br><textarea id="raghushree_short_desc" name="raghushree_short_desc" rows="3" class="large-text"><?php echo esc_textarea( $fields['short_desc'] ); ?></textarea><br><span class="description"><?php esc_html_e( 'Shown on the product card and at the top of this page. If empty, the excerpt or main description is used.', 'raghushree' ); ?></span></p>
+	<p><label for="raghushree_highlights"><strong><?php esc_html_e( 'Product highlights', 'raghushree' ); ?></strong></label><br><textarea id="raghushree_highlights" name="raghushree_highlights" rows="4" class="large-text"><?php echo esc_textarea( $fields['highlights'] ); ?></textarea><br><span class="description"><?php esc_html_e( 'Optional: one point per line. These points appear below the introduction. Add your paragraphs, headings and lists in the main product editor above.', 'raghushree' ); ?></span></p>
+	<?php
+	$gallery_items = array();
+	foreach ( explode( ',', (string) $fields['gallery_ids'] ) as $id ) {
+		$id = absint( trim( $id ) );
+		if ( $id && ! isset( $gallery_items[$id] ) ) { $gallery_items[$id] = array( 'id' => $id, 'url' => wp_get_attachment_image_url( $id, 'thumbnail' ) ?: '' ); }
+	}
+	?>
+	<div class="rg-gallery-editor" data-gallery-items="<?php echo esc_attr( wp_json_encode( array_values( $gallery_items ) ) ); ?>">
+		<p><strong><?php esc_html_e( 'Additional product images', 'raghushree' ); ?></strong><br><span class="description"><?php esc_html_e( 'Choose images from your Media Library for the product-page slider. Set the main card image separately as the Featured Image.', 'raghushree' ); ?></span></p>
+		<div data-gallery-preview class="rg-gallery-preview"></div>
+		<p><button type="button" class="button" data-gallery-add hidden><?php esc_html_e( 'Choose images', 'raghushree' ); ?></button></p>
+		<p data-gallery-fallback><label for="raghushree_gallery_ids"><?php esc_html_e( 'Gallery attachment IDs (comma separated; used if JavaScript is unavailable)', 'raghushree' ); ?></label><br><input type="text" id="raghushree_gallery_ids" name="raghushree_gallery_ids" value="<?php echo esc_attr( $fields['gallery_ids'] ); ?>" class="regular-text" /></p>
+	</div>
+	<details><summary><strong><?php esc_html_e( 'Additional structured details (optional)', 'raghushree' ); ?></strong></summary><p class="description"><?php esc_html_e( 'Use these optional fields for tables and FAQs. Existing values are kept. You can also write all your details as normal paragraphs or lists in the main editor.', 'raghushree' ); ?></p>
 	<table class="form-table" role="presentation">
 		<tr>
 			<th><label for="raghushree_polymer_code"><?php esc_html_e( 'Polymer Short Code', 'raghushree' ); ?></label></th>
@@ -82,13 +115,10 @@ function raghushree_render_product_meta_box( $post ) {
 						</option>
 					<?php endforeach; ?>
 				</select>
-				<p class="description"><?php esc_html_e( 'Used only until you upload a WordPress Featured Image on this product.', 'raghushree' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Used as a card fallback until you upload a Featured Image. The product page uses a neutral image area when no product photos are set.', 'raghushree' ); ?></p>
 			</td>
 		</tr>
-		<tr>
-			<th><label for="raghushree_short_desc"><?php esc_html_e( 'Short Card Summary', 'raghushree' ); ?></label></th>
-			<td><textarea id="raghushree_short_desc" name="raghushree_short_desc" rows="2" class="large-text"><?php echo esc_textarea( $fields['short_desc'] ); ?></textarea></td>
-		</tr>
+
 		<tr>
 			<th><label for="raghushree_grades_notes"><?php esc_html_e( 'Grades & Forms Overview', 'raghushree' ); ?></label></th>
 			<td><textarea id="raghushree_grades_notes" name="raghushree_grades_notes" rows="3" class="large-text"><?php echo esc_textarea( $fields['grades_notes'] ); ?></textarea></td>
@@ -139,19 +169,12 @@ function raghushree_render_product_meta_box( $post ) {
 			<th><label for="raghushree_availability"><?php esc_html_e( 'Verified Availability Note', 'raghushree' ); ?></label></th>
 			<td><input type="text" id="raghushree_availability" name="raghushree_availability" value="<?php echo esc_attr( $fields['availability'] ); ?>" class="regular-text" /></td>
 		</tr>
-		<tr>
-			<th><label for="raghushree_gallery_ids"><?php esc_html_e( 'Product Gallery Attachment IDs', 'raghushree' ); ?></label></th>
-			<td><input type="text" id="raghushree_gallery_ids" name="raghushree_gallery_ids" value="<?php echo esc_attr( $fields['gallery_ids'] ); ?>" class="regular-text" placeholder="e.g. 42, 43, 44" /></td>
-		</tr>
-		<tr>
-			<th><label for="raghushree_related_ids"><?php esc_html_e( 'Related Product Post IDs', 'raghushree' ); ?></label></th>
-			<td><input type="text" id="raghushree_related_ids" name="raghushree_related_ids" value="<?php echo esc_attr( $fields['related_ids'] ); ?>" class="regular-text" placeholder="e.g. 12, 15, 18" /></td>
-		</tr>
+
 		<tr>
 			<th><label for="raghushree_product_faqs"><?php esc_html_e( 'Product FAQs (Question | Answer)', 'raghushree' ); ?></label></th>
 			<td><textarea id="raghushree_product_faqs" name="raghushree_product_faqs" rows="4" class="large-text"><?php echo esc_textarea( $fields['product_faqs'] ); ?></textarea></td>
 		</tr>
-	</table>
+	</table></details>
 	<?php
 }
 
@@ -195,6 +218,7 @@ function raghushree_save_product_meta_box( $post_id ) {
 
 	$textarea_fields = array(
 		'short_desc',
+		'highlights',
 		'grades_notes',
 		'grades_rows',
 		'applications_rows',
@@ -216,6 +240,7 @@ function raghushree_save_product_meta_box( $post_id ) {
 	}
 }
 add_action( 'save_post_products', 'raghushree_save_product_meta_box' );
+add_action( 'save_post_page', 'raghushree_save_product_meta_box' );
 
 /**
  * Render read-only Buyer Enquiry details inside WP Admin.

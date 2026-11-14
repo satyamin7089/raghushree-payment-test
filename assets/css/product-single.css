@@ -669,3 +669,17 @@ main .sp-grade-card__desc, main .sp-tech-item__desc, main .sp-logistics-card__de
 .checkout-summary button { width: 100%; border-radius: 9px; font-weight: 700; margin-top: 12px; }
 .checkout-note { font-size: .8rem; line-height: 1.55; color: #586c78; }
 @media (min-width: 900px) { .checkout-grid { grid-template-columns: minmax(0, 1.25fr) minmax(290px, .75fr); } }
+
+/* Owner-authored product content: spacious, readable and responsive. */
+.product-editorial { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: start; }
+.product-editorial__heading h2 { margin: 10px 0 0; overflow-wrap: anywhere; }
+.product-editorial__body { min-width: 0; max-width: 820px; overflow-wrap: anywhere; }
+.product-editorial__body > * + * { margin-top: 1.25rem; }
+.product-editorial__body ul, .product-editorial__body ol { padding-left: 1.5rem; }
+.product-editorial__body li + li { margin-top: .5rem; }
+.product-editorial__body img { max-width: 100%; height: auto; }
+.product-editorial__item { padding: 20px; border-radius: var(--radius-md); background: var(--pearl); }
+.product-editorial__item h3 { margin: 0 0 .5rem; }
+.product-editorial__item p { margin: 0; }
+@media (min-width: 900px) { .product-editorial { grid-template-columns: minmax(0, .6fr) minmax(0, 1.4fr); gap: clamp(32px, 5vw, 80px); } }
+.product-image-empty { position: absolute; inset: 0; display: grid; place-items: center; background: var(--tint); color: var(--muted); font-weight: 600; }

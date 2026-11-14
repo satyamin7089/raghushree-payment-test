@@ -32,6 +32,8 @@ Shiprocket is used for rates only. It does not create a shipment, order or picku
 | --- | --- |
 | [`functions.php`](../../functions.php) | Loads the theme modules. |
 | [`inc/catalog-v2.php`](../../inc/catalog-v2.php) | Requested category and product definitions and the administrator-only, non-destructive catalog installer. |
+| [`inc/admin-meta-boxes.php`](../../inc/admin-meta-boxes.php), [`assets/js/product-gallery-admin.js`](../../assets/js/product-gallery-admin.js) | Optional highlights, existing structured fields and Media Library selection; gallery IDs remain in their existing meta format. |
+| [`template-parts/sections/product/detail-content.php`](../../template-parts/sections/product/detail-content.php) | Owner-authored content, optional saved sections and selected-image slider for both product types. |
 | [`inc/product-master.php`](../../inc/product-master.php) | Product type, polymer variations, packet quantities, per-product GST and HSN, meta box and validation. |
 | [`inc/shipping-quotes.php`](../../inc/shipping-quotes.php) | Shiprocket authentication, prepaid serviceability, lowest valid courier, GST calculation and AJAX endpoint. |
 | [`inc/payment-settings.php`](../../inc/payment-settings.php) | Credentials, setup and admin-only provider diagnostics. |
@@ -64,6 +66,7 @@ Deploy the updated theme and plugin **together**. Back up and disable checkout f
 
 ```bash
 php tests/product-master-test.php
+php tests/product-content-test.php
 php tests/catalog-v2-test.php
 php tests/shipping-quotes-test.php
 php tests/courier-diagnostics-test.php
@@ -73,4 +76,4 @@ php tests/payment-compat-test.php
 php tests/plugin-compat-test.php
 ```
 
-These are mocked smoke tests, not real WordPress, browser, Shiprocket or Razorpay tests. Test staging with actual provider accounts, including per-quantity measurements, GST, minimum courier selection, webhook/retry cases, and compatibility upgrades. Confirm applicable GST and whether the provider rate already includes tax with the merchant's tax adviser before live checkout.
+The PHP tests are mocked smoke tests, not real WordPress or provider tests. The separate gallery JavaScript and catalog layout browser tests require external test dependencies. Test staging with actual provider accounts, including per-quantity measurements, GST, minimum courier selection, webhook/retry cases, and compatibility upgrades. Confirm applicable GST and whether the provider rate already includes tax with the merchant's tax adviser before live checkout.

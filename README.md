@@ -146,32 +146,36 @@ Defined in `inc/custom-post-types.php`:
 
 ---
 
-## 9. How to Add & Edit Polymer Products
+## 9. How to edit a product, its card and gallery
 
-1. In WP Admin, go to **Polymer Products → Add New Product** (or edit an existing polymer).
-2. Enter the **Product Title** (e.g., `Polypropylene (PP)`), **Excerpt** (concise B2B summary shown on cards and hero), and **Main Content** (detailed overview).
-3. Assign **Polymer Categories**, **Material Grades**, **Material Forms**, and **Application Industries** in the right sidebar.
-4. Set a **Featured Image** (`1200×900` `4:3` industrial photograph recommended).
-5. Populate the **Polymer Product Technical & Commercial Details** meta box (`inc/admin-meta-boxes.php`):
-   - **Short Polymer Code** (e.g., `PP`, `HDPE`, `PVC`)
-   - **Subtitle / Hero Lead** & **Placeholder Image Key** (fallback key when no Featured Image is uploaded)
-   - **Available Forms Summary**, **Packaging Options**, **Minimum Order Quantity (MOQ)**, **Supply Availability**, and **Datasheet PDF URL or Media Attachment**
-   - **Grades & Specifications Rows** (`One per line: Grade Name | Form | Typical MFI / Key Metric | Primary Use`)
-   - **Manufacturing Applications** & **Industries Served** (`One item per line`)
-   - **Processing Methods** (`One per line: Method Name | Guidance Note`)
-   - **Technical Specifications Table** (`One per line: Property | Value / Standard | Test Method`)
-   - **Product-Specific FAQs** (`One per line: Question? | Answer`)
-6. Click **Publish / Update**. Any field left blank is cleanly omitted on the frontend rather than showing broken empty tables.
+The **Products** menu contains both polymer and pipe products (some older editor labels still say “Polymer”). The same content box is also available on an existing Page using the Product Detail template after saving that template choice.
+
+### Write the page and card
+
+1. Go to **Products → All Products → Edit** (or choose **Add New**). Enter the title. Write your paragraphs, headings and lists in the main editor; they appear under **Product overview**. Leave the content empty if you do not need an overview.
+2. In **Raghushree Polymer Product Specifications & Supply Data**, enter the **Short card and product introduction**. It appears both on the card and at the top of the product page. If it is empty, the WordPress **Excerpt** is used; if that is also empty, the first 26 words of the main description are used. If changing the Excerpt does not change the card, check this short introduction first.
+3. Add **Product highlights**, one point per line, for the bullets at the top. These are optional. The page no longer adds generic product claims or stock slideshow images.
+4. Set a **Featured Image** in the product sidebar. It is the product card image and first product-page image. Without one, the card uses its configured placeholder; the product page uses the first gallery image, or a neutral empty image area if there are no photos. Add useful alternative text in Media Library.
+5. Choose an existing supported **Polymer Category** (the categories also include pipes). You may also add verified **Material Grades** and **Material Forms** as card tags. Only categories in the predefined catalog appear in its listing.
+6. Open **Additional structured details (optional)** only if you need extra tables, applications, packaging, processing, a datasheet or FAQs. Existing values remain saved and populated values appear on both polymer and pipe pages. For example, enter a FAQ on each line as `Question | Answer`. You can instead use regular headings and lists in the main editor.
+7. Configure **Product Master — Pricing, GST & Shipping** separately if online purchase is needed; content editing does not set up checkout. Click **Update** or **Publish**, then preview the page and `/products/`.
+
+The layout retains functional labels, purchase/enquiry controls and headings for optional sections. Old hard-coded marketing sections and generic slider images are no longer shown. Previously saved structured details are not deleted; review them and clear any you no longer want displayed. Existing related-product IDs remain stored but are not displayed in the simplified layout.
+
+### Add, remove and arrange gallery images
+
+1. Edit a product, find **Additional product images** and click **Choose images**. Upload or select one or more images from the WordPress Media Library, then click **Add images**. No image IDs are needed.
+2. The image previews let you **Move earlier**, **Move later** or **Remove**. Click **Update** to save. The Featured Image is managed separately.
+3. Both pipe and polymer product pages show the Featured Image followed by your gallery images, in your chosen order. Duplicate Featured Images and invalid image references are skipped. With two or more images, visitors can use the arrows/dots; automatic rotation respects reduced-motion settings. A single image is shown without slider controls.
+4. Existing saved gallery IDs continue to work. If the Media Library JavaScript is unavailable, the old comma-separated ID field remains available as a fallback; do not remove existing values unless intended.
 
 ---
 
-## 10. How to Manage Categories & Catalog Filters
+## 10. How to manage the product catalog
 
-- Navigate to **Polymer Products → Polymer Categories**, **Material Grades**, or **Material Forms**.
-- On `/products/`:
-  - **Polymer Category Pills & Dropdown** display categories assigned to published products.
-  - **Grade & Material Form Dropdowns** automatically appear in the filter toolbar **as soon as at least one published product has a verified `material_grade` or `material_form` term assigned**. While unverified/empty, those dropdowns stay hidden so buyers never encounter dead, zero-result dropdowns.
-  - Filtering works both **instantly via progressive vanilla JS** (`assets/js/products.js`) and **server-side via URL query parameters** (`?q=...&polymer_cat=...&material_grade=...&material_form=...`) when JavaScript is disabled or links are shared.
+- Edit supported categories under **Products → Polymer Categories** and assign the relevant supported category to each product. See [Install the requested catalog](#install-the-requested-catalog) for how existing and new products are handled.
+- The `/products/` catalog groups matching published products by category, with server-side search (`product_q`), category selection (`polymer_cat`) and pagination (`catalog_page`). Each group displays two cards per row; a single remaining card leaves the second position empty.
+- The category list in the current template is predefined by the catalog setup; creating a new category in WordPress alone will not automatically add it to this listing.
 
 ---
 
@@ -183,7 +187,7 @@ Defined in `inc/custom-post-types.php`:
 | **About Page** | `page-templates/template-about.php` | `template-parts/sections/about/*.php` (4 grouped files covering 12 sections) |
 | **Contact Page** | `page-templates/template-contact.php` | `template-parts/sections/contact/hero-info-form.php` & `options-channels-faq.php` (9 sections) |
 | **Products Listing** | `archive-products.php` & `page-templates/template-products.php` | `template-parts/sections/product/listing-content.php` |
-| **Product Detail** | `single-products.php` & `page-templates/template-product-detail.php` | `template-parts/sections/product/detail-content.php` (10 sections) |
+| **Product Detail** | `single-products.php` & `page-templates/template-product-detail.php` | `template-parts/sections/product/detail-content.php` (owner-entered sections) |
 | **Global Header / Footer** | `header.php`, `footer.php` | Shared components in `template-parts/components/*.php` |
 
 Additionally:
@@ -403,6 +407,7 @@ The product page shows a breakdown alongside delivery details. The amount and ta
 
 - Under **Products → Payment & Shipping Setup**, save the Razorpay test Key ID/Secret, a separate webhook secret, Shiprocket API-user email/password and the pickup PIN. Configure the displayed public HTTPS Razorpay webhook URL for `order.paid`. Saved credentials are stored in the WordPress database without application-level encryption; protect admin access and backups.
 - **Test Shiprocket** checks authentication only. **Test courier rate** uses a published product ID, option key (`10kg` or `packet_1`, for example) and delivery PIN to check the lowest available prepaid rate without creating an order or pickup. The configured real Shiprocket account is contacted even in Razorpay Test mode.
+- **If heavier packs show “shipping unavailable”:** In the affected product, check that the exact pack is enabled and has its own positive actual packed weight and all three dimensions. Under **Products → Payment & Shipping Setup → Test Shiprocket courier rate**, choose the product and pack (or enter their ID/key manually) and the same customer PIN. Run the test for both the working 5 kg and failing pack. The admin-only result distinguishes configuration, connection, provider HTTP status and no-rate failures; it does not expose credentials or provider response bodies. Ask your host or Shiprocket support about the reported stage/status if needed. Authentication success alone does not prove a given pack is serviceable. The code contains no general 5 kg maximum for polymer products, but the real reason for a specific failure cannot be determined without that test.
 - On staging, test polymer pack, sample and pipe quantities, including an unconfigured quantity and a pipe over 30 kg. Confirm product price, both GST amounts, total, lowest courier and customer details in **Products → Payment Orders** and Razorpay test mode. Check failed/closed payments and webhook delivery; do not dispatch test or uncertain orders. Live mode requires both the existing live-safety opt-in and the new **GST live-pricing safety** confirmation. The new checkbox is unchecked on upgrade; verify the tax treatment and staging totals before enabling it.
 - Theme/plugin mixed versions disable new checkout to avoid an outdated amount. Install [`plugin-download/raghushree-payments.zip`](plugin-download/raghushree-payments.zip) as a replacement, not an additional copy. Legacy order snapshots and old manual-delivery data remain available; check Shiprocket for older shipments before booking a new one.
 - A known reconciliation risk remains: an unknown Razorpay order webhook is acknowledged with HTTP 200, including if it arrives before its order ID has been stored. A delivered webhook alone is not proof of a paid WordPress order. Manually reconcile uncertain payments with Razorpay; do not ask a customer to pay twice or ship until resolved.
