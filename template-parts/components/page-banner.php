@@ -82,6 +82,8 @@ $has_slider    = count( $slider_slides ) > 1;
 					<?php endif; ?>
 				</div>
 
+				<?php if ( ! empty( $args['purchase_post_id'] ) ) { get_template_part( 'template-parts/components/product-purchase', null, array( 'product_id' => $args['purchase_post_id'], 'enquire_url' => $args['purchase_enquire_url'] ) ); } ?>
+
 				<?php if ( ! empty( $primary_cta ) || ! empty( $secondary_btn ) || ! empty( $secondary_cta ) ) : ?>
 					<div class="page-banner-card__cta-row">
 						<?php if ( ! empty( $primary_cta['label'] ) && ! empty( $primary_cta['url'] ) ) : ?>

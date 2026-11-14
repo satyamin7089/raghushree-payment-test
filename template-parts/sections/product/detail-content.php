@@ -24,6 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $post_id = get_queried_object_id();
 $prod    = raghushree_get_product_data( $post_id );
+$is_pipe = 'pipe' === raghushree_product_commerce( $post_id )['type'];
 
 if ( empty( $prod['id'] ) ) {
 	return;
@@ -61,8 +62,9 @@ $related_args = array(
 	'post_type'      => 'products',
 	'post_status'    => 'publish',
 	'posts_per_page' => 3,
-	'post__not_in'   => array( $prod['id'] ),
+	'post__not_in'   => array_merge( array( $prod['id'] ), get_option( 'raghushree_catalog_v2' ) ? (array) get_option( 'raghushree_legacy_catalog_ids', array() ) : array() ),
 	'no_found_rows'  => true,
+	'tax_query' => get_option( 'raghushree_catalog_v2' ) ? array( array( 'taxonomy' => 'polymer_category', 'field' => 'slug', 'terms' => array_keys( raghushree_catalog_definitions() ) ) ) : array(),
 );
 if ( ! empty( $prod['related_ids'] ) ) {
 	$related_args['post__in'] = $prod['related_ids'];
@@ -90,6 +92,8 @@ $banner_points = array(
 	__( 'Pre-order sample evaluation & commercial bulk supply coordination', 'raghushree' ),
 	__( 'Domestic pan-India factory delivery & international export support', 'raghushree' ),
 );
+
+if ( $is_pipe ) { $banner_points = array( __( 'Sold by packet', 'raghushree' ), __( 'Delivery availability checked by PIN code', 'raghushree' ), __( 'Contact our team for bulk orders and product details', 'raghushree' ) ); }
 
 // Build Fade-In / Fade-Out Right-Column Banner Slider Slides
 $banner_slides = array(
@@ -124,6 +128,8 @@ if ( ! empty( $prod['gallery_ids'] ) ) {
 		);
 	}
 }
+
+if ( $is_pipe ) { $banner_slides = array( array( 'slot' => $prod['image_slot'], 'caption_title' => $prod['title'], 'caption_sub' => __( 'Pipes and hoses', 'raghushree' ) ) ); }
 
 // Curated Visual Image Cards for Single Product Page
 $product_image_cards = array(
@@ -186,14 +192,8 @@ get_template_part(
 		'title'         => $prod['title'],
 		'description'   => $prod['short_desc'],
 		'points'        => $banner_points,
-		'primary_cta'   => array(
-			'label' => __( 'Enquire Now', 'raghushree' ),
-			'url'   => $enquire_now_url,
-		),
-		'secondary_btn' => array(
-			'label' => __( 'Buy Now', 'raghushree' ),
-			'url'   => $buy_now_url,
-		),
+		'purchase_post_id' => $post_id,
+		'purchase_enquire_url' => $enquire_now_url,
 		'image_slot'    => $prod['image_slot'],
 		'slider_slides' => $banner_slides,
 		'post_id'       => $prod['id'],
@@ -203,6 +203,10 @@ get_template_part(
 );
 ?>
 
+<?php if ( $is_pipe ) : ?>
+<?php get_template_part( 'template-parts/components/product-checkout' ); ?>
+<section class="section surface--white single-product-section" id="overview"><div class="container"><div class="overview-layout"><div class="overview-layout__content"><div class="eyebrow"><?php esc_html_e( 'Product overview', 'raghushree' ); ?></div><h2><?php echo esc_html( $prod['title'] ); ?></h2><div class="entry-content"><?php echo wp_kses_post( apply_filters( 'the_content', get_post_field( 'post_content', $prod['id'] ) ) ); ?></div></div><aside class="overview-summary-card"><h3><?php esc_html_e( 'Product details', 'raghushree' ); ?></h3><p><?php esc_html_e( 'Contact our team for confirmed specifications and packet details.', 'raghushree' ); ?></p></aside></div></div></section>
+<?php else : ?>
 <!-- 2. Static Sticky On-Page Section Navigation (Packaging & Processing Removed) -->
 <section class="product-subnav" id="product-section-nav" aria-label="<?php esc_attr_e( 'On-page product sections', 'raghushree' ); ?>">
 	<div class="container">
@@ -220,55 +224,7 @@ get_template_part(
 	</div>
 </section>
 
-<!-- Product master pack options and optional custom checkout. -->
-<section class="section surface--white single-product-section product-purchase" id="product-purchase">
-	<div class="container">
-		<div class="eyebrow"><?php esc_html_e( 'Pack options', 'raghushree' ); ?></div>
-		<h2><?php esc_html_e( 'Pack and sample options', 'raghushree' ); ?></h2>
-		<p><?php echo esc_html( function_exists( 'rgpay_checkout_ready' ) && rgpay_checkout_ready() ? __( 'Select a pack and check shipping to continue to prepaid checkout.', 'raghushree' ) : __( 'Check an estimated Shiprocket rate below. Online checkout is not currently available.', 'raghushree' ) ); ?></p>
-		<div class="product-purchase__cards">
-			<?php $pack_count = 0; foreach ( raghushree_master_variations( $post_id ) as $pack ) : if ( empty( $pack['enabled'] ) ) { continue; } ++$pack_count; ?>
-			<article class="product-purchase__card">
-				<h3><?php echo esc_html( $pack['label'] ); ?></h3>
-				<p class="product-purchase__price">₹<?php echo esc_html( number_format_i18n( (int) $pack['price_paise'] / 100, 2 ) ); ?></p>
-				<p><?php echo esc_html( 0 === (int) $pack['price_paise'] ? __( 'Free sample — pay shipping only', 'raghushree' ) : __( 'Shipping calculated separately', 'raghushree' ) ); ?></p>
-			</article>
-			<?php endforeach; ?>
-		</div>
-		<?php if ( ! $pack_count ) : ?><p><?php esc_html_e( 'No pack options are currently available.', 'raghushree' ); ?></p><?php endif; ?>
-		<?php if ( $pack_count ) : ?>
-		<form class="product-quote" data-endpoint="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" data-product="<?php echo esc_attr( $post_id ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'raghushree_shipping_quote' ) ); ?>">
-			<label for="quote-pack"><?php esc_html_e( 'Pack option', 'raghushree' ); ?></label>
-			<select id="quote-pack" name="option" required><?php foreach ( raghushree_master_variations( $post_id ) as $key => $pack ) : if ( empty( $pack['enabled'] ) ) { continue; } ?><option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $pack['label'] ); ?></option><?php endforeach; ?></select>
-			<label for="quote-pincode"><?php esc_html_e( 'Delivery PIN code', 'raghushree' ); ?></label>
-			<input id="quote-pincode" name="pincode" type="text" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" required>
-			<button type="submit"><?php esc_html_e( 'Check shipping', 'raghushree' ); ?></button>
-			<p class="product-quote__result" role="status" aria-live="polite"></p>
-		</form>
-		<?php endif; ?>
-		<?php if ( $pack_count && function_exists( 'rgpay_checkout_ready' ) && rgpay_checkout_ready() ) : ?>
-		<form class="product-checkout" hidden>
-			<h3><?php esc_html_e( 'Delivery details', 'raghushree' ); ?></h3>
-			<?php if ( ( rgpay_settings()['mode'] ?? 'test' ) === 'test' ) : ?><p><strong><?php esc_html_e( 'Test mode: no real money will be charged and no shipment will be booked.', 'raghushree' ); ?></strong></p><?php endif; ?>
-			<p><?php esc_html_e( 'Enter your delivery details and pay securely with Razorpay. Prepaid orders only.', 'raghushree' ); ?></p>
-			<div class="product-checkout__fields">
-				<label><?php esc_html_e( 'First name', 'raghushree' ); ?><input name="first_name" required maxlength="50" autocomplete="given-name"></label>
-				<label><?php esc_html_e( 'Last name', 'raghushree' ); ?><input name="last_name" required maxlength="50" autocomplete="family-name"></label>
-				<label><?php esc_html_e( 'Email', 'raghushree' ); ?><input name="email" type="email" required maxlength="100" autocomplete="email"></label>
-				<label><?php esc_html_e( 'Mobile number', 'raghushree' ); ?><input name="phone" type="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" required autocomplete="tel-national"></label>
-				<label><?php esc_html_e( 'Address', 'raghushree' ); ?><input name="address" required maxlength="100" autocomplete="address-line1"></label>
-				<label><?php esc_html_e( 'Address line 2 (optional)', 'raghushree' ); ?><input name="address_2" maxlength="100" autocomplete="address-line2"></label>
-				<label><?php esc_html_e( 'City', 'raghushree' ); ?><input name="city" required maxlength="30" autocomplete="address-level2"></label>
-				<label><?php esc_html_e( 'State', 'raghushree' ); ?><input name="state" required maxlength="50" autocomplete="address-level1"></label>
-			</div>
-			<p><?php esc_html_e( 'Delivery PIN is taken from the shipping quote above. Shipping rates are estimates and may change before booking.', 'raghushree' ); ?></p>
-			<button type="submit"><?php esc_html_e( 'Pay with Razorpay', 'raghushree' ); ?></button>
-			<p class="product-checkout__status" role="status" aria-live="polite"></p>
-		</form>
-		<?php endif; ?>
-		<p><a href="<?php echo esc_url( $enquire_now_url ); ?>"><?php esc_html_e( 'Contact us to enquire about this product', 'raghushree' ); ?> →</a></p>
-	</div>
-</section>
+<?php get_template_part( 'template-parts/components/product-checkout' ); ?>
 
 <!-- 3. Product Overview -->
 <section class="section surface--white single-product-section" id="overview">
@@ -734,6 +690,7 @@ get_template_part(
 	</div>
 </section>
 
+<?php endif; ?>
 <!-- 9. Final RFQ / Enquiry CTA -->
 <section class="section surface--white single-product-section" id="enquiry">
 	<div class="container">
@@ -748,7 +705,7 @@ get_template_part(
 					__( 'Enquire About %s Supply Today', 'raghushree' ),
 					$prod['title']
 				),
-				'description' => __( 'Submit your target grade, physical form, application, and estimated quantity to receive a verified quotation from Raghushree Plast Products Pvt. Ltd.', 'raghushree' ),
+				'description' => $is_pipe ? __( 'Tell us the packet size, application and quantity you need and our team will prepare a quotation.', 'raghushree' ) : __( 'Submit your target grade, physical form, application, and estimated quantity to receive a verified quotation from Raghushree Plast Products Pvt. Ltd.', 'raghushree' ),
 				'material'    => $prod['title'],
 			)
 		);

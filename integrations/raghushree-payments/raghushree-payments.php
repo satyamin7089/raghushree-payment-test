@@ -2,11 +2,12 @@
 /**
  * Plugin Name: Raghushree Payments & Orders
  * Description: Razorpay checkout with Shiprocket rate quotes and manually managed WordPress orders.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires PHP: 8.0
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-define( 'RGPAY_RATES_ONLY_VERSION', '0.2.0' );
+define( 'RGPAY_RATES_ONLY_VERSION', '0.3.0' );
+define( 'RGPAY_TAX_PRICING_VERSION', '0.3.0' );
 
 function rgpay_settings() {
 	$value = get_option( 'raghushree_payment_settings', array() );
@@ -18,8 +19,8 @@ function rgpay_checkout_ready() {
 	$s = rgpay_settings();
 	$mode = isset( $s['mode'] ) ? $s['mode'] : 'test';
 	$prefix = 'live' === $mode ? 'rzp_live_' : 'rzp_test_';
-	return function_exists( 'raghushree_rates_only_theme_ready' ) && function_exists( 'raghushree_master_variations' ) && function_exists( 'raghushree_fetch_shipping_quote' )
-		&& ! empty( $s['checkout_enabled'] ) && ( 'test' === $mode || ( 'live' === $mode && ! empty( $s['allow_live'] ) ) ) && ! empty( $s['razorpay_key_id'] ) && 0 === strpos( $s['razorpay_key_id'], $prefix )
+	return function_exists( 'raghushree_tax_pricing_theme_ready' ) && function_exists( 'raghushree_rates_only_theme_ready' ) && function_exists( 'raghushree_master_variations' ) && function_exists( 'raghushree_fetch_shipping_quote' )
+		&& ! empty( $s['checkout_enabled'] ) && ( 'test' === $mode || ( 'live' === $mode && ! empty( $s['allow_live'] ) && ! empty( $s['allow_tax_live'] ) ) ) && ! empty( $s['razorpay_key_id'] ) && 0 === strpos( $s['razorpay_key_id'], $prefix )
 		&& ! empty( $s['razorpay_key_secret'] ) && ! empty( $s['razorpay_webhook_secret'] )
 		&& ! empty( $s['shiprocket_email'] ) && ! empty( $s['shiprocket_password'] ) && is_ssl();
 }
@@ -30,15 +31,15 @@ function rgpay_register_orders() {
 add_action( 'init', 'rgpay_register_orders' );
 
 function rgpay_incompatible_theme_notice() {
-	if ( ! current_user_can( 'manage_options' ) || function_exists( 'raghushree_rates_only_theme_ready' ) ) { return; }
-	?><div class="notice notice-error"><p>Update the Raghushree theme to the matching rates-only version. Checkout is disabled until both theme and plugin are updated.</p></div><?php
+	if ( ! current_user_can( 'manage_options' ) || function_exists( 'raghushree_tax_pricing_theme_ready' ) ) { return; }
+	?><div class="notice notice-error"><p>Update the Raghushree theme to the matching GST-pricing version. Checkout is disabled until both theme and plugin are updated.</p></div><?php
 }
 add_action( 'admin_notices', 'rgpay_incompatible_theme_notice' );
 
 function rgpay_enqueue() {
 	if ( ! rgpay_checkout_ready() || ! ( is_singular( 'products' ) || is_page_template( 'page-templates/template-product-detail.php' ) ) ) { return; }
 	wp_enqueue_script( 'razorpay-checkout', 'https://checkout.razorpay.com/v1/checkout.js', array(), null, true );
-	wp_enqueue_script( 'raghushree-checkout', plugin_dir_url( __FILE__ ) . 'checkout.js', array( 'razorpay-checkout', 'raghushree-shipping-quote' ), '0.2.0', true );
+	wp_enqueue_script( 'raghushree-checkout', plugin_dir_url( __FILE__ ) . 'checkout.js', array( 'razorpay-checkout', 'raghushree-shipping-quote' ), '0.3.0', true );
 }
 add_action( 'wp_enqueue_scripts', 'rgpay_enqueue', 20 );
 
@@ -80,7 +81,10 @@ function rgpay_start_checkout() {
 		'city' => rgpay_post_text( 'city', 30 ), 'state' => rgpay_post_text( 'state', 50 ), 'pincode' => $snapshot['pin'],
 	);
 	if ( ! $customer['first_name'] || ! $customer['last_name'] || ! is_email( $customer['email'] ) || strlen( $customer['email'] ) > 100 || ! preg_match( '/^[6-9][0-9]{9}$/D', $customer['phone'] ) || ! $customer['address'] || ! $customer['city'] || ! $customer['state'] ) { rgpay_error( 'Please complete the delivery details, including a valid email and 10-digit Indian mobile number.' ); }
-	$total = (int) $snapshot['quote']['product_paise'] + (int) $snapshot['quote']['rate_paise'];
+	$quote = $snapshot['quote'];
+	if ( ! isset( $quote['product_paise'], $quote['product_gst_paise'], $quote['rate_paise'], $quote['shipping_gst_paise'], $quote['total_paise'] ) || (int) $quote['product_paise'] !== (int) $snapshot['pack']['price_paise'] ) { rgpay_error( 'Quote details are incomplete. Please check shipping again.' ); }
+	$total = (int) $quote['product_paise'] + (int) $quote['product_gst_paise'] + (int) $quote['rate_paise'] + (int) $quote['shipping_gst_paise'];
+	if ( $total !== (int) $quote['total_paise'] ) { rgpay_error( 'Quote details are inconsistent. Please check shipping again.' ); }
 	if ( $total < 100 || $total > 2000000000 ) { rgpay_error( 'This total cannot be paid online. Please contact us.' ); }
 	// Atomic unique option consumes the token, preventing parallel double submission.
 	$claim = 'rgpay_quote_' . $hash;
@@ -224,7 +228,7 @@ function rgpay_orders_screen() {
 		<tr>
 		<td><strong>#<?php echo esc_html( $id ); ?></strong><br><?php echo esc_html( strtoupper( $r['mode'] ?? '' ) ); ?><br><?php echo esc_html( $r['created_utc'] ?? '' ); ?> UTC</td>
 		<td><?php echo esc_html( ( $c['first_name'] ?? '' ) . ' ' . ( $c['last_name'] ?? '' ) ); ?><br><?php echo esc_html( ( $c['email'] ?? '' ) . ' / ' . ( $c['phone'] ?? '' ) ); ?><br><?php echo esc_html( ( $c['address'] ?? '' ) . ', ' . ( $c['address_2'] ?? '' ) . ', ' . ( $c['city'] ?? '' ) . ', ' . ( $c['state'] ?? '' ) . ' ' . ( $c['pincode'] ?? '' ) ); ?><br><strong><?php echo esc_html( ( $q['product_name'] ?? '' ) . ' — ' . ( $q['option_name'] ?? '' ) ); ?></strong><br><?php echo esc_html( sprintf( 'Packed: %s kg; %s × %s × %s cm', $pack['weight_kg'] ?? '—', $pack['length_cm'] ?? '—', $pack['width_cm'] ?? '—', $pack['height_cm'] ?? '—' ) ); ?></td>
-		<td><strong><?php echo esc_html( $payment_status ); ?></strong><br><?php echo esc_html( sprintf( 'Product: ₹%s', number_format( (int) ( $q['product_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php echo esc_html( sprintf( 'Shipping: ₹%s', number_format( (int) ( $q['rate_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php echo esc_html( sprintf( 'Total: ₹%s', number_format( (int) ( $r['total_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_razorpay_order', true ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_payment_id', true ) ); ?></td>
+		<td><strong><?php echo esc_html( $payment_status ); ?></strong><br><?php echo esc_html( sprintf( 'Product: ₹%s', number_format( (int) ( $q['product_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php if ( isset( $q['product_gst_paise'] ) ) { echo esc_html( sprintf( 'Product GST (%s%%): ₹%s', number_format( (int) ( $q['product_gst_bps'] ?? 0 ) / 100, 2 ), number_format( (int) $q['product_gst_paise'] / 100, 2 ) ) ); echo '<br>'; if ( ! empty( $q['hsn'] ) ) { echo esc_html( 'HSN: ' . $q['hsn'] ); echo '<br>'; } } ?><?php echo esc_html( sprintf( 'Shipping: ₹%s', number_format( (int) ( $q['rate_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php if ( isset( $q['shipping_gst_paise'] ) ) { echo esc_html( sprintf( 'Shipping GST: ₹%s', number_format( (int) $q['shipping_gst_paise'] / 100, 2 ) ) ); echo '<br>'; } ?><?php echo esc_html( sprintf( 'Total: ₹%s', number_format( (int) ( $r['total_paise'] ?? 0 ) / 100, 2 ) ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_razorpay_order', true ) ); ?><br><?php echo esc_html( get_post_meta( $id, '_rgpay_payment_id', true ) ); ?></td>
 		<td><?php echo esc_html( $q['courier_name'] ?? '—' ); ?><br><?php echo esc_html( 'Courier ID: ' . ( $q['courier_id'] ?? '—' ) ); ?><br><?php echo esc_html( 'Pickup PIN: ' . ( $r['snapshot']['pickup_pincode'] ?? '—' ) ); ?><br><?php echo esc_html( 'Quoted UTC: ' . ( $r['snapshot']['quoted_utc'] ?? 'Not recorded' ) ); ?><?php if ( $legacy || $legacy_id || $legacy_shipment || $legacy_lock ) : ?><hr><strong>Previous Shiprocket integration — check before dispatch:</strong><br><?php echo esc_html( 'Status: ' . ( $legacy ? $legacy : 'unknown' ) ); ?><br><?php echo esc_html( 'Reference: ' . ( $r['shiprocket_reference'] ?? '—' ) ); ?><br><?php echo esc_html( 'Shiprocket order: ' . ( $legacy_id ? $legacy_id : '—' ) ); ?><br><?php echo esc_html( 'Shipment: ' . ( $legacy_shipment ? $legacy_shipment : '—' ) ); ?><?php endif; ?></td>
 		<td><?php if ( 'paid' === $payment_status ) : ?>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">

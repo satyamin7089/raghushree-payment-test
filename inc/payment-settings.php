@@ -28,6 +28,7 @@ function raghushree_payment_settings_save() {
 	$settings['pickup_pincode'] = $pickup_pincode;
 	$settings['checkout_enabled'] = isset( $_POST['checkout_enabled'] );
 	$settings['allow_live'] = isset( $_POST['allow_live'] );
+	$settings['allow_tax_live'] = isset( $_POST['allow_tax_live'] );
 	foreach ( raghushree_payment_settings_fields() as $key => $label ) {
 		if ( isset( $_POST['clear'][ $key ] ) ) { unset( $settings[ $key ] ); continue; }
 		$value = isset( $_POST[ $key ] ) && is_scalar( $_POST[ $key ] ) ? trim( wp_unslash( $_POST[ $key ] ) ) : '';
@@ -58,7 +59,8 @@ function raghushree_shiprocket_diagnostic_message( $code, $status = 0 ) {
 		'courier_network' => __( 'WordPress could not connect to Shiprocket courier serviceability. Check outbound HTTPS, DNS, TLS and the hosting firewall.', 'raghushree' ),
 		'courier_http' => __( 'Shiprocket courier serviceability returned an HTTP error. Check the API user Courier access, PINs and package details; ask Shiprocket support if it persists.', 'raghushree' ),
 		'courier_response' => __( 'Shiprocket courier serviceability returned an unexpected response.', 'raghushree' ),
-		'no_rate' => __( 'No usable recommended courier rate was returned. Check prepaid serviceability and courier recommendation settings for these PINs and package.', 'raghushree' ),
+		'no_rate' => __( 'No usable prepaid courier rate was returned. Check serviceability for these PINs and package.', 'raghushree' ),
+		'weight_limit' => __( 'The selected packet quantity exceeds 30 kg. Contact us for a custom quote.', 'raghushree' ),
 	);
 	$message = isset( $messages[ $code ] ) ? $messages[ $code ] : __( 'The test could not be completed. Check the saved configuration and try again.', 'raghushree' );
 	if ( in_array( $code, array( 'auth_http', 'courier_http' ), true ) && $status >= 100 && $status <= 599 ) { $message .= ' ' . sprintf( __( 'HTTP status: %d.', 'raghushree' ), $status ); }
@@ -91,7 +93,7 @@ function raghushree_payment_settings_render() {
 	delete_transient( 'raghushree_sr_courier_' . get_current_user_id() );
 	if ( is_array( $courier_test ) ) :
 		$success = ! empty( $courier_test['success'] );
-		$message = $success ? sprintf( __( 'Courier rate test succeeded: %1$s, estimated shipping ₹%2$s. No shipment was created.', 'raghushree' ), $courier_test['courier'] ?: __( 'Recommended courier', 'raghushree' ), number_format_i18n( (int) $courier_test['rate_paise'] / 100, 2 ) ) : raghushree_shiprocket_diagnostic_message( $courier_test['code'] ?? '', (int) ( $courier_test['status'] ?? 0 ) );
+		$message = $success ? sprintf( __( 'Courier rate test succeeded: %1$s, estimated shipping ₹%2$s. No shipment was created.', 'raghushree' ), $courier_test['courier'] ?: __( 'Lowest available courier', 'raghushree' ), number_format_i18n( (int) $courier_test['rate_paise'] / 100, 2 ) ) : raghushree_shiprocket_diagnostic_message( $courier_test['code'] ?? '', (int) ( $courier_test['status'] ?? 0 ) );
 		?><div class="notice <?php echo $success ? 'notice-success' : 'notice-error'; ?>"><p><?php echo esc_html( $message ); ?></p></div><?php
 	endif;
 	?>
@@ -104,6 +106,7 @@ function raghushree_payment_settings_render() {
 		<tr><th><label for="pickup-pincode"><?php esc_html_e( 'Pickup PIN code', 'raghushree' ); ?></label></th><td><input id="pickup-pincode" name="pickup_pincode" type="text" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" required value="<?php echo esc_attr( isset( $settings['pickup_pincode'] ) ? $settings['pickup_pincode'] : '208001' ); ?>"><p class="description"><?php esc_html_e( 'Origin PIN used for Shiprocket rate quotes. A PIN alone does not create or book a pickup.', 'raghushree' ); ?></p></td></tr>
 		<tr><th><?php esc_html_e( 'Enable checkout', 'raghushree' ); ?></th><td><label><input type="checkbox" name="checkout_enabled" value="1" <?php checked( ! empty( $settings['checkout_enabled'] ) ); ?>> <?php esc_html_e( 'Enable after setup and testing', 'raghushree' ); ?></label><p class="description"><?php esc_html_e( 'Shiprocket supplies quotes only. No Shiprocket order or pickup is created; arrange delivery yourself. Test mode does not charge real money. Configure the webhook before enabling.', 'raghushree' ); ?></p></td></tr>
 		<tr><th><?php esc_html_e( 'Live payment safety', 'raghushree' ); ?></th><td><label><input type="checkbox" name="allow_live" value="1" <?php checked( ! empty( $settings['allow_live'] ) ); ?>> <?php esc_html_e( 'I have completed staging tests and explicitly allow live payments', 'raghushree' ); ?></label><p class="description"><?php esc_html_e( 'Leave unchecked during testing. Both this and Enable checkout are required in live mode.', 'raghushree' ); ?></p></td></tr>
+		<tr><th><?php esc_html_e( 'GST live-pricing safety', 'raghushree' ); ?></th><td><label><input type="checkbox" name="allow_tax_live" value="1" <?php checked( ! empty( $settings['allow_tax_live'] ) ); ?>> <?php esc_html_e( 'I have verified product and shipping GST treatment and tested the new totals on staging', 'raghushree' ); ?></label><p class="description"><?php esc_html_e( 'Required for live checkout after this pricing upgrade. Confirm whether Shiprocket rates already include GST before charging additional shipping GST.', 'raghushree' ); ?></p></td></tr>
 		<?php foreach ( raghushree_payment_settings_fields() as $key => $label ) : ?>
 		<tr><th><label for="setting-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></label></th><td><input class="regular-text" type="password" autocomplete="new-password" id="setting-<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( $key ); ?>" value="" placeholder="<?php echo esc_attr( ! empty( $settings[ $key ] ) ? __( 'Saved — enter a new value to replace', 'raghushree' ) : __( 'Not set', 'raghushree' ) ); ?>"> <?php if ( ! empty( $settings[ $key ] ) ) : ?><label><input type="checkbox" name="clear[<?php echo esc_attr( $key ); ?>]" value="1"> <?php esc_html_e( 'Clear', 'raghushree' ); ?></label><?php endif; ?></td></tr>
 		<?php endforeach; ?></table>
@@ -118,11 +121,11 @@ function raghushree_payment_settings_render() {
 	</form>
 	<?php endforeach; ?>
 	<h2><?php esc_html_e( 'Test Shiprocket courier rate', 'raghushree' ); ?></h2>
-	<p><?php esc_html_e( 'Save credentials and pickup PIN first. Enter a published product ID (the number after post= in its edit URL), an enabled pack with saved dimensions, and a delivery PIN. This contacts your configured Shiprocket account for a prepaid rate only; it does not create an order or pickup. The Courier API-user module may be required; confirm permissions with Shiprocket if access is denied.', 'raghushree' ); ?></p>
+	<p><?php esc_html_e( 'Save credentials and pickup PIN first. Enter a published product ID (the number after post= in its edit URL), an enabled pack with saved dimensions, and a delivery PIN. This contacts your configured Shiprocket account for the lowest available prepaid rate only; it does not create an order or pickup. The Courier API-user module may be required; confirm permissions with Shiprocket if access is denied.', 'raghushree' ); ?></p>
 	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 		<input type="hidden" name="action" value="raghushree_test_courier_rate"><?php wp_nonce_field( 'raghushree_test_courier_rate' ); ?>
 		<label for="sr-product-id"><?php esc_html_e( 'Product ID', 'raghushree' ); ?></label> <input id="sr-product-id" name="product_id" type="number" min="1" required>
-		<label for="sr-option"><?php esc_html_e( 'Pack', 'raghushree' ); ?></label> <select id="sr-option" name="option"><?php foreach ( raghushree_master_defaults() as $key => $row ) : ?><option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $row['label'] ); ?></option><?php endforeach; ?></select>
+		<label for="sr-option"><?php esc_html_e( 'Pack', 'raghushree' ); ?></label> <input id="sr-option" name="option" type="text" placeholder="10kg or packet_1" required>
 		<label for="sr-destination"><?php esc_html_e( 'Delivery PIN', 'raghushree' ); ?></label> <input id="sr-destination" name="pincode" type="text" inputmode="numeric" pattern="[1-9][0-9]{5}" maxlength="6" required>
 		<?php submit_button( __( 'Test courier rate', 'raghushree' ), 'secondary', 'submit', false ); ?>
 	</form></div>

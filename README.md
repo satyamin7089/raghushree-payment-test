@@ -2,7 +2,7 @@
 
 Custom WordPress theme built specifically for **Raghushree (`Raghushree Plast Products Pvt. Ltd.`)**, an Indian manufacturer, exporter, and supplier of thermoplastic polymer raw materials (`PP`, `HDPE`, `LDPE`, `LLDPE`, `PVC`, `PET`, and `Recycled & Reprocessed Polymers`).
 
-> **Start here for the product master, Razorpay and Shiprocket setup:** [Product master and payments guide](#26-product-master-payments-and-manual-delivery). This guide covers installation, dashboard settings, test payments, manual delivery and developer details.
+> **Start here for the product master, Razorpay and Shiprocket setup:** [Product master and payments guide](#26-product-master-gst-checkout-and-manual-delivery). This guide covers installation, dashboard settings, test payments, manual delivery and developer details.
 >
 > **How the code connects:** [Code architecture README](docs/code-architecture/README.md) traces product data, shipping quotes, checkout, webhooks and order storage through the actual files and hooks.
 >
@@ -37,7 +37,7 @@ Custom WordPress theme built specifically for **Raghushree (`Raghushree Plast Pr
 23. [Troubleshooting Guide](#23-troubleshooting-guide)
 24. [Items Client Should Verify Before Launch](#24-items-client-should-verify-before-launch)
 25. [Future Scalability Notes](#25-future-scalability-notes)
-26. [Product master, payments and manual delivery](#26-product-master-payments-and-manual-delivery)
+26. [Product master, GST, checkout and manual delivery](#26-product-master-gst-checkout-and-manual-delivery)
 
 ---
 
@@ -53,7 +53,7 @@ Key architectural highlights:
   - **Contact & RFQ Page (`page-templates/template-contact.php`):** 9-section enquiry hub with a nonce-verified, honeypot-protected 11-field industrial quotation/sample form.
   - **Products Catalog (`archive-products.php` & `page-templates/template-products.php`):** Dynamic filterable polymer archive with category pills, live search, and verified taxonomy filters.
   - **Product Detail (`single-products.php` & `page-templates/template-product-detail.php`):** Reusable 10-section technical polymer template with sticky horizontal section navigation (`Overview`, `Grades`, `Applications`, `Processing`, `Technical Details`, `Packaging`, `FAQs`, `Enquiry`).
-- **Product information:** Unverified grade specifications, MOQ and datasheets should be left blank until confirmed. The separate product master currently supplies default pack sizes and prices; administrators must verify those commercial values before displaying or selling them.
+- **Product information:** Unverified grade specifications, MOQ and datasheets should be left blank until confirmed. The product master supports configurable pack prices; administrators must verify commercial values before displaying or selling them.
 
 ---
 
@@ -368,194 +368,43 @@ Before public launch or paid traffic campaigns, Raghushree management should rev
 - **CRM / ERP / Webhook Integration:** Hook into `save_post_raghushree_enquiry` (or extend `raghushree_handle_enquiry_submission()` in `inc/template-functions.php`) to push verified RFQs directly into Zoho CRM, Salesforce, HubSpot, Tally/ERP, or WhatsApp Business API.
 - **Multilingual / Export Market Localization:** All template strings are wrapped in WordPress i18n functions (`__()`, `_e()`, `esc_html__()`, `esc_attr__()`) under the `raghushree` text domain for seamless WPML or Polylang translation (e.g., Arabic, French, Spanish, or Russian export portals).
 
-## 26. Product master, payments and manual delivery
+## 26. Product master, GST, checkout and manual delivery
 
-This section is the main handover for the custom prepaid checkout. It is written for both the store owner and the developer maintaining the site.
+> **Deployment status:** This version changes totals and requires the matching theme and **Raghushree Payments & Orders plugin 0.3.0**. Back up the database and site, disable checkout, update both components, and test on staging before enabling payment. The code cannot itself establish that the correct tax treatment or combined package measurements were entered. Confirm both with your accountant and Shiprocket. Shipping is still an estimate; orders and delivery are managed manually.
 
-### 26.1 What has been built
+### Install the requested catalog
 
-The existing WordPress theme controls the product pages and their appearance. A small, separate custom plugin adds payment and order management. **WooCommerce is not required.**
+1. In WordPress, go to **Products → New Catalog Setup** and choose **Install / repair requested catalog** after backing up. It creates the specified polymer and pipe categories and listings, with no invented online prices, measurements or HSN codes. Existing products, their URLs and existing orders are not deleted or overwritten. Products that existed before this catalog was installed are excluded from the new catalog listing, even if they share a category. New listings are published for browsing but are enquiry-only until configured.
+2. Edit each new product under **Products → All Products**. Add verified descriptions and images, select its category and configure the Product Master below. Update the product and re-open it to verify saved values.
+3. The catalog sidebar and menu link to the requested categories. The new archive is organized by category and supports server-side search and pagination. The existing old product URLs may still be accessible directly; they are not automatically unpublished. Review them separately if they must no longer be public.
 
-| Part | What it does | What it does not do |
-| --- | --- | --- |
-| **Product master** | Lets an administrator set pack prices, visibility and package measurements per product. Supports an optional free sample. | Does not currently let an administrator add arbitrary new pack sizes or offer separate purchasable material-grade choices. |
-| **Shiprocket** | Provides the recommended available prepaid courier and a shipping-rate quote. | Does not create an order, assign a courier, generate an AWB, or book a pickup in this version. |
-| **Razorpay** | Opens checkout and accepts a prepaid test or live payment, according to the selected mode. | Does not arrange delivery. A successful authentication test alone does not verify checkout or webhooks. |
-| **Payment Orders** | Shows the order, payment and shipping quote in WordPress. An administrator can record manual fulfilment. | Does not automatically ship, notify customers of tracking, or create an order in Shiprocket. |
+### Product Master
 
-**Status and responsibility:** The repository contains implementation and mocked tests, but it has not been verified here end-to-end on the actual WordPress installation or merchant accounts. Do not call this production-ready until the staging and live-readiness checks below have passed. Shiprocket and Razorpay may charge their normal service fees; check their terms separately.
+The **Product Master — Pricing, GST & Shipping** box is available on Products and on Pages saved with the Product Detail template. Set **Product type** to Polymer or Pipe, enter the product GST percentage (default **18%**) and the verified HSN code (4–8 digits, optional until known). Product prices are **before GST**. Confirm GST and HSN with your tax adviser.
 
-### 26.2 The customer journey, in plain language
+- **Polymer:** Configure 5, 10, 15, 20 and 25 kg rows individually: set price, packed weight and dimensions, then tick Show. 30 kg and larger orders are enquiry-only. A free sample can still be enabled separately; only shipping and its GST are charged for the sample. Previously saved 10/20 kg values are retained; legacy 30 kg data remains in the database but is not offered for checkout. New rows default to unavailable, not fabricated prices.
+- **Pipe:** Set a packet description and price per packet. Enter one line per supported quantity in the packet measurement box as `quantity, total packed weight kg, total length cm, total width cm, total height cm`. For example: `1, 8, 40, 30, 20` and `2, 17, 60, 40, 25`. These are illustrative, not default measurements. Each quantity needs actual **combined** measurements; unconfigured quantities require an enquiry. The server rejects quantities with a configured combined weight over 30 kg before asking Shiprocket. Price is per packet multiplied by the selected quantity. An optional free sample is configured in the sample row.
+- If validation fails, the master values are not saved and an admin notice appears. The product post itself may already have been saved by WordPress. Correct the fields and update again.
+
+### How the total is calculated
+
+The server requests Shiprocket prepaid serviceability, selects the **lowest valid available courier rate**, and computes all amounts in integer paise, rounding each tax component to the nearest paise:
 
 ```text
-Product page → Buy Now → choose pack or sample → enter delivery PIN
-→ check Shiprocket shipping rate → enter delivery details
-→ pay product price + quoted shipping with Razorpay
-→ verified payment recorded in WordPress → owner arranges delivery manually
+product price + product GST (product-specific rate)
++ quoted shipping + shipping GST (18%) = total payable
 ```
 
-1. **Buy Now** leads to the pack-options section of the same product page. The customer selects one option and enters a delivery PIN.
-2. The server asks Shiprocket for a **prepaid** recommended-courier rate using the pickup PIN, delivery PIN and that option's packed weight and dimensions.
-3. The customer sees the product price, estimated shipping and total. After a valid quote, the delivery-details form and Razorpay checkout become available when the integration is enabled and configured.
-4. WordPress records the pending order and creates a Razorpay order for the server-calculated total. The product title and pack appear in the checkout description and Razorpay order notes, subject to Razorpay's display behavior.
-5. WordPress confirms payment using the checkout response and Razorpay API, or a verified `order.paid` webhook. Only a confirmed captured payment / paid order is marked **paid**.
-6. The owner views the order in **Products → Payment Orders**, then arranges delivery themselves. The owner can record their chosen courier and tracking reference there.
+For example, ₹100 product at 18% GST plus ₹45 shipping plus 18% shipping GST is ₹171.10. The code adds 18% to the `rate` returned by Shiprocket as requested; **verify whether your actual Shiprocket rate already includes tax**, so the customer is not charged twice. Do not enable live checkout before your accountant confirms the correct treatment. No separate CGST/SGST or IGST invoice calculation, tax invoice generation, refund reconciliation or inventory system is provided.
 
-**Example:** if the 10 kg pack is ₹100 and Shiprocket returns a ₹45 shipping quote, the checkout total is ₹145. For a free sample with a ₹45 quote, the total is ₹45. These are illustrations; the actual shipping quote comes from Shiprocket. A quote is an estimate, not a booking or a guarantee of the final courier charge. Differences caused by later courier or weight changes are not automatically charged to the customer.
+The product page shows a breakdown alongside delivery details. The amount and tax breakdown are saved in the server-side quote snapshot and order; the Razorpay order amount comes from that snapshot, not a browser-entered price. Shiprocket only supplies a rate; it does not create an order or pickup. The actual delivery charge may differ from the estimate.
 
-### 26.3 Product master: what the administrator can manage
+### Settings and testing
 
-The existing **Products** WordPress custom post type is the product master; there is not a separate WooCommerce catalog. For each product, open **Products → All Products → Edit**, then find **Product Master — Packs & Shipping**.
+- Under **Products → Payment & Shipping Setup**, save the Razorpay test Key ID/Secret, a separate webhook secret, Shiprocket API-user email/password and the pickup PIN. Configure the displayed public HTTPS Razorpay webhook URL for `order.paid`. Saved credentials are stored in the WordPress database without application-level encryption; protect admin access and backups.
+- **Test Shiprocket** checks authentication only. **Test courier rate** uses a published product ID, option key (`10kg` or `packet_1`, for example) and delivery PIN to check the lowest available prepaid rate without creating an order or pickup. The configured real Shiprocket account is contacted even in Razorpay Test mode.
+- On staging, test polymer pack, sample and pipe quantities, including an unconfigured quantity and a pipe over 30 kg. Confirm product price, both GST amounts, total, lowest courier and customer details in **Products → Payment Orders** and Razorpay test mode. Check failed/closed payments and webhook delivery; do not dispatch test or uncertain orders. Live mode requires both the existing live-safety opt-in and the new **GST live-pricing safety** confirmation. The new checkbox is unchecked on upgrade; verify the tax treatment and staging totals before enabling it.
+- Theme/plugin mixed versions disable new checkout to avoid an outdated amount. Install [`plugin-download/raghushree-payments.zip`](plugin-download/raghushree-payments.zip) as a replacement, not an additional copy. Legacy order snapshots and old manual-delivery data remain available; check Shiprocket for older shipments before booking a new one.
+- A known reconciliation risk remains: an unknown Razorpay order webhook is acknowledged with HTTP 200, including if it arrives before its order ID has been stored. A delivered webhook alone is not proof of a paid WordPress order. Manually reconcile uncertain payments with Razorpay; do not ask a customer to pay twice or ship until resolved.
 
-| Option | Default product price | Default visibility | Editable fields |
-| --- | ---: | --- | --- |
-| 10 kg | ₹100 | Shown | Price, packed weight, length, width, height, Show checkbox |
-| 20 kg | ₹200 | Shown | Same |
-| 30 kg | ₹300 | Shown | Same |
-| Sample | ₹0 | Hidden | Packed weight, length, width, height, Show checkbox; sample price stays ₹0 |
-
-- Defaults apply to each product until that product is saved with its own settings. Prices for the three pack options can be changed per product; the prices and enabled options are displayed publicly on the product page.
-- Enter **actual packed weight in kg**, including packaging, and **outer length, width and height in cm** for each option. A field can be left blank while saving, but a quote for that option will not work until all four measurements are positive and present.
-- Tick **Show** for options that should appear; untick it to hide an option. To offer a sample, tick **Show** on the Sample row and enter its measurements. Its product price cannot be changed from ₹0; the shipping quote is charged separately.
-- Click **Update** or **Publish** after changes. Prices must be valid for all three pack rows, even if a row is hidden; invalid submitted values can prevent the master data from being saved. Re-open the product to confirm important changes.
-- For a normal WordPress Page using the **Product Detail** template, first assign and save that template, then edit the page again to see the master box.
-- A **material grade** such as a specific polymer grade is not the same as a pack size. The theme has an existing Material Grades taxonomy for catalog information, but the current checkout does **not** offer a separate grade selector or grade-specific pricing. The three pack sizes are fixed in code; adding or renaming sizes requires development.
-- Checkout handles **one selected pack per order**, not a multi-item cart or editable quantity. Product prices are treated as final product prices; the code does not calculate a separate tax.
-
-### 26.4 Files, installation and safe upgrades
-
-| Item | Location | Purpose |
-| --- | --- | --- |
-| Raghushree theme | Repository root | Product pages, product master, settings and shipping quote integration. |
-| Plugin source | `integrations/raghushree-payments/` | PHP payment/order logic and checkout JavaScript. This folder inside the theme is **not automatically activated** as a plugin. |
-| Installable plugin ZIP | [`plugin-download/raghushree-payments.zip`](plugin-download/raghushree-payments.zip) | Upload this ZIP in WordPress. The plugin name is **Raghushree Payments & Orders**; the current code version is **0.2.0**. |
-
-To install or update:
-
-1. Back up the website and database. On an existing installation, disable checkout temporarily.
-2. Deploy the updated theme, then go to **Plugins → Add New → Upload Plugin** and upload the plugin ZIP. If WordPress offers **Replace current with uploaded**, replace the old copy rather than activating two copies. Alternatively, a developer can copy the source directory to `wp-content/plugins/raghushree-payments`.
-3. Activate the plugin and confirm its version. Update **both** theme and plugin: the plugin relies on theme functions and the updated pair includes compatibility safeguards. Settings and orders are stored in WordPress and are not intentionally deleted by the upgrade; still keep the backup.
-4. If only the new theme is installed while the old payment plugin remains active, the theme disables new checkout and the old automatic Shiprocket worker. If only the new plugin is installed with an old theme, checkout is disabled. This cannot stop a request already running during an upgrade.
-5. **Check older orders before dispatching.** The previous plugin version could have created a Shiprocket order already, or left an uncertain result. The Payment Orders screen retains available legacy status, reference and Shiprocket IDs. Check Shiprocket before creating a manual shipment to avoid duplicates; this update does not cancel existing Shiprocket orders.
-
-### 26.5 Connect Razorpay and Shiprocket in WordPress
-
-Use a **staging site** for setup and testing. Your site needs HTTPS; the webhook URL must be publicly reachable by Razorpay. On a reverse proxy, WordPress must correctly detect HTTPS. The theme declares WordPress 6.2+ and PHP 8.0+; verify the actual WordPress/PHP combination and outbound HTTPS connectivity on your host.
-
-Open **Products → Payment & Shipping Setup** in WordPress:
-
-| Field | What to enter or select |
-| --- | --- |
-| **Razorpay mode** | **Test** while testing. Test and live keys are separate; test Key IDs normally begin with `rzp_test_`. |
-| **Pickup PIN code** | The origin PIN used to request the shipping quote. The supplied default is `208001`; confirm it is your actual pickup PIN. A PIN does not create a Shiprocket address or book a pickup. |
-| **Razorpay Key ID** | Your Razorpay test Key ID. |
-| **Razorpay Key Secret** | The matching Razorpay test API secret. |
-| **Razorpay Webhook Secret** | A separate strong random secret that **you choose** for the webhook; the same value must be entered in Razorpay. It is not the API Key Secret. |
-| **Shiprocket API user email / password** | Credentials for a Shiprocket **API user**, created in the Shiprocket dashboard. These are not necessarily your normal seller-login credentials. |
-| **Enable checkout** | Keep off until setup is complete; enable it on staging for test checkout. |
-| **Live payment safety** | Keep **unchecked** in testing. Live checkout requires both this confirmation and Enable checkout. |
-
-Click **Save Changes**. Saved secrets are not shown again: a blank field preserves its existing value; the **Clear** checkbox removes it. Restrict administrator and database access and protect backups because the theme stores these credentials in the WordPress database **without application-level encryption**. Never paste keys, passwords or webhook secrets in chat or commit them to Git.
-
-For Shiprocket, create an API user under the dashboard's **Settings → API** area and grant the relevant API access. Set the account's courier priority to **Recommended by Shiprocket**. The code uses the configured Shiprocket production API endpoint for quotes in both Razorpay modes; it does **not** provide a Shiprocket sandbox or a simulated shipping-rate option. A working Shiprocket API user and rate response are therefore required even for the Razorpay test checkout.
-
-After saving, click **Test Razorpay** and **Test Shiprocket**. These buttons check authentication only: green success does **not** prove that the webhook, shipping quote, product page or complete payment flow works. For Shiprocket, the API user should have the **Courier** module enabled; Shiprocket must confirm the exact permission mapping for your account if serviceability is denied.
-
-To test the courier endpoint separately, use **Test Shiprocket courier rate** on the same settings page: enter a published product ID (the number after `post=` in its WordPress edit URL), select an enabled pack with saved measurements, and enter a delivery PIN. Click **Test courier rate**. This uses the same prepaid rate lookup as the product page, without creating a Shiprocket order or pickup. It will show an estimated recommended-courier rate or a safe diagnostic stage and, when available, an HTTP status. It does not display credentials, tokens or provider response bodies. HTTP 401/403 may indicate credentials or access, but the status alone does not prove the cause. If there is no recommendation, the test fails rather than selecting another courier. This is not an end-to-end checkout test and still contacts the configured Shiprocket account in Razorpay test mode.
-
-### 26.6 Configure the Razorpay webhook
-
-A webhook is a server-to-server notification from Razorpay. It helps the site learn that an order was paid even if the customer closes the browser before the checkout response reaches WordPress.
-
-1. In **Products → Payment & Shipping Setup**, copy the displayed **Razorpay webhook URL**. Copy the exact value from the installed site; do not guess it from the domain. The route is registered by the active custom plugin.
-2. In the Razorpay Dashboard, select **Test Mode**, then go to **Accounts & Settings → Webhooks → Add New Webhook**.
-3. Paste the WordPress URL. Create a strong, random webhook secret using a password manager and enter it there. Select **`order.paid`**; selecting every event is unnecessary for this implementation.
-4. Enter the **same** webhook secret in WordPress under **Razorpay Webhook Secret**, then save both dashboards. The webhook secret is separate from the Key Secret.
-5. Configure Razorpay payment capture appropriately; the integration requires a **captured** payment and **paid** order before treating an order as paid. Check Razorpay's webhook delivery logs during testing.
-
-Use the exact displayed public HTTPS URL, not localhost. Test and live webhooks and keys must be configured for their respective modes. Only one set of credentials and one webhook secret are stored in this implementation: do not switch mode or rotate secrets while orders remain unresolved without a reconciliation plan. If a secret is rotated, older retries may still be signed with the previous secret, which this implementation does not retain.
-
-### 26.7 Test the complete flow
-
-**Before starting:** confirm the updated theme and plugin are active; Razorpay is in Test mode; the test keys, webhook secret and Shiprocket API-user credentials are saved; `order.paid` webhook delivery is configured; and the selected pack has complete dimensions and weight. Leave **Live payment safety** unchecked.
-
-1. On staging, check **Enable checkout** and save. Open a published product page and choose an enabled pack.
-2. Enter a valid delivery PIN and click **Check shipping**. Confirm the product name, pack, quoted courier, shipping charge and total. If no rate is returned, no checkout should proceed for that quote.
-3. Enter the customer details and open Razorpay checkout. Use Razorpay's official **test-mode** payment instructions; do not use a real card or make a live payment as a substitute.
-4. Complete a successful test payment. In **Products → Payment Orders**, find the order marked **TEST**, verify the product, option, address, product amount, shipping, total and payment IDs, and confirm the payment status is **paid**. Check Razorpay's test dashboard and the `order.paid` webhook delivery log too. A test payment uses no real money.
-5. Verify there is **no new Shiprocket order or pickup**. The Shiprocket production account is contacted for the rate only; the test uses real-account quote data, not a separate Shiprocket sandbox.
-6. Repeat with a sample: enable the sample and its measurements, check that product price is ₹0 and total equals quoted shipping. If Shiprocket rejects or cannot quote a zero-value sample, treat it as an unresolved issue—do not invent a shipping charge or turn on live checkout.
-7. Also test a failed or closed checkout, an unserviceable PIN, missing measurements, a changed pack/price, an expired quote, and a customer closing the browser after payment. Confirm that unpaid or uncertain orders are not fulfilled and that duplicate webhooks do not reset manual delivery status. Some failed/cancelled attempts may remain **pending** in WordPress; this implementation does not automatically mark every failed attempt as failed.
-
-**If payment is uncertain:** do not ask the customer to pay again immediately and do not ship. Compare the Razorpay order/payment status, amount and currency with the WordPress order and inspect webhook delivery. A payment can succeed even when the browser response fails; seek technical help and reconcile before taking action. There is no administrator button that automatically reconciles an unresolved order.
-
-**Before accepting live payments:** resolve any staging failures and have a developer review the security and reconciliation limitations below. Set up the live API keys and a live-mode `order.paid` webhook with the matching secret, confirm there are no unresolved test orders, switch WordPress to Live, and enable both checkout and live safety. Run a small, controlled real payment and confirm it in WordPress and Razorpay before allowing ordinary customers to pay; this payment uses real money. Keep delivery manual and have a documented process to handle refunds and discrepancies.
-
-### 26.8 Manage paid orders and delivery
-
-Open **Products → Payment Orders**. The paginated screen shows the internal order number, **TEST/LIVE** mode, customer and address, product/pack, package measurements, payment status and IDs, product/shipping/total amounts, and quoted courier information.
-
-- **Pending** means the order has not been confirmed paid by this integration. Do not fulfil it. `order_creation_failed` means the Razorpay order creation did not complete successfully in the integration; investigate before retrying.
-- **Paid** means the integration recorded a verified paid order. Before delivery, also review the order and reconcile with Razorpay as appropriate. A **TEST** order is not a real payment and must not be shipped as a live order.
-- For a paid order, the administrator can save **Awaiting manual fulfilment** or **Fulfilled manually**, plus optional courier and tracking reference. These are internal notes/status only: they do not book delivery, create a Shiprocket order, or send tracking notifications to the customer.
-- Payment status and manual delivery status are separate. Duplicate payment notifications should not reset a manually saved delivery status. Only paid orders can have their manual delivery details updated through the admin form.
-- Quote amounts are stored with the order. If the actual delivery cost differs later, decide how to handle the difference with the customer; the integration does not automatically collect an extra amount.
-
-### 26.9 Troubleshooting
-
-| Issue | What to check |
-| --- | --- |
-| Product master box missing | Edit a **Products** item, or save a Page with the **Product Detail** template and reopen it. Confirm the updated theme is active. |
-| Pack or sample missing | Check its **Show** box and update the product. Sample is hidden by default. |
-| Shipping details not configured | Enter positive packed weight and all three dimensions for the selected option; save and retry. |
-| Shipping rate unavailable | Check Shiprocket API-user credentials, origin and destination PINs, prepaid serviceability, package data and recommended-courier response. Credentials may authenticate even when a usable quote is unavailable. |
-| Razorpay/Shiprocket authentication test fails | Save the right credentials first; verify test/live mode and API permissions, and check the server can make HTTPS requests. Don't share secrets in a support screenshot. |
-| Delivery form or Pay button does not appear | Confirm matching updated theme and plugin, active plugin, HTTPS, checkout enabled, test/live credentials and webhook secret saved, Shiprocket credentials saved, and a successful quote. In live mode the extra live-safety confirmation is also required. |
-| Payment completed but order remains pending | Check Razorpay payment is captured and order paid, amounts/currency match, the site's public webhook URL/secret and `order.paid` subscription are correct, and webhook delivery logs. Reconcile before retrying or dispatching. |
-| Old plugin / theme compatibility notice | Update both components to the matching rates-only versions. Check older Shiprocket orders before manual delivery. |
-| Actual shipping charge differs | The rate shown at checkout is an estimate, not a courier booking. Compare package measurements, weight and courier choice with the quote recorded in the order. |
-
-### 26.10 Technical reference
-
-**Key files**
-
-- `inc/custom-post-types.php` registers `products` and product taxonomies; `inc/product-master.php` supplies default packs and stores per-product master data in `_raghushree_master_variations` post meta. Pack prices are stored as integer paise.
-- `template-parts/sections/product/detail-content.php`, `assets/js/shipping-quote.js` and `assets/css/product-single.css` render the existing product page, quote form and checkout section.
-- `inc/payment-settings.php` provides the administrator-only settings and authentication checks. The WordPress option `raghushree_payment_settings` contains the configured credentials and mode.
-- `inc/shipping-quotes.php` validates product, enabled option, PIN and measurements, authenticates with Shiprocket, and calls its courier serviceability endpoint with prepaid `cod=0`. It selects the rate matching `recommended_courier_company_id`; missing recommendation/rate fails closed. The quote endpoint has a basic transient-based per-client throttle; use infrastructure-level rate limiting as well.
-- `integrations/raghushree-payments/raghushree-payments.php` implements checkout, payment verification, webhooks and the order screen; `integrations/raghushree-payments/checkout.js` opens Razorpay Checkout. The plugin depends on theme functions and the rates-only compatibility marker.
-- `inc/payment-compat.php` guards against using the updated theme with the older automatic-shipment plugin. The plugin similarly blocks new checkout when the matching theme is missing.
-
-**Quote and order lifecycle**
-
-1. Public AJAX action `raghushree_shipping_quote` retrieves a quote. The `raghushree_quote_result` filter stores a **15-minute** server-side transient containing product/pack, price, shipping quote, courier, pickup/delivery PIN, dimensions, mode and quote time. A random checkout token refers to the snapshot; the browser is not trusted for price.
-2. `rgpay_start_checkout` validates the token and current product/settings, validates customer details, and uses an atomic WordPress option claim to prevent reuse of a quote. It records an `rgpay_order` and creates a Razorpay Orders API order in INR paise. A scheduled WordPress event cleans up the quote claim; it is not a shipment worker.
-3. The Razorpay checkout handler sends the returned payment ID, order ID and signature to `rgpay_verify_checkout`. The server verifies the checkout HMAC using the stored order ID and API secret, fetches Razorpay payment and order status, and checks IDs, currency and amount before recording paid status.
-4. `POST` to the displayed `raghushree/v1/razorpay-webhook` REST route verifies `X-Razorpay-Signature` against the **raw body** and configured webhook secret. For `order.paid`, it matches the stored order and captured payment details before recording paid status. Unknown/non-`order.paid` events are not used to fulfil an order. **Known reconciliation risk:** an unknown Razorpay order receives HTTP 200, so a webhook arriving before its order ID is saved in WordPress could be acknowledged without recording payment and without a Razorpay retry. Do not rely solely on the browser callback or webhook delivery status; review and resolve this risk before live use.
-5. `rgpay_order` is a non-public custom post type; `_rgpay_record` stores the order snapshot and customer data, while other `_rgpay_*` post meta fields store payment and manual delivery details. The admin order screen requires `manage_options`; manual updates require that capability, a nonce and a paid order. No Shiprocket order-creation action or fulfilment worker is registered in this version.
-
-**Security and operational limits:** Product and customer data, payment configuration and secrets reside in WordPress's database; the code does not add application-level encryption. Use least-privilege admin access, HTTPS, protected backups, privacy/retention policies, edge rate limits and monitoring. Keep the public webhook reachable and review failed deliveries. WP-Cron is used for quote-claim housekeeping; paid-order recording does not require a shipping cron worker. There is no automatic refund/cancellation reconciliation, stock management, cart/quantity system, tax calculation, customer tracking notification or Shiprocket sandbox. Establish manual processes for those needs before launch.
-
-**Tests:** The repository provides standalone PHP smoke tests with mocked WordPress/provider responses; they are not real integration tests:
-
-```bash
-php tests/product-master-test.php
-php tests/shipping-quotes-test.php
-php tests/courier-diagnostics-test.php
-php tests/checkout-create-test.php
-php tests/payment-flow-test.php
-php tests/payment-compat-test.php
-php tests/plugin-compat-test.php
-```
-
-The plugin ZIP can be regenerated from source with `python3 scripts/package-payment-plugin.py`. Ensure the ZIP matches the source after any plugin change. Run staging tests against the actual services and review security, webhook handling, failure recovery and reconciliation before any live rollout.
-
-### 26.11 Official references
-
-For Razorpay behavior, treat its documentation as the source of truth:
-
-- [Razorpay documentation home](https://razorpay.com/docs/home/)
-- [Razorpay PHP integration and signature verification](https://razorpay.com/docs/payments/server-integration/php/integration-steps/?preferred-country=IN)
-- [Razorpay Standard Checkout best practices](https://razorpay.com/docs/payment-gateway/web-integration/standard/best-practices)
-- [Razorpay payment webhook setup](https://razorpay.com/docs/webhooks/setup-edit-payments/?preferred-country=IN) and [webhook best practices](https://razorpay.com/docs/webhooks/best-practices/?preferred-country=IN)
-- [Shiprocket API documentation](https://apidocs.shiprocket.in/) and [Shiprocket API user setup](https://support.shiprocket.in/support/solutions/articles/43000337456-shiprocket-api-document-helpsheet)
+For implementation details, see the [code architecture README](docs/code-architecture/README.md). The repository includes mocked smoke tests; they are not a real WordPress or provider end-to-end test. Consult the [Razorpay documentation](https://razorpay.com/docs/home/) and [Shiprocket API documentation](https://apidocs.shiprocket.in/) as provider sources of truth.
