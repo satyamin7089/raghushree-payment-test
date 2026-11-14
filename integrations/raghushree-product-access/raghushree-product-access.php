@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Raghushree Product Access
  * Description: Restricts the Product Manager role to the existing Products editor and its image picker.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires PHP: 7.4
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
@@ -194,7 +194,10 @@ add_filter( 'login_redirect', function ( $redirect, $requested, $user ) { return
 add_action( 'admin_bar_menu', function ( $bar ) {
 	if ( ! rgpa_restricted() ) { return; }
 	foreach ( $bar->get_nodes() as $node ) {
-		if ( ! in_array( $node->id, array( 'top-secondary', 'my-account', 'user-actions', 'logout' ), true ) ) { $bar->remove_node( $node->id ); }
+		if ( ! in_array( $node->id, array( 'top', 'top-secondary', 'menu-toggle', 'my-account', 'user-actions', 'logout' ), true ) ) { $bar->remove_node( $node->id ); }
 	}
 	$bar->add_node( array( 'id' => 'my-account', 'href' => false ) );
 }, 9999 );
+
+// Presentation only: the native WordPress screens and capability checks remain authoritative.
+require_once __DIR__ . '/admin-workspace.php';
