@@ -40,13 +40,28 @@ $content = get_post_field( 'post_content', $post_id );
 	<?php if ( ! empty( $prod['grades_rows'] ) ) : ?><div class="table-wrap"><table class="data-table"><thead><tr><th><?php esc_html_e( 'Grade', 'raghushree' ); ?></th><th><?php esc_html_e( 'Form', 'raghushree' ); ?></th><th><?php esc_html_e( 'Typical use', 'raghushree' ); ?></th></tr></thead><tbody><?php foreach ( $prod['grades_rows'] as $row ) : ?><tr><?php for ( $i = 0; $i < 3; $i++ ) : ?><td><?php echo esc_html( $row[$i] ?? '' ); ?></td><?php endfor; ?></tr><?php endforeach; ?></tbody></table></div><?php endif; ?></div>
 </div></section><?php endif; ?>
 <?php if ( ! empty( $prod['features'] ) ) : ?>
-<section class="section surface--pearl single-product-section" id="features"><div class="container product-editorial"><div class="product-editorial__heading"><span class="eyebrow"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2><?php esc_html_e( 'Features', 'raghushree' ); ?></h2></div><div class="product-editorial__body product-editorial__cards"><?php foreach ( $prod['features'] as $row ) : ?><article class="product-editorial__item"><h3><?php echo esc_html( $row[0] ); ?></h3><?php if ( ! empty( $row[1] ) ) : ?><p><?php echo esc_html( $row[1] ); ?></p><?php endif; ?></article><?php endforeach; ?></div></div></section><?php endif; ?>
+<section class="section product-features single-product-section" id="features" aria-labelledby="features-title">
+  <div class="container product-features__layout">
+    <div class="product-features__intro"><span class="product-section-kicker"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2 id="features-title"><?php esc_html_e( 'Features', 'raghushree' ); ?></h2><span class="product-features__rule" aria-hidden="true"></span></div>
+    <div class="product-features__list">
+      <?php foreach ( array_values( $prod['features'] ) as $index => $row ) : ?>
+      <article class="product-feature"><span class="product-feature__number" aria-hidden="true"><?php echo esc_html( sprintf( '%02d', $index + 1 ) ); ?></span><div><h3><?php echo esc_html( $row[0] ); ?></h3><?php if ( ! empty( $row[1] ) ) : ?><p><?php echo esc_html( $row[1] ); ?></p><?php endif; ?></div></article>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section><?php endif; ?>
 <?php if ( ! empty( $prod['apps_rows'] ) || ! empty( $prod['industries'] ) ) : ?>
-<section class="section surface--white single-product-section" id="applications"><div class="container product-editorial">
-	<div class="product-editorial__heading"><span class="eyebrow"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2><?php esc_html_e( 'Applications', 'raghushree' ); ?></h2></div><div class="product-editorial__body">
-	<div class="product-editorial__cards"><?php foreach ( $prod['apps_rows'] as $row ) : ?><div class="product-editorial__item"><h3><?php echo esc_html( $row[0] ); ?></h3><p><?php echo esc_html( $row[1] ); ?></p></div><?php endforeach; ?></div>
-	<?php if ( ! empty( $prod['industries'] ) ) : ?><h3><?php esc_html_e( 'Industries', 'raghushree' ); ?></h3><ul><?php foreach ( $prod['industries'] as $row ) : ?><li><?php echo esc_html( $row[0] ); ?></li><?php endforeach; ?></ul><?php endif; ?></div>
-</div></section><?php endif; ?>
+<section class="section product-applications single-product-section" id="applications" aria-labelledby="applications-title">
+  <div class="container">
+    <div class="product-applications__header"><div><span class="product-section-kicker"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2 id="applications-title"><?php esc_html_e( 'Applications', 'raghushree' ); ?></h2></div><span class="product-applications__mark" aria-hidden="true">↗</span></div>
+    <?php if ( ! empty( $prod['apps_rows'] ) ) : ?><div class="product-applications__grid">
+      <?php foreach ( array_values( $prod['apps_rows'] ) as $index => $row ) : ?>
+      <article class="product-application"><span class="product-application__number" aria-hidden="true"><?php echo esc_html( sprintf( '%02d', $index + 1 ) ); ?></span><h3><?php echo esc_html( $row[0] ); ?></h3><?php if ( ! empty( $row[1] ) ) : ?><p><?php echo esc_html( $row[1] ); ?></p><?php endif; ?></article>
+      <?php endforeach; ?>
+    </div><?php endif; ?>
+    <?php if ( ! empty( $prod['industries'] ) ) : ?><div class="product-industries"><h3><?php esc_html_e( 'Industries', 'raghushree' ); ?></h3><ul><?php foreach ( $prod['industries'] as $row ) : ?><li><?php echo esc_html( $row[0] ); ?></li><?php endforeach; ?></ul></div><?php endif; ?>
+  </div>
+</section><?php endif; ?>
 <?php if ( ! empty( $prod['tech_specs'] ) || ! empty( $prod['datasheet'] ) ) : ?>
 <section class="section surface--pearl single-product-section" id="technical-details"><div class="container product-editorial">
 	<div class="product-editorial__heading"><span class="eyebrow"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2><?php esc_html_e( 'Technical specifications', 'raghushree' ); ?></h2></div><div class="product-editorial__body">

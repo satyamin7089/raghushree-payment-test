@@ -45,7 +45,7 @@ function raghushree_payment_settings_save() {
 add_action( 'admin_post_raghushree_payment_settings_save', 'raghushree_payment_settings_save' );
 
 /** Convert internal diagnostic codes to fixed administrator-facing guidance. */
-function raghushree_shiprocket_diagnostic_message( $code, $status = 0 ) {
+function raghushree_shiprocket_diagnostic_message( $code, $status = 0, $reason = '' ) {
 	$messages = array(
 		'config' => __( 'Shiprocket API-user credentials are not saved.', 'raghushree' ),
 		'product' => __( 'Use the ID of a published product or Product Detail page.', 'raghushree' ),
@@ -63,6 +63,13 @@ function raghushree_shiprocket_diagnostic_message( $code, $status = 0 ) {
 		'weight_limit' => __( 'The selected packet quantity exceeds 30 kg. Contact us for a custom quote.', 'raghushree' ),
 	);
 	$message = isset( $messages[ $code ] ) ? $messages[ $code ] : __( 'The test could not be completed. Check the saved configuration and try again.', 'raghushree' );
+	$reasons = array(
+		'invalid_json' => __( 'The response was not a JSON object.', 'raghushree' ),
+		'missing_data' => __( 'The response did not contain a data field.', 'raghushree' ),
+		'invalid_data' => __( 'The response data field was not an object or array.', 'raghushree' ),
+		'currency' => __( 'The response specified an unsupported currency.', 'raghushree' ),
+	);
+	if ( 'courier_response' === $code && isset( $reasons[ $reason ] ) ) { $message .= ' ' . $reasons[ $reason ]; }
 	if ( in_array( $code, array( 'auth_http', 'courier_http' ), true ) && $status >= 100 && $status <= 599 ) { $message .= ' ' . sprintf( __( 'HTTP status: %d.', 'raghushree' ), $status ); }
 	return $message;
 }
@@ -93,7 +100,7 @@ function raghushree_payment_settings_render() {
 	delete_transient( 'raghushree_sr_courier_' . get_current_user_id() );
 	if ( is_array( $courier_test ) ) :
 		$success = ! empty( $courier_test['success'] );
-		$message = $success ? sprintf( __( 'Courier rate test succeeded: %1$s, estimated shipping ₹%2$s. No shipment was created.', 'raghushree' ), $courier_test['courier'] ?: __( 'Lowest available courier', 'raghushree' ), number_format_i18n( (int) $courier_test['rate_paise'] / 100, 2 ) ) : raghushree_shiprocket_diagnostic_message( $courier_test['code'] ?? '', (int) ( $courier_test['status'] ?? 0 ) );
+		$message = $success ? sprintf( __( 'Courier rate test succeeded: %1$s, estimated shipping ₹%2$s. No shipment was created.', 'raghushree' ), $courier_test['courier'] ?: __( 'Lowest available courier', 'raghushree' ), number_format_i18n( (int) $courier_test['rate_paise'] / 100, 2 ) ) : raghushree_shiprocket_diagnostic_message( $courier_test['code'] ?? '', (int) ( $courier_test['status'] ?? 0 ), $courier_test['reason'] ?? '' );
 		?><div class="notice <?php echo $success ? 'notice-success' : 'notice-error'; ?>"><p><?php echo esc_html( $message ); ?></p></div><?php
 	endif;
 	?>
@@ -172,7 +179,11 @@ function raghushree_test_courier_rate() {
 	$option = isset( $_POST['option'] ) && is_scalar( $_POST['option'] ) ? sanitize_key( wp_unslash( $_POST['option'] ) ) : '';
 	$pin = isset( $_POST['pincode'] ) && is_scalar( $_POST['pincode'] ) ? trim( wp_unslash( $_POST['pincode'] ) ) : '';
 	$quote = raghushree_fetch_shipping_quote( $id, $option, $pin );
-	$result = is_wp_error( $quote ) ? array( 'success' => false, 'code' => $quote->get_error_code(), 'status' => (int) $quote->get_error_data() ) : array( 'success' => true, 'courier' => $quote['courier_name'], 'rate_paise' => $quote['rate_paise'] );
+	if ( is_wp_error( $quote ) ) {
+		$data = $quote->get_error_data();
+		$result = array( 'success' => false, 'code' => $quote->get_error_code(), 'status' => is_numeric( $data ) ? (int) $data : 0 );
+		if ( 'courier_response' === $quote->get_error_code() && is_string( $data ) && in_array( $data, array( 'invalid_json', 'missing_data', 'invalid_data', 'currency' ), true ) ) { $result['reason'] = $data; }
+	} else { $result = array( 'success' => true, 'courier' => $quote['courier_name'], 'rate_paise' => $quote['rate_paise'] ); }
 	set_transient( 'raghushree_sr_courier_' . get_current_user_id(), $result, 5 * MINUTE_IN_SECONDS );
 	wp_safe_redirect( add_query_arg( array( 'post_type' => 'products', 'page' => 'raghushree-payment-setup' ), admin_url( 'edit.php' ) ) );
 	exit;

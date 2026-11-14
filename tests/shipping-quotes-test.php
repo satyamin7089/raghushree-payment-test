@@ -83,4 +83,13 @@ foreach ( array( 5, 10, 15, 20, 25 ) as $kg ) {
  check( $query['weight'] === (string) ( $kg + 0.25 ) && $query['length'] === (string) ( 30 + $kg ) && $query['breadth'] === '22' && $query['height'] === '18', $key . ' sends its own packed measurements' );
  check( $query['declared_value'] === number_format( $kg * 250, 2, '.', '' ), 'declared value is numeric without thousands separators' );
 }
+foreach ( array( 'not json' => 'invalid_json', '{"message":"secret"}' => 'missing_data', '{"data":null}' => 'invalid_data', '{"currency":"USD","data":{}}' => 'currency' ) as $payload => $reason ) {
+ $GLOBALS['courier_response'] = array( 'code' => 200, 'body' => $payload );
+ $error = raghushree_fetch_shipping_quote( 42, 'sample', '226001' );
+ check( $error->get_error_code() === 'courier_response' && $error->get_error_data() === $reason, 'response reason: ' . $reason );
+ check( strpos( raghushree_shiprocket_diagnostic_message( 'courier_response', 0, $reason ), 'secret' ) === false, 'diagnostic does not expose response' );
+}
+$GLOBALS['courier_response'] = array( 'code' => 200, 'body' => '{"currency":" inr ","data":{"available_courier_companies":[{"courier_company_id":7,"rate":44}]}}' );
+check( raghushree_fetch_shipping_quote( 42, 'sample', '226001' )['rate_paise'] === 4400, 'accept normalized INR without accepting foreign currency' );
+check( strpos( raghushree_shiprocket_diagnostic_message( 'courier_response', 0, 'secret' ), 'secret' ) === false, 'unknown diagnostic is not displayed' );
 echo "Shipping quote smoke tests passed.\n";

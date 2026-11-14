@@ -64,7 +64,13 @@ function raghushree_fetch_shipping_quote( $product_id, $option, $destination ) {
 	$status = (int) wp_remote_retrieve_response_code( $response );
 	if ( 200 !== $status ) { return new WP_Error( 'courier_http', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ), $status ); }
 	$body = json_decode( wp_remote_retrieve_body( $response ), true );
-	if ( ! is_array( $body ) || ! isset( $body['data'] ) || ! is_array( $body['data'] ) || ( isset( $body['currency'] ) && 'INR' !== $body['currency'] ) ) { return new WP_Error( 'courier_response', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ) ); }
+	// Retain only a fixed structural reason for the admin diagnostic, never provider text.
+	$reason = '';
+	if ( ! is_array( $body ) ) { $reason = 'invalid_json'; }
+	elseif ( ! array_key_exists( 'data', $body ) ) { $reason = 'missing_data'; }
+	elseif ( ! is_array( $body['data'] ) ) { $reason = 'invalid_data'; }
+	elseif ( isset( $body['currency'] ) && ( ! is_string( $body['currency'] ) || 'INR' !== strtoupper( trim( $body['currency'] ) ) ) ) { $reason = 'currency'; }
+	if ( '' !== $reason ) { return new WP_Error( 'courier_response', __( 'We could not check shipping for this pack and PIN right now. Please try again or contact us.', 'raghushree' ), $reason ); }
 	$rate = raghushree_lowest_shipping_rate( isset( $body['data'] ) ? $body['data'] : null );
 	if ( false === $rate ) { return new WP_Error( 'no_rate', __( 'No prepaid shipping rate is available for this PIN code. Please contact us.', 'raghushree' ) ); }
 	$product_paise = (int) $pack['price_paise'];

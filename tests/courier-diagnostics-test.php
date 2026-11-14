@@ -43,6 +43,12 @@ check( $GLOBALS['transients']['raghushree_sr_courier_123'] === array( 'success' 
 $GLOBALS['quote_result'] = new WP_Error( 'courier_http', 'private response', 403 );
 invoke( 'raghushree_test_courier_rate', 'redirect' );
 check( $GLOBALS['transients']['raghushree_sr_courier_123'] === array( 'success' => false, 'code' => 'courier_http', 'status' => 403 ), 'only safe error data saved' );
+$GLOBALS['quote_result'] = new WP_Error( 'courier_response', 'private response', 'missing_data' );
+invoke( 'raghushree_test_courier_rate', 'redirect' );
+check( $GLOBALS['transients']['raghushree_sr_courier_123']['reason'] === 'missing_data', 'fixed response reason saved for admin' );
+$GLOBALS['quote_result'] = new WP_Error( 'courier_response', 'private response', 'private provider text' );
+invoke( 'raghushree_test_courier_rate', 'redirect' );
+check( ! isset( $GLOBALS['transients']['raghushree_sr_courier_123']['reason'] ), 'unrecognized data not saved' );
 $_POST = array( 'service' => 'shiprocket' );
 $GLOBALS['auth_result'] = new WP_Error( 'auth_http', 'private response', 401 );
 invoke( 'raghushree_test_service_connection', 'redirect' );
