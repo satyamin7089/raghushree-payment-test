@@ -2,12 +2,17 @@
 /**
  * Plugin Name: Raghushree Product Access
  * Description: Restricts the Product Manager role to the existing Products editor and its image picker.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires PHP: 7.4
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 const RGPA_ROLE = 'raghushree_product_manager';
+const RGPA_VERSION = '1.1.0';
+
+function rgpa_taxonomies() {
+	return array( 'polymer_category', 'material_grade', 'material_form', 'manufacturing_application' );
+}
 
 function rgpa_product_caps() {
 	return array( 'edit_rg_products', 'edit_others_rg_products', 'publish_rg_products', 'read_private_rg_products', 'delete_rg_products', 'delete_private_rg_products', 'delete_published_rg_products', 'delete_others_rg_products', 'edit_private_rg_products', 'edit_published_rg_products' );
@@ -16,6 +21,8 @@ function rgpa_activate() {
 	$caps = array_fill_keys( rgpa_product_caps(), true );
 	$caps['read'] = true;
 	$caps['upload_files'] = true;
+	$caps['rgpa_manage_product_terms'] = true;
+	$caps['rgpay_manage_orders'] = true;
 	add_role( RGPA_ROLE, 'Product Manager (restricted)', $caps );
 	$role = get_role( RGPA_ROLE );
 	if ( $role ) {
@@ -23,10 +30,19 @@ function rgpa_activate() {
 		foreach ( array_keys( $role->capabilities ) as $cap ) { $role->remove_cap( $cap ); }
 		foreach ( $caps as $cap => $grant ) { $role->add_cap( $cap, $grant ); }
 	}
+	update_option( 'rgpa_role_version', RGPA_VERSION );
 }
-function rgpa_deactivate() { remove_role( RGPA_ROLE ); }
+function rgpa_deactivate() { remove_role( RGPA_ROLE ); delete_option( 'rgpa_role_version' ); }
 register_activation_hook( __FILE__, 'rgpa_activate' );
 register_deactivation_hook( __FILE__, 'rgpa_deactivate' );
+// Plugin updates do not fire the activation hook; upgrade existing role assignments.
+add_action( 'init', function () {
+	if ( RGPA_VERSION !== get_option( 'rgpa_role_version' ) || ! get_role( RGPA_ROLE ) ) {
+		rgpa_activate();
+		$user = wp_get_current_user();
+		if ( $user && $user->ID ) { $user->get_role_caps(); }
+	}
+}, 1 );
 
 function rgpa_restricted( $user = null ) {
 	$user = $user ?: wp_get_current_user();
@@ -46,7 +62,7 @@ add_filter( 'register_post_type_args', function ( $args, $type ) {
 // Existing users retain the same product access as their standard post permissions.
 add_filter( 'user_has_cap', function ( $allcaps, $caps, $args, $user ) {
 	if ( rgpa_restricted( $user ) ) {
-		$allowed = array_fill_keys( array_merge( array( 'read', 'upload_files', RGPA_ROLE ), rgpa_product_caps() ), true );
+		$allowed = array_fill_keys( array_merge( array( 'read', 'upload_files', 'rgpa_manage_product_terms', 'rgpay_manage_orders', RGPA_ROLE ), rgpa_product_caps() ), true );
 		$allcaps = array_intersect_key( $allcaps, $allowed );
 		// The REST media controller checks this primitive directly for listing/uploading.
 		// Never grant it to object checks, even inside a media request.
@@ -54,6 +70,9 @@ add_filter( 'user_has_cap', function ( $allcaps, $caps, $args, $user ) {
 			$allcaps['edit_posts'] = true;
 		}
 		return $allcaps;
+	}
+	if ( ! array_key_exists( 'rgpa_manage_product_terms', $allcaps ) ) {
+		$allcaps['rgpa_manage_product_terms'] = ! empty( $allcaps['manage_categories'] );
 	}
 	foreach ( rgpa_product_caps() as $product_cap ) {
 		$post_cap = str_replace( 'rg_products', 'posts', $product_cap );
@@ -64,21 +83,14 @@ add_filter( 'user_has_cap', function ( $allcaps, $caps, $args, $user ) {
 	return $allcaps;
 }, 1000, 4 );
 
-// Permit assignment of existing product terms, but not managing the taxonomy itself.
+// Give this role its own management capability for only the four product taxonomies.
 add_filter( 'register_taxonomy_args', function ( $args, $taxonomy ) {
-	if ( in_array( $taxonomy, array( 'polymer_category', 'material_grade', 'material_form', 'manufacturing_application' ), true ) ) {
+	if ( in_array( $taxonomy, rgpa_taxonomies(), true ) ) {
 		$args['capabilities'] = isset( $args['capabilities'] ) ? $args['capabilities'] : array();
+		foreach ( array( 'manage_terms', 'edit_terms', 'delete_terms' ) as $cap ) { $args['capabilities'][ $cap ] = 'rgpa_manage_product_terms'; }
 		$args['capabilities']['assign_terms'] = 'edit_rg_products';
 	}
 	return $args;
-}, 10, 2 );
-
-// Core can implicitly create non-hierarchical terms while assigning them to a post.
-add_filter( 'pre_insert_term', function ( $term, $taxonomy ) {
-	if ( rgpa_restricted() && in_array( $taxonomy, array( 'polymer_category', 'material_grade', 'material_form', 'manufacturing_application' ), true ) ) {
-		return new WP_Error( 'rgpa_term_forbidden', 'Only existing product terms can be assigned.' );
-	}
-	return $term;
 }, 10, 2 );
 
 // Image metadata may be edited only for the client's own uploads. No media deletion.
@@ -111,15 +123,23 @@ add_action( 'admin_init', function () {
 	if ( 'index.php' === $pagenow && 'GET' === ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
 		wp_safe_redirect( admin_url( 'edit.php?post_type=products' ) ); exit;
 	}
-	if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'products' === $_GET['post_type'] ) { return; }
+	if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'products' === $_GET['post_type'] && ( ! isset( $_GET['page'] ) || 'rgpay-orders' === $_GET['page'] ) ) { return; }
+	if ( 'admin.php' === $pagenow && ( $_GET['page'] ?? '' ) === 'rgpay-orders' ) { return; }
+	if ( in_array( $pagenow, array( 'edit-tags.php', 'term.php' ), true ) && isset( $_REQUEST['taxonomy'] ) && is_string( $_REQUEST['taxonomy'] ) && in_array( $_REQUEST['taxonomy'], rgpa_taxonomies(), true ) ) { return; }
+	if ( 'admin-post.php' === $pagenow && ( $_REQUEST['action'] ?? '' ) === 'rgpay_update_delivery' ) { return; }
 	if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'products' === $_GET['post_type'] ) { return; }
 	if ( 'post.php' === $pagenow && rgpa_product_id( $_REQUEST['post'] ?? $_POST['post_ID'] ?? 0 ) ) { return; }
 	if ( 'revision.php' === $pagenow && rgpa_product_id( $_REQUEST['revision'] ?? $_REQUEST['to'] ?? 0 ) ) { return; }
 	if ( 'async-upload.php' === $pagenow && ( $_REQUEST['action'] ?? '' ) === 'upload-attachment' ) { return; }
 	if ( 'admin-ajax.php' === $pagenow ) {
 		$action = isset( $_REQUEST['action'] ) && is_string( $_REQUEST['action'] ) ? $_REQUEST['action'] : '';
-		$allowed = array( 'heartbeat', 'autosave', 'inline-save', 'query-attachments', 'get-attachment', 'upload-attachment', 'save-attachment', 'save-attachment-compat', 'save-attachment-order', 'set-post-thumbnail', 'get-post-thumbnail-html', 'get-permalink', 'sample-permalink', 'get-revision-diffs', 'wp-link-ajax', 'parse-media-shortcode', 'get-tagcloud', 'get-post-formats' );
+		$allowed = array( 'heartbeat', 'autosave', 'inline-save', 'query-attachments', 'get-attachment', 'upload-attachment', 'save-attachment', 'save-attachment-compat', 'save-attachment-order', 'set-post-thumbnail', 'get-post-thumbnail-html', 'get-permalink', 'sample-permalink', 'get-revision-diffs', 'wp-link-ajax', 'parse-media-shortcode', 'get-tagcloud', 'get-post-formats', 'add-tag', 'delete-tag', 'inline-save-tax', 'ajax-tag-search' );
+		foreach ( rgpa_taxonomies() as $taxonomy ) { $allowed[] = 'add-' . $taxonomy; }
 		if ( ! in_array( $action, $allowed, true ) ) { rgpa_deny(); }
+		if ( in_array( $action, array( 'add-tag', 'delete-tag', 'inline-save-tax', 'ajax-tag-search' ), true ) ) {
+			$taxonomy = $_REQUEST['taxonomy'] ?? $_REQUEST['tax'] ?? '';
+			if ( ! is_string( $taxonomy ) || ! in_array( $taxonomy, rgpa_taxonomies(), true ) ) { rgpa_deny(); }
+		}
 		if ( in_array( $action, array( 'get-permalink', 'sample-permalink' ), true ) && ! rgpa_product_id( $_POST['post_id'] ?? 0 ) ) { rgpa_deny(); }
 		if ( 'save-attachment' === $action && ! empty( $_REQUEST['changes']['parent'] ) && ! rgpa_product_id( $_REQUEST['changes']['parent'] ) ) { rgpa_deny(); }
 		return;
@@ -138,7 +158,7 @@ add_filter( 'rest_pre_dispatch', function ( $result, $server, $request ) {
 	$discovery = (bool) preg_match( '#^/wp/v2/(?:types(?:/products)?|taxonomies(?:/(?:polymer_category|material_grade|material_form|manufacturing_application))?|statuses(?:/[^/]+)?|settings|users/me|block-types(?:/[^/]+(?:/[^/]+)?)?|blocks(?:/\d+)?|block-patterns/(?:patterns|categories)|search|themes|font-families(?:/.*)?)/?$#', $route );
 	if ( $media && ! $read && ! in_array( $method, array( 'POST' ), true ) ) { $media = false; }
 	if ( $media && ! $read && ! empty( $request['post'] ) && ! rgpa_product_id( $request['post'] ) ) { $media = false; }
-	if ( ! ( $product || $media || ( $read && ( $tax || $discovery ) ) ) ) {
+	if ( ! ( $product || $media || $tax || ( $read && $discovery ) ) ) {
 		return new WP_Error( 'rgpa_forbidden', 'This account can only access the Products editor.', array( 'status' => 403 ) );
 	}
 	return $result;
@@ -161,7 +181,9 @@ add_action( 'admin_menu', function () {
 	}
 	if ( isset( $submenu['edit.php?post_type=products'] ) ) {
 		foreach ( $submenu['edit.php?post_type=products'] as $item ) {
-			if ( isset( $item[2] ) && ! in_array( $item[2], array( 'edit.php?post_type=products', 'post-new.php?post_type=products' ), true ) ) { remove_submenu_page( 'edit.php?post_type=products', $item[2] ); }
+			$allowed_submenus = array( 'edit.php?post_type=products', 'post-new.php?post_type=products', 'rgpay-orders' );
+			foreach ( rgpa_taxonomies() as $taxonomy ) { $allowed_submenus[] = 'edit-tags.php?taxonomy=' . $taxonomy . '&amp;post_type=products'; $allowed_submenus[] = 'edit-tags.php?taxonomy=' . $taxonomy . '&post_type=products'; }
+			if ( isset( $item[2] ) && ! in_array( $item[2], $allowed_submenus, true ) ) { remove_submenu_page( 'edit.php?post_type=products', $item[2] ); }
 		}
 	}
 }, 9999 );

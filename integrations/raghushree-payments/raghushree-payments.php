@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Raghushree Payments & Orders
  * Description: Razorpay checkout with Shiprocket rate quotes and manually managed WordPress orders.
- * Version: 0.3.0
+ * Version: 0.3.1
  * Requires PHP: 8.0
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
@@ -177,8 +177,17 @@ add_action( 'wp_ajax_nopriv_rgpay_verify_checkout', 'rgpay_verify_checkout' );
  * Old scheduled rgpay_fulfil_order events therefore cannot create orders after upgrade.
  * Existing records/Shiprocket IDs are retained and shown for manual reconciliation.
  */
+// Administrators keep their existing access; other roles may be granted this
+// order-specific capability without receiving access to site/payment settings.
+add_filter( 'user_has_cap', function ( $allcaps ) {
+	if ( ! array_key_exists( 'rgpay_manage_orders', $allcaps ) && ! empty( $allcaps['manage_options'] ) ) {
+		$allcaps['rgpay_manage_orders'] = true;
+	}
+	return $allcaps;
+}, 10 );
+
 function rgpay_admin_menu() {
-	add_submenu_page( 'edit.php?post_type=products', 'Payment Orders', 'Payment Orders', 'manage_options', 'rgpay-orders', 'rgpay_orders_screen' );
+	add_submenu_page( 'edit.php?post_type=products', 'Payment Orders', 'Payment Orders', 'rgpay_manage_orders', 'rgpay-orders', 'rgpay_orders_screen' );
 }
 add_action( 'admin_menu', 'rgpay_admin_menu' );
 
@@ -192,7 +201,7 @@ function rgpay_set_manual_delivery( $id, $status, $courier, $tracking ) {
 }
 
 function rgpay_admin_update_delivery() {
-	if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Permission denied.' ); }
+	if ( ! current_user_can( 'rgpay_manage_orders' ) ) { wp_die( 'Permission denied.' ); }
 	$id = absint( rgpay_post_value( 'order_id' ) );
 	check_admin_referer( 'rgpay_delivery_' . $id );
 	$ok = rgpay_set_manual_delivery( $id, rgpay_post_value( 'delivery_status' ), rgpay_post_value( 'delivery_courier' ), rgpay_post_value( 'delivery_tracking' ) );
@@ -202,7 +211,7 @@ function rgpay_admin_update_delivery() {
 add_action( 'admin_post_rgpay_update_delivery', 'rgpay_admin_update_delivery' );
 
 function rgpay_orders_screen() {
-	if ( ! current_user_can( 'manage_options' ) ) { return; }
+	if ( ! current_user_can( 'rgpay_manage_orders' ) ) { return; }
 	$page = isset( $_GET['order_page'] ) && is_scalar( $_GET['order_page'] ) ? max( 1, absint( $_GET['order_page'] ) ) : 1;
 	$query = new WP_Query( array( 'post_type' => 'rgpay_order', 'post_status' => 'publish', 'posts_per_page' => 25, 'paged' => $page, 'orderby' => 'ID', 'order' => 'DESC' ) );
 	$result = isset( $_GET['delivery_result'] ) && is_scalar( $_GET['delivery_result'] ) ? sanitize_key( wp_unslash( $_GET['delivery_result'] ) ) : '';
