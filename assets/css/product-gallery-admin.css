@@ -9,3 +9,5 @@
 .rg-section-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
 .rg-section-row label { display: block; flex: 1 1 180px; }
 .rg-section-row input { display: block; margin-top: 5px; }
+.rg-section-intro { display: block; margin: 0 0 16px; }
+.rg-section-intro textarea { display: block; margin-top: 5px; }

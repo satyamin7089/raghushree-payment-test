@@ -124,6 +124,12 @@ function raghushree_get_enquiry_url( $params = array() ) {
 	return $url . '#enquiry-form';
 }
 
+/** Keep a product selected even if it is outside the contact form's short catalog list. */
+function raghushree_contact_material_options( $options, $selected ) {
+	if ( is_string( $selected ) && '' !== $selected && strlen( $selected ) <= 800 && ! in_array( $selected, $options, true ) ) { $options[] = $selected; }
+	return $options;
+}
+
 /**
  * Return crisp inline SVG icons (zero CSS border triangles).
  *
