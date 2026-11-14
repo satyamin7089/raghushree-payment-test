@@ -3,7 +3,8 @@
 define( 'ABSPATH', __DIR__ );
 $GLOBALS['removed'] = array();
 function add_action( ...$args ) {}
-function rgpay_checkout_ready() { return true; } // Old plugin has no rates-only marker.
+function rgpay_checkout_ready() { return true; }
+define( 'RGPAY_RATES_ONLY_VERSION', '0.2.0' ); // Previous rates-only plugin lacks the GST-pricing marker.
 function remove_action( $hook, $callback ) { $GLOBALS['removed'][] = $hook . ':' . $callback; }
 function remove_filter( $hook, $callback, $priority = 10 ) { $GLOBALS['removed'][] = $hook . ':' . $callback; }
 require __DIR__ . '/../inc/payment-compat.php';

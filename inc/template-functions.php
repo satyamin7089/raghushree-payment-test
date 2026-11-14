@@ -193,6 +193,8 @@ function raghushree_get_catalog_items( $limit = 12 ) {
 		array(
 			'post_type'              => 'products',
 			'post_status'            => 'publish',
+			'post__not_in'           => get_option( 'raghushree_catalog_v2' ) ? (array) get_option( 'raghushree_legacy_catalog_ids', array() ) : array(),
+			'tax_query'              => get_option( 'raghushree_catalog_v2' ) ? array( array( 'taxonomy' => 'polymer_category', 'field' => 'slug', 'terms' => array_keys( raghushree_catalog_definitions() ) ) ) : array(),
 			'posts_per_page'         => absint( $limit ),
 			'orderby'                => array(
 				'menu_order' => 'ASC',

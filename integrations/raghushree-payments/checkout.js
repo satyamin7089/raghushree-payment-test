@@ -4,6 +4,7 @@
   if (!quoteForm || !form) return;
   const status = form.querySelector('.product-checkout__status');
   const button = form.querySelector('button[type="submit"]');
+  const section = form.closest('.checkout-section');
   let quoteToken = '';
   let started = false;
   let finished = false;
@@ -11,10 +12,23 @@
     if (started) return;
     quoteToken = event.detail.checkout_token || '';
     form.hidden = !quoteToken;
+    if (section) section.hidden = !quoteToken;
     status.textContent = '';
+    if (quoteToken) {
+      const quote = event.detail;
+      const money = (paise) => '₹' + (Number(paise) / 100).toFixed(2);
+      ['product_paise', 'product_gst_paise', 'rate_paise', 'shipping_gst_paise', 'total_paise'].forEach((key) => {
+        const field = form.querySelector(`[data-summary="${key}"]`);
+        if (field) field.textContent = money(quote[key]);
+      });
+      form.querySelector('[data-summary="product"]').textContent = `${quote.product_name} — ${quote.option_name}`;
+      form.querySelector('[data-summary="gst_label"]').textContent = `Product GST (${quote.product_gst_bps / 100}%)`;
+      form.querySelector('[data-summary="courier"]').textContent = quote.courier_name ? `Lowest available courier: ${quote.courier_name}` : 'Lowest available courier';
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   });
   quoteForm.addEventListener('raghushree:quote-invalid', () => {
-    if (!started) { quoteToken = ''; form.hidden = true; }
+    if (!started) { quoteToken = ''; form.hidden = true; if (section) section.hidden = true; }
   });
   async function post(action, fields) {
     const body = new URLSearchParams({ action, nonce: quoteForm.dataset.nonce, ...fields });

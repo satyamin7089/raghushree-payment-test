@@ -3,7 +3,7 @@
 define('ABSPATH', __DIR__); define('HOUR_IN_SECONDS',3600); define('MINUTE_IN_SECONDS',60);
 $GLOBALS['options'] = array('raghushree_payment_settings'=>array('mode'=>'test', 'checkout_enabled'=>true, 'razorpay_key_id'=>'rzp_test_abc', 'razorpay_key_secret'=>'secret', 'razorpay_webhook_secret'=>'webhook', 'shiprocket_email'=>'email', 'shiprocket_password'=>'password', 'pickup_location'=>'Primary', 'pickup_pincode'=>'208001'));
 $GLOBALS['meta']=array(); $GLOBALS['transients']=array(); $GLOBALS['requests']=array();
-function raghushree_rates_only_theme_ready(){return true;} function add_action(...$x) {} function add_filter(...$x) {} function is_ssl(){return true;}
+function raghushree_rates_only_theme_ready(){return true;} function raghushree_tax_pricing_theme_ready(){return true;} function add_action(...$x) {} function add_filter(...$x) {} function is_ssl(){return true;}
 function get_option($k,$default=false){return $GLOBALS['options'][$k]??$default;} function add_option($k,$v,$d='',$a=null){if(isset($GLOBALS['options'][$k]))return false;$GLOBALS['options'][$k]=$v;return true;}
 function set_transient($k,$v,$ttl){$GLOBALS['transients'][$k]=$v;return true;} function get_transient($k){return $GLOBALS['transients'][$k]??false;} function delete_transient($k){unset($GLOBALS['transients'][$k]);} function wp_schedule_single_event(...$x){return true;}
 function check_ajax_referer(...$x){} function wp_unslash($x){return $x;} function sanitize_text_field($x){return trim(strip_tags($x));} function sanitize_email($x){return filter_var($x,FILTER_SANITIZE_EMAIL);} function is_email($x){return filter_var($x,FILTER_VALIDATE_EMAIL);}
@@ -17,20 +17,29 @@ function check($ok,$message){if(!$ok)throw new Exception($message);}
 $GLOBALS['pack_key']='10kg'; $GLOBALS['pack']=array('label'=>'10 kg','enabled'=>true,'price_paise'=>10000,'weight_kg'=>'10','length_cm'=>'30','width_cm'=>'20','height_cm'=>'10');
 unset($GLOBALS['options']['raghushree_payment_settings']['pickup_location']);
 check(rgpay_checkout_ready(), 'pickup nickname is not required for rate-only checkout');
-$quote=rgpay_quote_snapshot(array('product_paise'=>10000,'rate_paise'=>4450,'product_name'=>'PP','option_name'=>'10 kg','courier_id'=>'7','courier_name'=>'Example'),42,'10kg','226001');
+$GLOBALS['options']['raghushree_payment_settings']['mode']='live'; $GLOBALS['options']['raghushree_payment_settings']['razorpay_key_id']='rzp_live_abc'; $GLOBALS['options']['raghushree_payment_settings']['allow_live']=true;
+check(!rgpay_checkout_ready(), 'live checkout requires explicit new tax safety confirmation');
+$GLOBALS['options']['raghushree_payment_settings']['allow_tax_live']=true; check(rgpay_checkout_ready(), 'live checkout requires both opt-ins');
+$GLOBALS['options']['raghushree_payment_settings']['mode']='test'; $GLOBALS['options']['raghushree_payment_settings']['razorpay_key_id']='rzp_test_abc';
+$quote=rgpay_quote_snapshot(array('product_paise'=>10000,'rate_paise'=>4450,'product_gst_paise'=>1800,'shipping_gst_paise'=>801,'total_paise'=>17051,'product_name'=>'PP','option_name'=>'10 kg','courier_id'=>'7','courier_name'=>'Example'),42,'10kg','226001');
 $generated=$GLOBALS['transients']['rgpay_q_'.hash('sha256',$quote['checkout_token'])]??false;
 check(is_array($generated) && $generated['pickup_pincode']==='208001' && !empty($generated['quoted_utc']) && $generated['quote']['courier_id']==='7','quote snapshot stores courier, origin and time');
 $token=str_repeat('a',64);$hash=hash('sha256',$token);
-$GLOBALS['transients']['rgpay_q_'.$hash]=array('product_id'=>42,'option'=>'10kg','pin'=>'226001','mode'=>'test','pickup_pincode'=>'208001','pickup_location'=>'Primary','pack'=>$GLOBALS['pack'],'quote'=>array('product_paise'=>10000,'rate_paise'=>4450,'product_name'=>'PP','option_name'=>'10 kg','courier_name'=>'Example'));
+$GLOBALS['transients']['rgpay_q_'.$hash]=array('product_id'=>42,'option'=>'10kg','pin'=>'226001','mode'=>'test','pickup_pincode'=>'208001','pickup_location'=>'Primary','pack'=>$GLOBALS['pack'],'quote'=>array('product_paise'=>10000,'rate_paise'=>4450,'product_gst_paise'=>1800,'shipping_gst_paise'=>801,'total_paise'=>17051,'product_name'=>'PP','option_name'=>'10 kg','courier_name'=>'Example'));
 $_POST=array('quote_token'=>$token,'first_name'=>'A','last_name'=>'B','email'=>'a@example.com','phone'=>'9876543210','address'=>'Street','city'=>'Lucknow','state'=>'UP','amount'=>'1');
-try { rgpay_start_checkout(); throw new Exception('No response'); } catch(Sent $result){check($result->ok && $result->data['amount']===14450,'server quote sets total');}
-$sent=json_decode($GLOBALS['requests'][0][1]['body'],true);check($sent['amount']===14450 && $sent['notes']['product']==='PP - 10 kg','order uses server amount and dynamic title');
+try { rgpay_start_checkout(); throw new Exception('No response'); } catch(Sent $result){check($result->ok && $result->data['amount']===17051,'server quote sets total');}
+$sent=json_decode($GLOBALS['requests'][0][1]['body'],true);check($sent['amount']===17051 && $sent['notes']['product']==='PP - 10 kg','order uses server amount and dynamic title');
 check($GLOBALS['meta'][77]['_rgpay_record']['customer']['pincode']==='226001','server quote binds delivery pincode');
 try { rgpay_start_checkout(); throw new Exception('No response'); } catch(Sent $result){check(!$result->ok && count($GLOBALS['requests'])===1,'replay rejected');}
 $GLOBALS['pack_key']='sample'; $GLOBALS['pack']=array('label'=>'Sample','enabled'=>true,'price_paise'=>0,'weight_kg'=>'0.5','length_cm'=>'10','width_cm'=>'8','height_cm'=>'6');
 $token=str_repeat('b',64); $hash=hash('sha256',$token);
-$GLOBALS['transients']['rgpay_q_'.$hash]=array('product_id'=>42,'option'=>'sample','pin'=>'226001','mode'=>'test','pickup_pincode'=>'208001','pack'=>$GLOBALS['pack'],'quote'=>array('product_paise'=>0,'rate_paise'=>4450,'product_name'=>'PP','option_name'=>'Sample','courier_name'=>'Example','courier_id'=>'7'));
+$GLOBALS['transients']['rgpay_q_'.$hash]=array('product_id'=>42,'option'=>'sample','pin'=>'226001','mode'=>'test','pickup_pincode'=>'208001','pack'=>$GLOBALS['pack'],'quote'=>array('product_paise'=>0,'rate_paise'=>4450,'product_gst_paise'=>0,'shipping_gst_paise'=>801,'total_paise'=>5251,'product_name'=>'PP','option_name'=>'Sample','courier_name'=>'Example','courier_id'=>'7'));
 $_POST['quote_token']=$token;
-try { rgpay_start_checkout(); throw new Exception('No response'); } catch(Sent $result){check($result->ok && $result->data['amount']===4450,'free sample charges shipping only');}
+try { rgpay_start_checkout(); throw new Exception('No response'); } catch(Sent $result){check($result->ok && $result->data['amount']===5251,'free sample charges shipping only');}
 check($GLOBALS['meta'][77]['_rgpay_record']['snapshot']['quote']['rate_paise']===4450 && $GLOBALS['meta'][77]['_rgpay_record']['snapshot']['quote']['courier_id']==='7', 'shipping quote stored in order snapshot');
+$GLOBALS['pack_key']='10kg'; $GLOBALS['pack']=array('label'=>'10 kg','enabled'=>true,'price_paise'=>10000,'gst_bps'=>1800,'weight_kg'=>'10','length_cm'=>'30','width_cm'=>'20','height_cm'=>'10');
+$token=str_repeat('c',64); $hash=hash('sha256',$token);
+$GLOBALS['transients']['rgpay_q_'.$hash]=array('product_id'=>42,'option'=>'10kg','pin'=>'226001','mode'=>'test','pickup_pincode'=>'208001','pack'=>$GLOBALS['pack'],'quote'=>array('product_paise'=>10000,'rate_paise'=>4450,'product_gst_paise'=>1800,'shipping_gst_paise'=>801,'total_paise'=>17051,'product_name'=>'PP','option_name'=>'10 kg'));
+$_POST['quote_token']=$token; $GLOBALS['pack']['gst_bps']=500; $prior=count($GLOBALS['requests']);
+try { rgpay_start_checkout(); throw new Exception('No response'); } catch(Sent $result){check(!$result->ok && count($GLOBALS['requests'])===$prior,'GST change invalidates old quote');}
 echo "Checkout creation smoke tests passed.\n";

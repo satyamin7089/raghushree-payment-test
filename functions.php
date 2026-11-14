@@ -20,6 +20,7 @@ $raghushree_includes = array(
 	'inc/custom-fields.php',
 	'inc/admin-meta-boxes.php',
 	'inc/product-master.php',
+	'inc/catalog-v2.php',
 	'inc/payment-settings.php',
 	'inc/payment-compat.php',
 	'inc/shipping-quotes.php',

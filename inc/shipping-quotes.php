@@ -1,19 +1,22 @@
 <?php
-/** Shiprocket recommended-courier quotes. This does not accept payments. */
+/** Shiprocket lowest available prepaid courier quotes. This does not accept payments. */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-/** Read only a rate for the explicitly recommended courier; never silently choose another. */
-function raghushree_recommended_shipping_rate( $data ) {
-	if ( ! is_array( $data ) || empty( $data['recommended_courier_company_id'] ) || ! is_scalar( $data['recommended_courier_company_id'] ) || empty( $data['available_courier_companies'] ) || ! is_array( $data['available_courier_companies'] ) ) { return false; }
-	$recommended_id = (string) $data['recommended_courier_company_id'];
+/** Select the lowest valid rate from Shiprocket's available couriers. Never use blocked entries. */
+function raghushree_lowest_shipping_rate( $data ) {
+	if ( ! is_array( $data ) || empty( $data['available_courier_companies'] ) || ! is_array( $data['available_courier_companies'] ) ) { return false; }
+	$best = false;
 	foreach ( $data['available_courier_companies'] as $courier ) {
-		if ( ! is_array( $courier ) || ! isset( $courier['courier_company_id'], $courier['rate'] ) || ! is_scalar( $courier['courier_company_id'] ) || (string) $courier['courier_company_id'] !== $recommended_id || ! is_numeric( $courier['rate'] ) ) { continue; }
+		if ( ! is_array( $courier ) || ! isset( $courier['courier_company_id'], $courier['rate'] ) || ! is_scalar( $courier['courier_company_id'] ) || ! preg_match( '/^[1-9][0-9]*$/D', (string) $courier['courier_company_id'] ) || ! is_numeric( $courier['rate'] ) || ! empty( $courier['blocked'] ) ) { continue; }
 		$rate = (float) $courier['rate'];
-		if ( ! is_finite( $rate ) || $rate < 0.005 || $rate > 10000000 ) { return false; }
-		return array( 'courier_id' => $recommended_id, 'courier_name' => isset( $courier['courier_name'] ) && is_scalar( $courier['courier_name'] ) ? sanitize_text_field( (string) $courier['courier_name'] ) : '', 'rate_paise' => (int) round( $rate * 100 ) );
+		if ( ! is_finite( $rate ) || $rate < 0.005 || $rate > 10000000 ) { continue; }
+		$paise = (int) round( $rate * 100 );
+		if ( false === $best || $paise < $best['rate_paise'] ) { $best = array( 'courier_id' => (string) $courier['courier_company_id'], 'courier_name' => isset( $courier['courier_name'] ) && is_scalar( $courier['courier_name'] ) ? sanitize_text_field( (string) $courier['courier_name'] ) : '', 'rate_paise' => $paise ); }
 	}
-	return false;
+	return $best;
 }
+/** Round GST to the nearest paise using integer basis points. */
+function raghushree_tax_paise( $paise, $basis_points ) { return intdiv( (int) $paise * (int) $basis_points + 5000, 10000 ); }
 
 /**
  * Authenticate with the documented Shiprocket API. Error data is restricted to an
@@ -40,9 +43,11 @@ function raghushree_fetch_shipping_quote( $product_id, $option, $destination ) {
 	if ( ! isset( $variations[ $option ] ) || empty( $variations[ $option ]['enabled'] ) ) { return new WP_Error( 'variation', __( 'This option is not available.', 'raghushree' ) ); }
 	if ( ! preg_match( '/^[1-9][0-9]{5}$/D', $destination ) ) { return new WP_Error( 'pincode', __( 'Enter a valid six-digit delivery PIN code.', 'raghushree' ) ); }
 	$pack = $variations[ $option ];
+	if ( ! isset( $pack['price_paise'], $pack['gst_bps'], $pack['hsn'] ) || ! is_numeric( $pack['price_paise'] ) || (int) $pack['price_paise'] < 0 || ( 'sample' !== $option && (int) $pack['price_paise'] < 1 ) || (int) $pack['price_paise'] > 2000000000 || ! is_numeric( $pack['gst_bps'] ) || (int) $pack['gst_bps'] < 0 || (int) $pack['gst_bps'] > 10000 || ! is_string( $pack['hsn'] ) ) { return new WP_Error( 'config', __( 'This option is not configured for checkout. Please contact us.', 'raghushree' ) ); }
 	foreach ( raghushree_master_shipping_fields() as $field => $label ) {
 		if ( ! isset( $pack[ $field ] ) || ! is_numeric( $pack[ $field ] ) || (float) $pack[ $field ] <= 0 || (float) $pack[ $field ] > 99999 ) { return new WP_Error( 'package', __( 'Shipping details are not yet configured for this option. Please contact us.', 'raghushree' ) ); }
 	}
+	if ( ( $pack['product_type'] ?? 'polymer' ) === 'pipe' && (float) $pack['weight_kg'] > 30 ) { return new WP_Error( 'weight_limit', __( 'Orders over 30 kg require a custom quote. Please contact us.', 'raghushree' ) ); }
 	$settings = get_option( 'raghushree_payment_settings', array() );
 	if ( ! is_array( $settings ) || empty( $settings['shiprocket_email'] ) || empty( $settings['shiprocket_password'] ) ) { return new WP_Error( 'config', __( 'Shipping quotes are not configured. Please contact us.', 'raghushree' ) ); }
 	$pickup = isset( $settings['pickup_pincode'] ) ? $settings['pickup_pincode'] : '208001';
@@ -59,10 +64,13 @@ function raghushree_fetch_shipping_quote( $product_id, $option, $destination ) {
 	$status = (int) wp_remote_retrieve_response_code( $response );
 	if ( 200 !== $status ) { return new WP_Error( 'courier_http', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ), $status ); }
 	$body = json_decode( wp_remote_retrieve_body( $response ), true );
-	if ( ! is_array( $body ) || ! isset( $body['data'] ) || ! is_array( $body['data'] ) ) { return new WP_Error( 'courier_response', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
-	$rate = raghushree_recommended_shipping_rate( isset( $body['data'] ) ? $body['data'] : null );
-	if ( false === $rate ) { return new WP_Error( 'no_rate', __( 'No recommended prepaid shipping rate is available for this PIN code. Please contact us.', 'raghushree' ) ); }
-	return array( 'rate_paise' => $rate['rate_paise'], 'courier_name' => $rate['courier_name'], 'courier_id' => $rate['courier_id'], 'product_paise' => (int) $pack['price_paise'], 'product_name' => get_the_title( $post ), 'option_name' => $pack['label'] );
+	if ( ! is_array( $body ) || ! isset( $body['data'] ) || ! is_array( $body['data'] ) || ( isset( $body['currency'] ) && 'INR' !== $body['currency'] ) ) { return new WP_Error( 'courier_response', __( 'Shipping rates are temporarily unavailable. Please try again later.', 'raghushree' ) ); }
+	$rate = raghushree_lowest_shipping_rate( isset( $body['data'] ) ? $body['data'] : null );
+	if ( false === $rate ) { return new WP_Error( 'no_rate', __( 'No prepaid shipping rate is available for this PIN code. Please contact us.', 'raghushree' ) ); }
+	$product_paise = (int) $pack['price_paise'];
+	$product_gst = raghushree_tax_paise( $product_paise, (int) $pack['gst_bps'] );
+	$shipping_gst = raghushree_tax_paise( $rate['rate_paise'], 1800 );
+	return array( 'rate_paise' => $rate['rate_paise'], 'courier_name' => $rate['courier_name'], 'courier_id' => $rate['courier_id'], 'product_paise' => $product_paise, 'product_gst_paise' => $product_gst, 'product_gst_bps' => (int) $pack['gst_bps'], 'shipping_gst_paise' => $shipping_gst, 'shipping_gst_bps' => 1800, 'total_paise' => $product_paise + $product_gst + $rate['rate_paise'] + $shipping_gst, 'hsn' => $pack['hsn'], 'product_name' => get_the_title( $post ), 'option_name' => $pack['label'] );
 }
 
 function raghushree_ajax_shipping_quote() {

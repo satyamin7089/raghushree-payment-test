@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $raghushree_company       = raghushree_get_company_info();
-$raghushree_catalog_items = raghushree_get_catalog_items( 8 );
+$raghushree_catalog_categories = raghushree_catalog_definitions();
 $raghushree_products_url  = raghushree_get_products_url();
 $raghushree_about_url     = raghushree_get_page_url( 'about' );
 $raghushree_contact_url   = raghushree_get_page_url( 'contact' );
@@ -129,35 +129,20 @@ $is_contact_active  = is_page_template( 'page-templates/template-contact.php' ) 
 		</button>
 
 		<!-- Accessible Product Mega Menu -->
-		<div class="mega-menu" id="products-mega-menu" role="region" aria-label="<?php esc_attr_e( 'Polymer Products Menu', 'raghushree' ); ?>" aria-hidden="true">
+		<div class="mega-menu" id="products-mega-menu" role="region" aria-label="<?php esc_attr_e( 'Product Categories Menu', 'raghushree' ); ?>" aria-hidden="true">
 			<div class="mega-menu__grid">
 				<div>
 					<div class="mega-menu__header">
-						<h2 class="mega-menu__heading"><?php esc_html_e( 'Polymer Raw Material Portfolio', 'raghushree' ); ?></h2>
+						<h2 class="mega-menu__heading"><?php esc_html_e( 'Explore Product Categories', 'raghushree' ); ?></h2>
 						<a class="link-arrow" href="<?php echo esc_url( $raghushree_products_url ); ?>">
 							<span><?php esc_html_e( 'View All Products', 'raghushree' ); ?></span>
 							<?php echo raghushree_icon( 'arrow-right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						</a>
 					</div>
 					<div class="mega-menu__categories">
-						<?php if ( ! empty( $raghushree_catalog_items ) ) : ?>
-							<?php foreach ( $raghushree_catalog_items as $m_item ) : ?>
-								<a class="mega-menu__item" href="<?php echo esc_url( $m_item['permalink'] ); ?>">
-									<span class="mega-menu__item-title">
-										<span><?php echo esc_html( $m_item['title'] ); ?></span>
-										<?php if ( ! empty( $m_item['polymer_code'] ) ) : ?>
-											<span class="mega-menu__item-code"><?php echo esc_html( $m_item['polymer_code'] ); ?></span>
-										<?php endif; ?>
-									</span>
-									<span class="mega-menu__item-desc"><?php echo esc_html( wp_trim_words( $m_item['short_desc'], 13 ) ); ?></span>
-								</a>
-							<?php endforeach; ?>
-						<?php else : ?>
-							<a class="mega-menu__item" href="<?php echo esc_url( $raghushree_products_url ); ?>">
-								<span class="mega-menu__item-title"><?php esc_html_e( 'Explore Polymer Catalog', 'raghushree' ); ?></span>
-								<span class="mega-menu__item-desc"><?php esc_html_e( 'PP, HDPE, LDPE, LLDPE, PVC, PET & Recycled Polymers.', 'raghushree' ); ?></span>
-							</a>
-						<?php endif; ?>
+						<?php foreach ( $raghushree_catalog_categories as $slug => $category ) : ?>
+							<a class="mega-menu__item" href="<?php echo esc_url( raghushree_get_products_url( array( 'polymer_cat' => $slug ) ) ); ?>"><span class="mega-menu__item-title"><?php echo esc_html( $category['title'] ); ?></span><span class="mega-menu__item-desc"><?php echo esc_html( 'pipe' === $category['type'] ? __( 'Pipes & hoses', 'raghushree' ) : __( 'Polymer materials', 'raghushree' ) ); ?></span></a>
+						<?php endforeach; ?>
 					</div>
 				</div>
 
@@ -211,14 +196,11 @@ $is_contact_active  = is_page_template( 'page-templates/template-contact.php' ) 
 						</button>
 						<div class="mobile-nav__sublist" id="mobile-products-sublist" hidden>
 							<a class="mobile-nav__sublink mobile-nav__sublink--all" href="<?php echo esc_url( $raghushree_products_url ); ?>">
-								<span><?php esc_html_e( 'View Complete Polymer Catalog', 'raghushree' ); ?></span>
+								<span><?php esc_html_e( 'View All Products', 'raghushree' ); ?></span>
 								<?php echo raghushree_icon( 'arrow-right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</a>
-							<?php foreach ( $raghushree_catalog_items as $m_item ) : ?>
-								<a class="mobile-nav__sublink" href="<?php echo esc_url( $m_item['permalink'] ); ?>">
-									<span><?php echo esc_html( $m_item['title'] ); ?></span>
-									<?php echo raghushree_icon( 'chevron-right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-								</a>
+							<?php foreach ( $raghushree_catalog_categories as $slug => $category ) : ?>
+								<a class="mobile-nav__sublink" href="<?php echo esc_url( raghushree_get_products_url( array( 'polymer_cat' => $slug ) ) ); ?>"><span><?php echo esc_html( $category['title'] ); ?></span><?php echo raghushree_icon( 'chevron-right' ); ?></a>
 							<?php endforeach; ?>
 						</div>
 					</li>
