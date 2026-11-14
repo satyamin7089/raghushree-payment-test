@@ -81,9 +81,35 @@
     onScrollUpdate();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initProductSubnav);
-  } else {
+  // Keep long introductions readable on short screens without nested scrollbars.
+  function initDetailHeadings() {
+    var headings = Array.prototype.slice.call(document.querySelectorAll('.product-detail-heading'));
+    if (!headings.length) return;
+
+    function update() {
+      headings.forEach(function (heading) {
+        var top = parseFloat(window.getComputedStyle(heading).top) || 0;
+        var tooTall = heading.getBoundingClientRect().height + top + 20 > window.innerHeight;
+        heading.classList.toggle('is-too-tall', tooTall);
+      });
+    }
+
+    update();
+    window.addEventListener('resize', update, { passive: true });
+    if (window.ResizeObserver) {
+      var observer = new ResizeObserver(update);
+      headings.forEach(function (heading) { observer.observe(heading); });
+    }
+  }
+
+  function init() {
     initProductSubnav();
+    initDetailHeadings();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();
