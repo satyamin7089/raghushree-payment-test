@@ -33,4 +33,10 @@ $GLOBALS['featured'] = 0; $GLOBALS['product']['gallery_ids'] = array( 22 ); $htm
 check( $hero['slider_slides'][0]['attachment_id'] === 22 && ! $hero['empty_image'], 'gallery works without featured image' );
 $GLOBALS['product']['gallery_ids'] = array(); $GLOBALS['content'] = ''; $html = render_product();
 check( $GLOBALS['parts']['template-parts/components/page-banner']['empty_image'] && strpos( $html, 'id="overview"' ) === false, 'empty product does not invent content or photo' );
+$GLOBALS['product']['features'] = array( array( 'A <feature>', 'Owner feature' ), array( 'Second', '' ) );
+$GLOBALS['product']['apps_rows'] = array( array( 'First application', 'Owner use' ), array( 'Second use', '' ) );
+$GLOBALS['product']['industries'] = array( array( 'Owner industry' ) );
+$html = render_product();
+check( strpos( $html, 'product-features__list' ) !== false && strpos( $html, 'product-applications__grid' ) !== false && strpos( $html, 'product-industries' ) !== false, 'distinct editorial sections rendered' );
+check( strpos( $html, 'A &lt;feature&gt;' ) !== false && strpos( $html, 'Owner use' ) !== false && strpos( $html, '>02</span>' ) !== false, 'authored text escaped and entries indexed' );
 echo "Product content smoke tests passed.\n";
