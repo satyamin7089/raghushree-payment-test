@@ -145,6 +145,10 @@ function raghushree_handle_enquiry_submission() {
 		)
 	);
 
+	if ( ! $enquiry_post_id || is_wp_error( $enquiry_post_id ) ) {
+		$raghushree_enquiry_state['message'] = __( 'Your enquiry could not be saved. Please try again or contact us directly.', 'raghushree' );
+		return;
+	}
 	if ( $enquiry_post_id && ! is_wp_error( $enquiry_post_id ) ) {
 		foreach ( $values as $meta_key => $meta_val ) {
 			update_post_meta( $enquiry_post_id, '_enquiry_' . $meta_key, $meta_val );

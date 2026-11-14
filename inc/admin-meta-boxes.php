@@ -45,6 +45,7 @@ function raghushree_product_content_admin_assets( $hook ) {
 	$screen = get_current_screen();
 	if ( ! $screen || ! in_array( $screen->post_type, array( 'products', 'page' ), true ) ) { return; }
 	if ( 'page' === $screen->post_type ) { $post_id = isset( $_GET['post'] ) && is_scalar( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; if ( ! $post_id || 'page-templates/template-product-detail.php' !== get_page_template_slug( $post_id ) ) { return; } }
+	wp_enqueue_script( 'raghushree-product-sections-editor', get_template_directory_uri() . '/assets/js/product-sections-admin.js', array(), raghushree_asset_version( 'assets/js/product-sections-admin.js' ), true );
 	wp_enqueue_media();
 	wp_enqueue_script( 'raghushree-product-gallery-editor', get_template_directory_uri() . '/assets/js/product-gallery-admin.js', array( 'media-views' ), raghushree_asset_version( 'assets/js/product-gallery-admin.js' ), true );
 	wp_enqueue_style( 'raghushree-product-gallery-editor', get_template_directory_uri() . '/assets/css/product-gallery-admin.css', array(), raghushree_asset_version( 'assets/css/product-gallery-admin.css' ) );
@@ -99,6 +100,7 @@ function raghushree_render_product_meta_box( $post ) {
 		<p><button type="button" class="button" data-gallery-add hidden><?php esc_html_e( 'Choose images', 'raghushree' ); ?></button></p>
 		<p data-gallery-fallback><label for="raghushree_gallery_ids"><?php esc_html_e( 'Gallery attachment IDs (comma separated; used if JavaScript is unavailable)', 'raghushree' ); ?></label><br><input type="text" id="raghushree_gallery_ids" name="raghushree_gallery_ids" value="<?php echo esc_attr( $fields['gallery_ids'] ); ?>" class="regular-text" /></p>
 	</div>
+	<?php raghushree_render_product_sections( $post->ID ); ?>
 	<details><summary><strong><?php esc_html_e( 'Additional structured details (optional)', 'raghushree' ); ?></strong></summary><p class="description"><?php esc_html_e( 'Use these optional fields for tables and FAQs. Existing values are kept. You can also write all your details as normal paragraphs or lists in the main editor.', 'raghushree' ); ?></p>
 	<table class="form-table" role="presentation">
 		<tr>
@@ -131,23 +133,12 @@ function raghushree_render_product_meta_box( $post ) {
 			</td>
 		</tr>
 		<tr>
-			<th><label for="raghushree_applications_rows"><?php esc_html_e( 'Applications (Title | Description)', 'raghushree' ); ?></label></th>
-			<td><textarea id="raghushree_applications_rows" name="raghushree_applications_rows" rows="4" class="large-text"><?php echo esc_textarea( $fields['applications_rows'] ); ?></textarea></td>
-		</tr>
-		<tr>
 			<th><label for="raghushree_industries_rows"><?php esc_html_e( 'Target Industries (One per line)', 'raghushree' ); ?></label></th>
 			<td><textarea id="raghushree_industries_rows" name="raghushree_industries_rows" rows="3" class="large-text"><?php echo esc_textarea( $fields['industries_rows'] ); ?></textarea></td>
 		</tr>
 		<tr>
 			<th><label for="raghushree_processing_rows"><?php esc_html_e( 'Processing Methods (Method | Notes)', 'raghushree' ); ?></label></th>
 			<td><textarea id="raghushree_processing_rows" name="raghushree_processing_rows" rows="4" class="large-text"><?php echo esc_textarea( $fields['processing_rows'] ); ?></textarea></td>
-		</tr>
-		<tr>
-			<th><label for="raghushree_tech_specs"><?php esc_html_e( 'Verified Technical Specs (Optional)', 'raghushree' ); ?></label></th>
-			<td>
-				<textarea id="raghushree_tech_specs" name="raghushree_tech_specs" rows="4" class="large-text" placeholder="Parameter | Value | Test Standard"><?php echo esc_textarea( $fields['tech_specs'] ); ?></textarea>
-				<p class="description"><?php esc_html_e( 'Leave blank unless verified technical values are confirmed.', 'raghushree' ); ?></p>
-			</td>
 		</tr>
 		<tr>
 			<th><label for="raghushree_datasheet_url"><?php esc_html_e( 'Datasheet PDF URL (Optional)', 'raghushree' ); ?></label></th>
@@ -170,10 +161,6 @@ function raghushree_render_product_meta_box( $post ) {
 			<td><input type="text" id="raghushree_availability" name="raghushree_availability" value="<?php echo esc_attr( $fields['availability'] ); ?>" class="regular-text" /></td>
 		</tr>
 
-		<tr>
-			<th><label for="raghushree_product_faqs"><?php esc_html_e( 'Product FAQs (Question | Answer)', 'raghushree' ); ?></label></th>
-			<td><textarea id="raghushree_product_faqs" name="raghushree_product_faqs" rows="4" class="large-text"><?php echo esc_textarea( $fields['product_faqs'] ); ?></textarea></td>
-		</tr>
 	</table></details>
 	<?php
 }
@@ -235,6 +222,7 @@ function raghushree_save_product_meta_box( $post_id ) {
 		}
 	}
 
+	raghushree_save_product_sections( $post_id );
 	if ( isset( $_POST['raghushree_datasheet_url'] ) ) {
 		update_post_meta( $post_id, '_raghushree_datasheet_url', esc_url_raw( wp_unslash( $_POST['raghushree_datasheet_url'] ) ) );
 	}

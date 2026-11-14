@@ -6,6 +6,7 @@ function wp_unslash( $value ) { return $value; } function sanitize_text_field( $
 function sanitize_textarea_field( $value ) { return trim( strip_tags( $value ) ); } function esc_url_raw( $value ) { return $value; }
 function wp_verify_nonce( $nonce, $action ) { return 'valid' === $nonce; }
 function current_user_can( ...$args ) { return $GLOBALS['allowed']; }
+function raghushree_save_product_sections( $id ) {}
 function update_post_meta( $id, $key, $value ) { $GLOBALS['saved'][$key] = $value; }
 require __DIR__ . '/../inc/admin-meta-boxes.php';
 function check( $value, $message ) { if ( ! $value ) { throw new Exception( $message ); } }

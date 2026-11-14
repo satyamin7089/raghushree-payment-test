@@ -24,6 +24,10 @@ function add_query_arg( $query, $url ) { return $url . '?' . http_build_query( $
 require __DIR__ . '/../inc/shipping-quotes.php';
 require __DIR__ . '/../inc/payment-settings.php';
 function check( $condition, $message ) { if ( ! $condition ) { throw new Exception( $message ); } }
+check( raghushree_shipping_error_reference( 'courier_http' ) === 'SR-RATE-HTTP' && raghushree_shipping_error_reference( 'arbitrary_secret' ) === '', 'safe fixed shipping references' );
+$recommended = array( 'recommended_courier_company_id' => 7, 'available_courier_companies' => array( array( 'courier_company_id' => 2, 'rate' => null ), array( 'courier_company_id' => 7, 'rate' => 42 ) ) );
+check( raghushree_lowest_shipping_rate( $recommended )['courier_id'] === '7', 'recommended courier used when it is the only valid rate' );
+check( false === raghushree_lowest_shipping_rate( array( 'recommended_courier_company_id' => 7, 'available_courier_companies' => array( array( 'courier_company_id' => 7, 'rate' => null ) ) ) ), 'recommended id alone cannot supply a price' );
 // Fields and placement follow Shiprocket's published courier serviceability example.
 $documented_data = array( 'available_courier_companies' => array( array( 'courier_company_id' => 43, 'courier_name' => 'Delhivery Surface', 'rate' => 54 ), array( 'courier_company_id' => 225, 'courier_name' => 'India Post', 'rate' => 123.9 ) ), 'recommended_courier_company_id' => 43, 'shiprocket_recommended_courier_id' => 43 );
 $documented_rate = raghushree_lowest_shipping_rate( $documented_data );

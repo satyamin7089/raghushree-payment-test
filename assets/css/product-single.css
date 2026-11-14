@@ -683,3 +683,28 @@ main .sp-grade-card__desc, main .sp-tech-item__desc, main .sp-logistics-card__de
 .product-editorial__item p { margin: 0; }
 @media (min-width: 900px) { .product-editorial { grid-template-columns: minmax(0, .6fr) minmax(0, 1.4fr); gap: clamp(32px, 5vw, 80px); } }
 .product-image-empty { position: absolute; inset: 0; display: grid; place-items: center; background: var(--tint); color: var(--muted); font-weight: 600; }
+
+/* Keep the product image a comfortable size and sticky only within the hero. */
+@media (min-width: 900px) {
+  #product-hero, #product-hero .page-banner-card { overflow: visible; }
+  #product-hero .page-banner-card__right { display: block; animation: none; }
+  #product-hero .page-banner-card__frame { position: sticky; top: calc(var(--header-height, 90px) + 16px); height: min(560px, calc(100vh - var(--header-height, 90px) - 36px)); min-height: 0; }
+}
+.product-editorial__cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.product-editorial__body.product-editorial__cards > * { margin: 0; }
+.product-editorial__item { padding: clamp(20px, 2vw, 28px); background: var(--white); border: 1px solid var(--line); box-shadow: var(--shadow-xs); }
+.surface--white .product-editorial__item { background: var(--pearl); }
+.product-editorial__item h3 { font-size: 1.15rem; overflow-wrap: anywhere; }
+.product-editorial__body .data-table { background: var(--white); }
+.product-enquiry { background: var(--ink); color: var(--text-on-dark); }
+.product-enquiry h2, .product-enquiry h3, .product-enquiry label { color: var(--text-on-dark); }
+.product-enquiry__card { padding: clamp(22px, 4vw, 38px); background: var(--ink-soft); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-md); }
+.product-enquiry__grid { display: grid; gap: 16px; }
+.product-enquiry__grid label { display: block; font-weight: 600; font-size: .9rem; }
+.product-enquiry__grid input, .product-enquiry__grid textarea { display: block; width: 100%; margin-top: 7px; padding: 12px; background: #fff; color: var(--ink); border: 1px solid #d7dce0; border-radius: var(--radius-sm); }
+.product-enquiry__grid textarea { min-height: 120px; resize: vertical; }
+.product-enquiry__message { grid-column: 1 / -1; }
+.product-enquiry__submit { margin-top: 20px; }
+.product-enquiry__notice { padding: 14px; margin-bottom: 18px; color: var(--ink); background: #fff; border-radius: var(--radius-sm); }
+.product-enquiry .raghushree-hp { position: absolute; left: -9999px; }
+@media (min-width: 600px) { .product-editorial__cards, .product-enquiry__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

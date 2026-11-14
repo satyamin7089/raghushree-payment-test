@@ -4,3 +4,8 @@
 .rg-gallery-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .rg-gallery-actions .button { font-size: 12px; padding: 0 6px; }
 .rg-gallery-editor [hidden] { display: none; }
+.rg-section-editor { margin: 24px 0; }
+.rg-section-fieldset { border: 1px solid #dcdcde; padding: 14px; margin: 0 0 16px; background: #fff; }
+.rg-section-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+.rg-section-row label { display: block; flex: 1 1 180px; }
+.rg-section-row input { display: block; margin-top: 5px; }

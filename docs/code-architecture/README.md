@@ -34,6 +34,8 @@ Shiprocket is used for rates only. It does not create a shipment, order or picku
 | [`inc/catalog-v2.php`](../../inc/catalog-v2.php) | Requested category and product definitions and the administrator-only, non-destructive catalog installer. |
 | [`inc/admin-meta-boxes.php`](../../inc/admin-meta-boxes.php), [`assets/js/product-gallery-admin.js`](../../assets/js/product-gallery-admin.js) | Optional highlights, existing structured fields and Media Library selection; gallery IDs remain in their existing meta format. |
 | [`template-parts/sections/product/detail-content.php`](../../template-parts/sections/product/detail-content.php) | Owner-authored content, optional saved sections and selected-image slider for both product types. |
+| [`inc/product-sections.php`](../../inc/product-sections.php), [`assets/js/product-sections-admin.js`](../../assets/js/product-sections-admin.js) | Structured feature, application, specification and FAQ editor. Legacy text rows are read until the new format is first saved; the original meta is not deleted. Invalid edits leave published section data unchanged. |
+| [`template-parts/components/product-enquiry.php`](../../template-parts/components/product-enquiry.php) | Product enquiry form using the existing nonce, validation, honeypot, rate limit and enquiry post handler. |
 | [`inc/product-master.php`](../../inc/product-master.php) | Product type, polymer variations, packet quantities, per-product GST and HSN, meta box and validation. |
 | [`inc/shipping-quotes.php`](../../inc/shipping-quotes.php) | Shiprocket authentication, prepaid serviceability, lowest valid courier, GST calculation and AJAX endpoint. |
 | [`inc/payment-settings.php`](../../inc/payment-settings.php) | Credentials, setup and admin-only provider diagnostics. |
@@ -49,7 +51,7 @@ Shiprocket is used for rates only. It does not create a shipment, order or picku
 
 1. Product meta `_raghushree_master_variations` stores polymer pack prices in paise, enabled state and measurements. `_raghushree_commerce` stores type, GST in basis points, HSN, packet price and quantity-specific combined package measurements. New polymer sizes and pipe quantities are unavailable until configured. Sample price remains zero. Existing legacy 30 kg metadata is retained but not presented for checkout.
 2. For a pipe, `raghushree_master_variations()` derives `packet_N` rows from the per-packet price and the exact combined measurements configured for quantity N. A quantity with no configured row fails; a pipe over 30 kg fails before Shiprocket is called. Polymer checkout uses the five fixed options 5–25 kg.
-3. `raghushree_ajax_shipping_quote()` checks nonce and inputs, and `raghushree_fetch_shipping_quote()` validates the product, option, PIN and packed measurements. It authenticates using `POST /v1/external/auth/login` and calls `GET /v1/external/courier/serviceability/` with `cod=0`, weight, dimensions and PINs. `raghushree_lowest_shipping_rate()` chooses the lowest valid available non-blocked rate, not the recommended ID. No rate means an error.
+3. `raghushree_ajax_shipping_quote()` checks nonce and inputs, and `raghushree_fetch_shipping_quote()` validates the product, option, PIN and packed measurements. It authenticates using `POST /v1/external/auth/login` and calls `GET /v1/external/courier/serviceability/` with `cod=0`, weight, dimensions and PINs. `raghushree_lowest_shipping_rate()` chooses the lowest valid available non-blocked rate, not the recommended ID. The recommended courier is included in the same valid-rate selection; its ID alone cannot provide a price. No valid rate means an error, not an invented fallback. Public responses contain only fixed stage references; administrator diagnostics give a provider HTTP status when available.
 4. `raghushree_tax_paise()` calculates rounded integer-paise product GST and 18% shipping GST. The returned quote has `product_paise`, `product_gst_paise`, `product_gst_bps`, `rate_paise`, `shipping_gst_paise`, `shipping_gst_bps`, `total_paise`, `hsn` and the courier/product details. The configured shipping GST is **added** to the provider's rate; tax-inclusive treatment must be independently verified.
 5. The theme runs `raghushree_quote_result`; plugin callback `rgpay_quote_snapshot()` stores the server quote and selected pack in a 15-minute transient indexed by a hash of a random token. `checkout.js` displays the server-supplied totals; the browser does not set the Razorpay amount.
 6. `rgpay_start_checkout()` checks the snapshot against current product and pack details, validates customer fields, claims the token once, creates an internal `rgpay_order` and a Razorpay order. It adds the four saved components to determine the total and verifies the stored `total_paise`. Live checkout additionally requires the new `allow_tax_live` confirmation (unset on upgrade); old plugin/theme combinations are blocked by `RGPAY_TAX_PRICING_VERSION` and `raghushree_tax_pricing_theme_ready()`.
@@ -67,6 +69,8 @@ Deploy the updated theme and plugin **together**. Back up and disable checkout f
 ```bash
 php tests/product-master-test.php
 php tests/product-content-test.php
+php tests/product-sections-test.php
+php tests/product-enquiry-test.php
 php tests/catalog-v2-test.php
 php tests/shipping-quotes-test.php
 php tests/courier-diagnostics-test.php
