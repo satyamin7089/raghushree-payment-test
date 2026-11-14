@@ -739,7 +739,8 @@ main .sp-grade-card__desc, main .sp-tech-item__desc, main .sp-logistics-card__de
   .product-applications__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(28px, 5vw, 72px); }
 }
 @media (min-width: 900px) {
-  .product-detail-heading { position: sticky; top: calc(var(--header-height, 84px) + 20px); align-self: start; max-height: calc(100vh - var(--header-height, 84px) - 40px); overflow-y: auto; }
+  .product-detail-heading { position: sticky; top: calc(var(--header-height, 84px) + 20px); align-self: start; }
+  .product-detail-heading.is-too-tall { position: static; }
 }
 
 /* Equal, rounded controls with intentional gaps rather than overlapping corners. */
