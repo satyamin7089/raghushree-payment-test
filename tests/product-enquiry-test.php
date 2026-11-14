@@ -1,0 +1,11 @@
+<?php
+define( 'ABSPATH', __DIR__ ); define( 'MINUTE_IN_SECONDS', 60 );
+$GLOBALS['insert_result'] = 88; $GLOBALS['meta'] = array(); $GLOBALS['count'] = 0;
+function add_action( ...$args ) {} function __( $v, $d = null ) { return $v; } function sanitize_text_field( $v ) { return trim( strip_tags( $v ) ); } function sanitize_textarea_field( $v ) { return trim( strip_tags( $v ) ); } function sanitize_email( $v ) { return trim( $v ); } function wp_unslash( $v ) { return $v; } function wp_verify_nonce( $v, $a ) { return $v === 'valid'; } function is_email( $email ) { return filter_var( $email, FILTER_VALIDATE_EMAIL ); } function get_transient( $key ) { return $GLOBALS['count']; } function set_transient( $key, $v, $time ) { $GLOBALS['count'] = $v; } function wp_insert_post( $post ) { return $GLOBALS['insert_result']; } function is_wp_error( $x ) { return false; } function update_post_meta( $id, $key, $value ) { $GLOBALS['meta'][$key] = $value; } function raghushree_get_company_info() { return array( 'email' => '' ); }
+require __DIR__ . '/../inc/template-functions.php';
+function check( $v, $message ) { if ( ! $v ) throw new Exception( $message ); }
+$_SERVER['REQUEST_METHOD'] = 'POST'; $_POST = array( 'raghushree_enquiry_action' => 'submit_rfq', 'raghushree_enquiry_nonce' => 'valid', 'enquiry_name' => 'Buyer', 'enquiry_company' => 'Company', 'enquiry_email' => 'buyer@example.com', 'enquiry_phone' => '123', 'enquiry_country' => 'India', 'enquiry_type' => 'Request a Quotation', 'enquiry_material' => 'Product', 'enquiry_message' => 'Please send details.' );
+$GLOBALS['raghushree_enquiry_state'] = null; raghushree_handle_enquiry_submission(); check( raghushree_get_enquiry_state()['success'] && $GLOBALS['meta']['_enquiry_material'] === 'Product', 'valid enquiry saved' );
+$GLOBALS['raghushree_enquiry_state'] = null; $GLOBALS['insert_result'] = 0; raghushree_handle_enquiry_submission(); check( ! raghushree_get_enquiry_state()['success'] && strpos( raghushree_get_enquiry_state()['message'], 'could not be saved' ) !== false, 'failed database save is not reported as success' );
+$GLOBALS['raghushree_enquiry_state'] = null; $_POST['raghushree_enquiry_nonce'] = 'invalid'; raghushree_handle_enquiry_submission(); check( ! raghushree_get_enquiry_state()['success'], 'invalid nonce rejected' );
+echo "Product enquiry smoke tests passed.\n";

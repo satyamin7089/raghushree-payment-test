@@ -24,8 +24,10 @@ check( $hero['points'] === array( 'Own point 1', 'Own point 2' ), 'owner highlig
 check( count( $hero['slider_slides'] ) === 2 && $hero['slider_slides'][1]['attachment_id'] === 22, 'featured duplication and invalid images skipped' );
 check( strpos( $html, 'My own overview.' ) !== false && strpos( $html, 'Shop-Floor Conversion' ) === false && strpos( $html, 'id="grades"' ) === false, 'only authored content, no generic extras' );
 check( isset( $GLOBALS['parts']['template-parts/components/product-checkout'] ), 'checkout retained' );
+$GLOBALS['product']['features'] = array( array( 'Our feature', 'A detail' ) );
 $GLOBALS['product']['tech_specs'] = array( array( 'Owner property', 'Value', 'Reference' ) );
 $GLOBALS['product']['packaging'] = 'A bag'; $html = render_product();
+check( strpos( $html, 'Our feature' ) !== false && isset( $GLOBALS['parts']['template-parts/components/product-enquiry'] ), 'features and enquiry are rendered' );
 check( strpos( $html, 'Owner property' ) !== false && strpos( $html, 'A bag' ) !== false, 'saved structured fields displayed' );
 $GLOBALS['featured'] = 0; $GLOBALS['product']['gallery_ids'] = array( 22 ); $html = render_product(); $hero = $GLOBALS['parts']['template-parts/components/page-banner'];
 check( $hero['slider_slides'][0]['attachment_id'] === 22 && ! $hero['empty_image'], 'gallery works without featured image' );

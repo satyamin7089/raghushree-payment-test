@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 $post_id = get_queried_object_id();
 $prod = raghushree_get_product_data( $post_id );
 if ( empty( $prod['id'] ) ) { return; }
-$enquire = raghushree_get_enquiry_url( array( 'material' => $prod['title'], 'enquiry_type' => 'Request a Quotation' ) );
+$enquire = '#product-enquiry';
 $points = preg_split( '/\r\n|\r|\n/', trim( (string) get_post_meta( $post_id, '_raghushree_highlights', true ) ) );
 $points = array_values( array_filter( array_map( 'trim', (array) $points ), 'strlen' ) );
 $slides = array();
@@ -39,10 +39,12 @@ $content = get_post_field( 'post_content', $post_id );
 	<div class="product-editorial__body"><?php if ( ! empty( $prod['grades_notes'] ) ) : ?><p><?php echo esc_html( $prod['grades_notes'] ); ?></p><?php endif; ?>
 	<?php if ( ! empty( $prod['grades_rows'] ) ) : ?><div class="table-wrap"><table class="data-table"><thead><tr><th><?php esc_html_e( 'Grade', 'raghushree' ); ?></th><th><?php esc_html_e( 'Form', 'raghushree' ); ?></th><th><?php esc_html_e( 'Typical use', 'raghushree' ); ?></th></tr></thead><tbody><?php foreach ( $prod['grades_rows'] as $row ) : ?><tr><?php for ( $i = 0; $i < 3; $i++ ) : ?><td><?php echo esc_html( $row[$i] ?? '' ); ?></td><?php endfor; ?></tr><?php endforeach; ?></tbody></table></div><?php endif; ?></div>
 </div></section><?php endif; ?>
+<?php if ( ! empty( $prod['features'] ) ) : ?>
+<section class="section surface--pearl single-product-section" id="features"><div class="container product-editorial"><div class="product-editorial__heading"><span class="eyebrow"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2><?php esc_html_e( 'Features', 'raghushree' ); ?></h2></div><div class="product-editorial__body product-editorial__cards"><?php foreach ( $prod['features'] as $row ) : ?><article class="product-editorial__item"><h3><?php echo esc_html( $row[0] ); ?></h3><?php if ( ! empty( $row[1] ) ) : ?><p><?php echo esc_html( $row[1] ); ?></p><?php endif; ?></article><?php endforeach; ?></div></div></section><?php endif; ?>
 <?php if ( ! empty( $prod['apps_rows'] ) || ! empty( $prod['industries'] ) ) : ?>
 <section class="section surface--white single-product-section" id="applications"><div class="container product-editorial">
 	<div class="product-editorial__heading"><span class="eyebrow"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2><?php esc_html_e( 'Applications', 'raghushree' ); ?></h2></div><div class="product-editorial__body">
-	<?php foreach ( $prod['apps_rows'] as $row ) : ?><div class="product-editorial__item"><h3><?php echo esc_html( $row[0] ); ?></h3><p><?php echo esc_html( $row[1] ); ?></p></div><?php endforeach; ?>
+	<div class="product-editorial__cards"><?php foreach ( $prod['apps_rows'] as $row ) : ?><div class="product-editorial__item"><h3><?php echo esc_html( $row[0] ); ?></h3><p><?php echo esc_html( $row[1] ); ?></p></div><?php endforeach; ?></div>
 	<?php if ( ! empty( $prod['industries'] ) ) : ?><h3><?php esc_html_e( 'Industries', 'raghushree' ); ?></h3><ul><?php foreach ( $prod['industries'] as $row ) : ?><li><?php echo esc_html( $row[0] ); ?></li><?php endforeach; ?></ul><?php endif; ?></div>
 </div></section><?php endif; ?>
 <?php if ( ! empty( $prod['tech_specs'] ) || ! empty( $prod['datasheet'] ) ) : ?>
@@ -57,3 +59,5 @@ $content = get_post_field( 'post_content', $post_id );
 <?php foreach ( $prod['processing'] as $row ) : ?><div class="product-editorial__item"><h3><?php echo esc_html( $row[0] ); ?></h3><p><?php echo esc_html( $row[1] ); ?></p></div><?php endforeach; ?>
 </div></div></section><?php endif; ?>
 <?php if ( ! empty( $prod['faqs'] ) ) : ?><section class="section surface--white single-product-section" id="faqs"><div class="container product-editorial"><div class="product-editorial__heading"><span class="eyebrow"><?php esc_html_e( 'Product details', 'raghushree' ); ?></span><h2><?php esc_html_e( 'Questions & answers', 'raghushree' ); ?></h2></div><div class="product-editorial__body"><?php get_template_part( 'template-parts/components/faq', null, array( 'faqs' => $prod['faqs'], 'id_prefix' => 'prod-faq-' . $prod['id'] ) ); ?></div></div></section><?php endif; ?>
+
+<?php get_template_part( 'template-parts/components/product-enquiry', null, array( 'product_id' => $post_id, 'product_title' => $prod['title'] ) ); ?>

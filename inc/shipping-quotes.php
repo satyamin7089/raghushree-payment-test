@@ -73,6 +73,12 @@ function raghushree_fetch_shipping_quote( $product_id, $option, $destination ) {
 	return array( 'rate_paise' => $rate['rate_paise'], 'courier_name' => $rate['courier_name'], 'courier_id' => $rate['courier_id'], 'product_paise' => $product_paise, 'product_gst_paise' => $product_gst, 'product_gst_bps' => (int) $pack['gst_bps'], 'shipping_gst_paise' => $shipping_gst, 'shipping_gst_bps' => 1800, 'total_paise' => $product_paise + $product_gst + $rate['rate_paise'] + $shipping_gst, 'hsn' => $pack['hsn'], 'product_name' => get_the_title( $post ), 'option_name' => $pack['label'] );
 }
 
+/** Public, fixed diagnostic references contain no provider response or credentials. */
+function raghushree_shipping_error_reference( $code ) {
+	$references = array( 'auth_network' => 'SR-AUTH-NET', 'auth_http' => 'SR-AUTH-HTTP', 'auth_response' => 'SR-AUTH-DATA', 'courier_network' => 'SR-RATE-NET', 'courier_http' => 'SR-RATE-HTTP', 'courier_response' => 'SR-RATE-DATA', 'no_rate' => 'SR-NO-RATE' );
+	return $references[$code] ?? '';
+}
+
 function raghushree_ajax_shipping_quote() {
 	check_ajax_referer( 'raghushree_shipping_quote', 'nonce' );
 	// A modest per-client throttle; a production deployment should also use edge rate limiting.
@@ -85,7 +91,7 @@ function raghushree_ajax_shipping_quote() {
 	$option = isset( $_POST['option'] ) && is_scalar( $_POST['option'] ) ? sanitize_key( wp_unslash( $_POST['option'] ) ) : '';
 	$pin = isset( $_POST['pincode'] ) && is_scalar( $_POST['pincode'] ) ? trim( wp_unslash( $_POST['pincode'] ) ) : '';
 	$quote = raghushree_fetch_shipping_quote( $id, $option, $pin );
-	if ( is_wp_error( $quote ) ) { wp_send_json_error( array( 'message' => $quote->get_error_message() ), 400 ); }
+	if ( is_wp_error( $quote ) ) { $reference = raghushree_shipping_error_reference( $quote->get_error_code() ); $status = in_array( $quote->get_error_code(), array( 'auth_network', 'auth_http', 'auth_response', 'courier_network', 'courier_http', 'courier_response' ), true ) ? 502 : 400; wp_send_json_error( array( 'message' => $quote->get_error_message(), 'reference' => $reference ), $status ); }
 	$quote = apply_filters( 'raghushree_quote_result', $quote, $id, $option, $pin );
 	wp_send_json_success( $quote );
 }

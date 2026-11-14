@@ -82,7 +82,10 @@ function raghushree_get_product_data( $post_id ) {
 	$industries     = raghushree_parse_pipe_rows( (string) get_post_meta( $post_id, '_raghushree_industries_rows', true ), 1 );
 	$processing     = raghushree_parse_pipe_rows( (string) get_post_meta( $post_id, '_raghushree_processing_rows', true ), 2 );
 	$tech_specs     = raghushree_parse_pipe_rows( (string) get_post_meta( $post_id, '_raghushree_tech_specs', true ), 2 );
-	$faq_rows       = raghushree_parse_pipe_rows( (string) get_post_meta( $post_id, '_raghushree_product_faqs', true ), 2 );
+	$sections       = raghushree_product_sections( $post_id );
+	$apps_rows      = $sections['applications'];
+	$tech_specs     = $sections['specifications'];
+	$faq_rows       = $sections['faqs'];
 
 	$faqs = array();
 	foreach ( $faq_rows as $f_row ) {
@@ -135,6 +138,7 @@ function raghushree_get_product_data( $post_id ) {
 		'grades_notes' => $grades_notes,
 		'grades_rows'  => $grades_rows,
 		'apps_rows'    => $apps_rows,
+		'features'     => $sections['features'],
 		'industries'   => $industries,
 		'processing'   => $processing,
 		'tech_specs'   => $tech_specs,

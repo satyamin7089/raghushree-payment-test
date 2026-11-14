@@ -39,7 +39,7 @@
         const response = await fetch(form.dataset.endpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }, body });
         const data = await response.json();
         if (requestRevision !== revision) return;
-        if (!data.success) throw new Error(data.data?.message || 'Shipping rates are temporarily unavailable.');
+        if (!data.success) { const message = data.data?.message || 'Shipping rates are temporarily unavailable.'; const ref = data.data?.reference; throw new Error(message + (typeof ref === 'string' && /^SR-[A-Z-]+$/.test(ref) ? ' Reference: ' + ref + '.' : '')); }
         const quote = data.data;
         result.textContent = `Estimated total ${money(quote.total_paise)} including GST and shipping${quote.courier_name ? ' (' + quote.courier_name + ')' : ''}.${quote.checkout_token ? ' Continue below.' : ' Checkout is not currently available.'}`;
         form.dispatchEvent(new CustomEvent('raghushree:quote', { detail: quote }));

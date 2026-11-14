@@ -18,6 +18,7 @@ $raghushree_includes = array(
 	'inc/enqueue.php',
 	'inc/custom-post-types.php',
 	'inc/custom-fields.php',
+	'inc/product-sections.php',
 	'inc/admin-meta-boxes.php',
 	'inc/product-master.php',
 	'inc/catalog-v2.php',
