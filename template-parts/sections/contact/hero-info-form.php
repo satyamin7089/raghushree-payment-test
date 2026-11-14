@@ -59,6 +59,8 @@ if ( ! empty( $catalog_items ) ) {
 	);
 }
 $material_options[] = 'Multiple Polymers / Custom Requirement';
+// Retain a product prefill (or a submitted selection after validation) outside the short catalog list.
+$material_options = raghushree_contact_material_options( $material_options, $val_mat );
 
 $app_options = array(
 	'Injection Moulding',

@@ -3,7 +3,8 @@
 define( 'ABSPATH', __DIR__ );
 function get_queried_object_id() { return 42; }
 function raghushree_get_product_data( $id ) { return $GLOBALS['product']; }
-function raghushree_get_enquiry_url( $args ) { return '/enquire'; }
+function raghushree_get_enquiry_url( $args ) { $GLOBALS['enquiry_args'] = $args; return '/contact/#enquiry-form'; }
+function raghushree_product_section_intros( $id ) { return $GLOBALS['intros'] ?? array(); }
 function get_post_meta( $id, $key, $single ) { return $GLOBALS['meta'][$key] ?? ''; }
 function get_post_thumbnail_id( $id ) { return $GLOBALS['featured']; }
 function wp_attachment_is_image( $id ) { return in_array( $id, array( 11, 22 ), true ); }
@@ -27,7 +28,8 @@ check( isset( $GLOBALS['parts']['template-parts/components/product-checkout'] ),
 $GLOBALS['product']['features'] = array( array( 'Our feature', 'A detail' ) );
 $GLOBALS['product']['tech_specs'] = array( array( 'Owner property', 'Value', 'Reference' ) );
 $GLOBALS['product']['packaging'] = 'A bag'; $html = render_product();
-check( strpos( $html, 'Our feature' ) !== false && isset( $GLOBALS['parts']['template-parts/components/product-enquiry'] ), 'features and enquiry are rendered' );
+check( strpos( $html, 'Our feature' ) !== false && ! isset( $GLOBALS['parts']['template-parts/components/product-enquiry'] ), 'features shown and inline enquiry removed' );
+check( $GLOBALS['parts']['template-parts/components/page-banner']['purchase_enquire_url'] === '/contact/#enquiry-form' && $GLOBALS['enquiry_args']['material'] === 'Actual product', 'purchase enquiry points to product-specific contact form' );
 check( strpos( $html, 'Owner property' ) !== false && strpos( $html, 'A bag' ) !== false, 'saved structured fields displayed' );
 $GLOBALS['featured'] = 0; $GLOBALS['product']['gallery_ids'] = array( 22 ); $html = render_product(); $hero = $GLOBALS['parts']['template-parts/components/page-banner'];
 check( $hero['slider_slides'][0]['attachment_id'] === 22 && ! $hero['empty_image'], 'gallery works without featured image' );
@@ -39,4 +41,14 @@ $GLOBALS['product']['industries'] = array( array( 'Owner industry' ) );
 $html = render_product();
 check( strpos( $html, 'product-features__list' ) !== false && strpos( $html, 'product-applications__grid' ) !== false && strpos( $html, 'product-industries' ) !== false, 'distinct editorial sections rendered' );
 check( strpos( $html, 'A &lt;feature&gt;' ) !== false && strpos( $html, 'Owner use' ) !== false && strpos( $html, '>02</span>' ) !== false, 'authored text escaped and entries indexed' );
+$GLOBALS['intros'] = array( 'features' => 'Features <intro>', 'applications' => 'Application intro', 'specifications' => 'Technical intro', 'faqs' => 'FAQ intro' );
+$GLOBALS['product']['faqs'] = array( array( 'question' => 'Q?', 'answer' => 'A.' ) );
+$html = render_product();
+foreach ( array( 'Features &lt;intro&gt;', 'Application intro', 'Technical intro', 'FAQ intro' ) as $text ) { check( strpos( $html, $text ) !== false, 'section intro shown and escaped' ); }
+foreach ( array( 'features', 'applications', 'technical-details', 'faqs' ) as $id ) {
+ preg_match( '/<section[^>]*id="' . $id . '"[\s\S]*?<\/section>/', $html, $match );
+ check( isset( $match[0] ) && strpos( $match[0], 'eyebrow' ) === false && strpos( $match[0], 'product-detail-heading' ) !== false, 'consistent heading without eyebrow: ' . $id );
+}
+$GLOBALS['product']['features'] = array(); $html = render_product();
+check( strpos( $html, 'id="features"' ) !== false && strpos( $html, 'product-features__list' ) === false, 'intro-only section has no empty list' );
 echo "Product content smoke tests passed.\n";
