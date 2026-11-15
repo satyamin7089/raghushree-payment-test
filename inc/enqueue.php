@@ -101,6 +101,16 @@ function raghushree_enqueue_assets() {
 			array( 'raghushree-components', 'raghushree-interactive-sections' ),
 			raghushree_asset_version( 'assets/css/home.css' )
 		);
+		wp_enqueue_script(
+			'raghushree-home-hero',
+			$uri . '/assets/js/home-hero.js',
+			array(),
+			raghushree_asset_version( 'assets/js/home-hero.js' ),
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
 	}
 
 	if ( $is_about ) {

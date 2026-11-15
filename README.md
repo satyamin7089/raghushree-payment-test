@@ -196,14 +196,28 @@ Additionally:
 
 ### Consumer shop sections (Homepage & About page only)
 
-The homepage and the About page open with two image-first shopping sections. Both are driven by the same published `products` records, so nothing has to be duplicated in the editor.
+The homepage and the About page are ordered image-first. The shop sections are driven by the same published `products` records and `polymer_category` terms, so nothing has to be duplicated in the editor.
 
 1. **Packet grid (`template-parts/sections/home/product-categories.php` on Home, `template-parts/sections/about/portfolio-applications.php` on About):** up to **9 products in a 3 × 3 grid** (2 columns on tablet, 1 on mobile). Each tile shows the featured image, product name, the lowest enabled packet price and a **Buy now** button that opens the product page purchase area. The **Explore All** button sits after the grid and links to the Products catalog. Tiles are rendered by `template-parts/components/product-tile.php`; the archive keeps using the existing `product-card` component.
-2. **Product coverflow (`template-parts/components/product-coverflow.php`):** the third homepage section is a centre-focused image slider. The active product is sharp and centred with a **+** button that opens its product page; the neighbouring slides are scaled down, blurred and dimmed. Previous/next arrows, dots, keyboard arrows, swipe and click-a-neighbour-to-centre all work, and the first slide stays visible without JavaScript.
+2. **Product coverflow (`template-parts/components/product-coverflow.php`):** a centre-focused image slider. The active product is sharp and centred with a **+** button that opens its product page; **two neighbouring slides stay visible on each side**, scaled down, blurred and dimmed (one per side below 768 px so nothing is clipped). Previous/next arrows, dots, keyboard arrows, swipe and click-a-neighbour-to-centre all work, and the first slide stays visible without JavaScript.
+3. **Category cards (`template-parts/components/category-grid.php`):** sits **directly after the coverflow on both pages**. Each `polymer_category` term becomes an image card with its name and product count, linking to that category's archive. The order follows the requested catalog definitions; cards are hidden automatically while a category has no products.
 
 **Prices on the tiles never invent a value.** They come from the enabled packet prices in the Product Master meta box (`inc/product-master.php` → `raghushree_product_price_summary()`). While no packet price is enabled the tile reads “Price on request”, so keep the Product Master up to date before launch.
 
-Both sections share `assets/css/shop.css` and `assets/js/shop.js`, which are only loaded on the homepage and the About page; the Products archive and product detail pages are unchanged. A static design preview (sample photos and sample prices) is available at [`docs/previews/shop-preview.html`](docs/previews/shop-preview.html).
+These sections share `assets/css/shop.css` and `assets/js/shop.js`, which are only loaded on the homepage and the About page; the Products archive and product detail pages are unchanged. A static design preview (sample photos and sample prices) is available at [`docs/previews/home-preview.html`](docs/previews/home-preview.html).
+
+### Homepage banner carousel
+
+`template-parts/sections/home/hero.php` renders **two banners with the same layout**:
+
+| Banner | Content | Photograph |
+|---|---|---|
+| 1 | Agriculture & irrigation pipes (Kisan-facing copy, pipe range CTAs, pipe tags) | `home_hero_pipes` placeholder (`inc/image-placeholders.php`) |
+| 2 | Polymer raw materials (the original homepage copy and polymer tags) | `home_hero` (front page Featured Image or `assets/images/bg-cta-3.jpg`) |
+
+They rotate every **12 seconds** with **left/right arrow buttons only — no dots**, pause on hover and keyboard focus, support the arrow keys, and do not auto-rotate when the visitor prefers reduced motion. Without JavaScript the first banner stays visible. Banner photographs are **full colour** — the previous greyscale filter has been removed.
+
+Replace either photograph in **Appearance → Customize → Raghushree Media Placeholders** (`Homepage Banner 1 — Agriculture & Irrigation Pipes Image`, `Homepage Hero Image`); the Kisan/irrigation banner is a placeholder until real photography is uploaded.
 
 ---
 

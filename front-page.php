@@ -2,9 +2,9 @@
 /**
  * Homepage Template — Image-first consumer layout.
  *
- * Section order: hero → 3 × 3 packet grid (with "Explore All") → centre-focused
- * product coverflow → the remaining industrial proof sections. Content, tone and
- * styling of the existing sections are unchanged.
+ * Section order: two-banner hero (12-second rotation) → 3 × 3 packet grid (with
+ * "Explore All") → centre-focused product coverflow → polymer & pipe category
+ * cards → the remaining industrial proof sections.
  *
  * @package Raghushree
  */
@@ -31,41 +31,48 @@ get_header();
 		array( 'id' => 'home-product-showcase' )
 	);
 
-	// 4. Business Strength / Trust Bar
+	// 4. Polymer & Pipe Categories — image-led cards after the showcase slider
+	get_template_part(
+		'template-parts/components/category-grid',
+		null,
+		array( 'id' => 'home-categories' )
+	);
+
+	// 5. Business Strength / Trust Bar
 	get_template_part( 'template-parts/sections/home/trust-bar' );
 
-	// 5. About Raghushree
+	// 6. About Raghushree
 	get_template_part( 'template-parts/sections/home/about-preview' );
 
-	// 6. Five-Slide Scroll-Pinned Visual Product Story
+	// 7. Five-Slide Scroll-Pinned Visual Product Story
 	get_template_part(
 		'template-parts/components/visual-product-story',
 		null,
 		array( 'id' => 'home-visual-product-story' )
 	);
 
-	// 7. Grades and Material Forms
+	// 8. Grades and Material Forms
 	get_template_part( 'template-parts/sections/home/grades-forms' );
 
-	// 8. Manufacturing Applications
+	// 9. Manufacturing Applications
 	get_template_part( 'template-parts/sections/home/applications' );
 
-	// 9. Why Choose Raghushree
+	// 10. Why Choose Raghushree
 	get_template_part( 'template-parts/sections/home/why-choose' );
 
-	// 10. Industries and Customers Served
+	// 11. Industries and Customers Served
 	get_template_part( 'template-parts/sections/home/industries-served' );
 
-	// 11. Quality and Supply Capabilities
+	// 12. Quality and Supply Capabilities
 	get_template_part( 'template-parts/sections/home/quality-supply' );
 
-	// 12. Manufacturing / Supply Process
+	// 13. Manufacturing / Supply Process
 	get_template_part( 'template-parts/sections/home/supply-process' );
 
-	// 13. Frequently Asked Questions
+	// 14. Frequently Asked Questions
 	get_template_part( 'template-parts/sections/home/faq-section' );
 
-	// 14. Final CTA and Enquiry
+	// 15. Final CTA and Enquiry
 	get_template_part( 'template-parts/sections/home/final-cta' );
 	?>
 </main>

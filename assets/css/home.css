@@ -4,6 +4,7 @@
 
 /* Section 1: Home Hero (Full-Width Curved Wave Split Banner) */
 .home-hero {
+  position: relative;
   background-color: var(--white);
   padding-block: 0;
 }
@@ -93,7 +94,6 @@
   height: 100%;
   object-fit: cover;
   object-position: center 28%;
-  filter: grayscale(100%) contrast(1.08) brightness(0.95);
 }
 
 .home-banner__quick-badge {
@@ -181,6 +181,84 @@
   .home-banner__quick-badge {
     top: 28px;
     bottom: auto;
+    right: max(28px, var(--gutter-current));
+  }
+}
+
+/* Section 1b: Two-Banner Rotation (12-second delay, arrows only, no dots) */
+.home-hero__track {
+  position: relative;
+  display: block;
+}
+
+/* Without JavaScript only the first banner is shown. */
+.home-hero:not(.home-hero--enhanced) .home-banner:not(.is-active) {
+  display: none;
+}
+
+.home-hero--enhanced .home-hero__track {
+  display: grid;
+}
+
+.home-hero--enhanced .home-banner {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--transition-slow) var(--ease-standard);
+}
+
+.home-hero--enhanced .home-banner.is-active {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.home-hero__controls {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.home-hero:not(.home-hero--enhanced) .home-hero__controls {
+  display: none;
+}
+
+.home-hero__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  color: var(--text-on-dark);
+  background-color: rgba(15, 17, 19, 0.55);
+  border-radius: 50%;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-standard),
+              transform var(--transition-fast) var(--ease-standard);
+}
+
+.home-hero__arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.home-hero__arrow:hover {
+  background-color: var(--cta);
+  transform: translateY(-1px);
+}
+
+@media (min-width: 1024px) {
+  .home-hero__controls {
+    left: auto;
+    bottom: 28px;
     right: max(28px, var(--gutter-current));
   }
 }
