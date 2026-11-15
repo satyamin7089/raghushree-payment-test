@@ -1,6 +1,6 @@
 # Product, shipping and payment code architecture
 
-This document describes the current custom theme and plugin. See the [main README](../../README.md#26-product-master-gst-checkout-and-manual-delivery) for the owner setup, GST warning, catalog installation and test checklist. The implementation is not a substitute for real WordPress/provider end-to-end and tax validation.
+This document describes the current custom theme and plugin. For the owner-facing, field-by-field content map, see the [Content editing guide](../CONTENT-EDITING-GUIDE.md). See the [main README](../../README.md#26-product-master-gst-checkout-and-manual-delivery) for the owner setup, GST warning, catalog installation and test checklist. The implementation is not a substitute for real WordPress/provider end-to-end and tax validation.
 
 ## Connections
 

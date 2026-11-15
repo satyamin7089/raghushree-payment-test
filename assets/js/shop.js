@@ -42,12 +42,19 @@
         }
       }
 
+      // Circular distance so the slider never runs out of slides on either side:
+      // the last product always sits to the left of the first one and vice versa.
+      function circularOffset(index) {
+        var raw = (index - activeIndex + total) % total;
+        return raw > total / 2 ? raw - total : raw;
+      }
+
       function layout() {
         slides.forEach(function (slide, index) {
-          var offset = index - activeIndex;
-          var clamped = Math.max(-3, Math.min(3, offset));
-          slide.setAttribute('data-offset', String(clamped));
-          setSlideState(slide, offset === 0);
+          var offset = circularOffset(index);
+          var bounded = Math.max(-4, Math.min(4, offset));
+          slide.setAttribute('data-offset', String(bounded));
+          setSlideState(slide, 0 === offset);
         });
 
         dots.forEach(function (dot, index) {

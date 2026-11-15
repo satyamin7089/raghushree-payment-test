@@ -6,6 +6,8 @@ Custom WordPress theme built specifically for **Raghushree (`Raghushree Plast Pr
 >
 > **How the code connects:** [Code architecture README](docs/code-architecture/README.md) traces product data, shipping quotes, checkout, webhooks and order storage through the actual files and hooks.
 >
+> **Changing any text, card, image, button or price:** [Content editing guide](docs/CONTENT-EDITING-GUIDE.md) lists, section by section and card by card, exactly where every piece of content lives and how to change it.
+>
 > **Current status:** the code and mocked tests are present, but the payment flow has not been verified end-to-end on the deployed WordPress site with the merchant's actual accounts. Keep live checkout disabled until staging and controlled live checks are complete. Shiprocket is used for **quotes only**; orders and delivery are managed manually in WordPress.
 
 ---
@@ -193,6 +195,8 @@ Product enquiry buttons link to the contact enquiry form with the product presel
 Additionally:
 - Page intros/content and Featured Images on `Home`, `About`, and `Contact` can be updated directly in WP Admin → **Pages**.
 - Company name, phone, WhatsApp, email, and address are managed centrally in **Appearance → Customize → Raghushree Company & Contact**.
+
+For a field-by-field map of every heading, card, image and price on these pages, see the [Content editing guide](docs/CONTENT-EDITING-GUIDE.md).
 
 ### Consumer shop sections (Homepage & About page only)
 

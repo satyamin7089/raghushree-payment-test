@@ -96,6 +96,14 @@ function raghushree_get_placeholder_registry() {
 			'alt'      => 'Representative stacked polymer resin bags ready for industrial manufacturing supply',
 			'label'    => 'Products Listing Hero Image',
 		),
+		'contact_hero'      => array(
+			'local_file' => 'assets/images/bg-cta-3.jpg',
+			'base_url'   => 'https://images.unsplash.com/photo-1785900976288-31f0f42a7364',
+			'width'      => 1200,
+			'height'     => 800,
+			'alt'        => 'Representative industrial polymer raw material facility',
+			'label'      => 'Contact Page Hero Image',
+		),
 		'polymer_pp'        => array(
 			'base_url' => 'https://images.unsplash.com/photo-1675176785803-bffbbb0cd2f4',
 			'width'    => 1000,
