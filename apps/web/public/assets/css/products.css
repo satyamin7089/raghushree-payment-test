@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Raghushree — Products Archive / Listing Page Styles
+   ========================================================================== */
+
+/* Polymer Category Quick Navigation Pills */
+.category-pills {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: var(--space-2);
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+@media (min-width: 900px) {
+  .category-pills {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 16px;
+  font-size: var(--text-label);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background-color: var(--tint);
+  color: var(--heading);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.category-pill:hover {
+  background-color: var(--ink-soft);
+  color: var(--text-on-dark);
+}
+
+.category-pill.is-active {
+  background-color: var(--cta);
+  color: var(--text-on-dark);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Dynamic Filter & Search Toolbar */
+.products-toolbar {
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
+}
+
+.products-toolbar__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: end;
+}
+
+@media (min-width: 768px) {
+  .products-toolbar__form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .products-toolbar__form {
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)) auto;
+  }
+
+  .products-toolbar__form--compact {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  }
+}
+
+.products-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.products-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-label);
+  font-weight: 500;
+  color: var(--heading);
+}
+
+.products-empty {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  border-radius: var(--radius-md);
+  background-color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.product-card[hidden] {
+  display: none;
+}
+
+.catalog-hero { padding: clamp(55px, 8vw, 110px) 0; background: var(--ink, #102d3d); color: #fff; }
+.catalog-hero .eyebrow { color: #c7e4dd; }
+.catalog-hero h1 { color: #fff; max-width: 780px; margin: 12px 0; }
+.catalog-hero p { color: rgba(255,255,255,.78); max-width: 600px; }
+.catalog-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 30px; align-items: start; }
+.catalog-sidebar { padding: 24px; background: #fff; border: 1px solid #e2eaee; border-radius: 15px; }
+.catalog-sidebar h2 { font-size: 1.2rem; margin: 0 0 14px; }
+.catalog-sidebar h3 { color: #71828a; text-transform: uppercase; letter-spacing: .1em; font-size: .67rem; margin: 24px 0 8px; }
+.catalog-sidebar__link { display: block; padding: 10px 12px; border-radius: 8px; color: var(--heading); font-size: .88rem; text-decoration: none; }
+.catalog-sidebar__link:hover, .catalog-sidebar__link.is-active { background: var(--accent-06); color: var(--cta); font-weight: 700; }
+.catalog-search { display: flex; gap: 10px; }
+.catalog-search input { flex: 1; min-width: 0; padding: 12px 15px; border: 1px solid #d6e0e5; border-radius: 8px; }
+.catalog-count { color: #677b84; margin: 18px 0 26px; font-size: .85rem; }
+.catalog-group { margin-bottom: 42px; }
+.catalog-group__heading { margin-bottom: 20px; }
+.catalog-group__heading h2 { margin: 6px 0 0; font-size: clamp(1.35rem, 2vw, 1.8rem); }
+.catalog-pagination { display: flex; gap: 8px; }
+.catalog-pagination a { padding: 8px 14px; border-radius: 8px; background: #fff; }
+.catalog-pagination a[aria-current] { background: var(--cta); color: #fff; }
+@media (min-width: 900px) { .catalog-layout { grid-template-columns: 250px minmax(0, 1fr); gap: 36px; } .catalog-sidebar { position: sticky; top: 110px; } }
+/* Keep two equal tracks, even when the final row contains only one product. */
+.catalog-main { min-width: 0; }
+.catalog-group .product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+  align-items: stretch;
+}
+.catalog-group .product-card__badge {
+  max-width: calc(100% - 16px);
+  overflow-wrap: anywhere;
+}
+.catalog-group .product-card__desc { overflow-wrap: anywhere; }
+/* Two columns on narrow phones need compact cards and full-width touch targets. */
+@media (max-width: 767px) {
+  .catalog-group .product-card__body { padding: 14px 12px; }
+  main .catalog-group .product-card__title { font-size: 1rem; line-height: 1.3; }
+  main .catalog-group .product-card__desc { font-size: .875rem; line-height: 1.5; }
+  main .catalog-group .product-card__badge { top: 8px; left: 8px; padding: 4px 7px; font-size: .75rem; line-height: 1.3; }
+  main .catalog-group .product-card__tags .tag { font-size: .8rem; }
+  .catalog-group .product-card__actions { grid-template-columns: minmax(0, 1fr); }
+  .catalog-group .product-card__actions .btn { white-space: normal; overflow-wrap: anywhere; padding: 9px 8px; }
+}
+/* The sidebar leaves less room for each button on small desktops. */
+@media (min-width: 900px) and (max-width: 1150px) {
+  .catalog-group .product-card__actions { grid-template-columns: minmax(0, 1fr); }
+}

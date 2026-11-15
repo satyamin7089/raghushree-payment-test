@@ -1,0 +1,135 @@
+/* Presentation for the restricted Product Manager only. Native WP controls remain intact. */
+body.rgpa-workspace {
+  --rg-ink: #172b3b;
+  --rg-muted: #64747b;
+  --rg-teal: #176e68;
+  --rg-border: #e0e7e4;
+  --rg-shadow: 0 8px 28px rgba(23, 43, 59, .05);
+  color: var(--rg-ink);
+  background: #f3f6f4;
+}
+.rgpa-workspace #wpcontent { padding-left: 28px; }
+.rgpa-workspace #wpbody-content { padding-bottom: 64px; }
+.rgpa-workspace #wpbody-content > .wrap { margin: 26px 28px 0 0; }
+.rgpa-workspace #wpfooter { color: #7d8d91; }
+
+/* WordPress navigation is retained, only its appearance changes. */
+.rgpa-workspace #adminmenuback, .rgpa-workspace #adminmenuwrap, .rgpa-workspace #adminmenu { background: #172b3b; }
+.rgpa-workspace #adminmenuwrap::before {
+  content: "RAGHUSHREE  /  WORKSPACE"; display: block; padding: 26px 16px 19px;
+  color: #a6beb9; font-size: 9px; font-weight: 700; letter-spacing: .13em; line-height: 1.5;
+  border-bottom: 1px solid rgba(255,255,255,.09);
+}
+.rgpa-workspace #adminmenu { margin-top: 12px; }
+.rgpa-workspace #adminmenu .wp-submenu { background: #213a49; }
+.rgpa-workspace #adminmenu .wp-has-current-submenu .wp-submenu { background: #213a49; }
+.rgpa-workspace #adminmenu a, .rgpa-workspace #adminmenu div.wp-menu-image:before { color: #c5d5d4; }
+.rgpa-workspace #adminmenu .wp-submenu a { color: #b9ceca; padding-top: 8px; padding-bottom: 8px; }
+.rgpa-workspace #adminmenu .wp-submenu a:hover, .rgpa-workspace #adminmenu .wp-submenu a:focus,
+.rgpa-workspace #adminmenu .wp-submenu li.current a { color: #fff; }
+.rgpa-workspace #adminmenu li.wp-has-current-submenu > a.wp-has-current-submenu,
+.rgpa-workspace #adminmenu li.current a.menu-top { background: #267f76; color: #fff; }
+.rgpa-workspace #adminmenu li.wp-has-current-submenu a.wp-has-current-submenu div.wp-menu-image:before { color: #fff; }
+.rgpa-workspace #adminmenu .wp-has-current-submenu .wp-submenu li.current a { border-left: 3px solid #d4c09b; padding-left: 9px; }
+.rgpa-workspace #collapse-button { color: #a8c0be; }
+.rgpa-workspace.folded #adminmenuwrap::before { content: "R"; padding: 18px 0; text-align: center; font-size: 17px; }
+.rgpa-workspace #wpadminbar { background: #102432; }
+
+/* A consistent visual introduction above the unmodified native screens. */
+.rgpa-hero {
+  box-sizing: border-box; clear: both; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between;
+  min-height: 226px; margin: 28px 28px 0 0; padding: 34px 42px;
+  color: #fff; border: 1px solid rgba(255,255,255,.09); border-radius: 18px;
+  background: linear-gradient(112deg, #132c3b 0%, #1d504f 67%, #2f6e65 100%); box-shadow: 0 16px 36px rgba(20, 50, 51, .14);
+}
+.rgpa-hero::after { content: ""; position: absolute; width: 390px; height: 390px; right: -75px; top: -135px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; box-shadow: 0 0 0 48px rgba(255,255,255,.025), 0 0 0 96px rgba(255,255,255,.025); pointer-events: none; }
+.rgpa-hero__content { position: relative; z-index: 1; max-width: 720px; }
+.rgpa-hero__eyebrow { display: flex; align-items: center; gap: 11px; color: #d3e5df; font-size: 10px; font-weight: 700; letter-spacing: .16em; }
+.rgpa-hero__mark { display: inline-grid; place-items: center; width: 30px; height: 30px; border: 1px solid #a3c7b5; border-radius: 8px; color: #fff; font: 700 17px Georgia, serif; letter-spacing: 0; }
+.rgpa-hero__slash { color: #b9a274; padding: 0 4px; }
+.rgpa-hero h2 { margin: 24px 0 10px; color: #fff; font: 400 clamp(27px, 3vw, 39px)/1.16 Georgia, 'Times New Roman', serif; letter-spacing: -.025em; }
+.rgpa-hero p { margin: 0; max-width: 570px; color: #cbded7; font-size: 14px; line-height: 1.6; }
+.rgpa-hero__signature { z-index: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; color: rgba(231,244,233,.7); text-align: right; }
+.rgpa-hero__signature span { font: 400 72px/.9 Georgia, serif; }
+.rgpa-hero__signature small { font-size: 8px; font-weight: 700; line-height: 1.5; letter-spacing: .2em; }
+.rgpa-nav { display: flex; align-items: stretch; gap: 5px; overflow-x: auto; margin: 0 28px 0 0; padding: 0 8px; background: #fff; border: 1px solid var(--rg-border); border-top: 0; border-radius: 0 0 14px 14px; box-shadow: var(--rg-shadow); }
+.rgpa-nav__link { position: relative; flex: 0 0 auto; padding: 16px 15px; color: #617575; font-size: 12px; font-weight: 650; text-decoration: none; }
+.rgpa-nav__logout { margin-left: auto; }
+.rgpa-nav__link:hover, .rgpa-nav__link:focus, .rgpa-nav__link.is-active { color: #145f5a; }
+.rgpa-nav__link.is-active::after { content: ""; position: absolute; height: 3px; left: 15px; right: 15px; bottom: 0; background: #208176; border-radius: 4px 4px 0 0; }
+.rgpa-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 20px 28px 0 0; }
+.rgpa-metric { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 19px 21px 18px; background: #fff; border: 1px solid var(--rg-border); border-radius: 14px; box-shadow: var(--rg-shadow); color: var(--rg-ink); text-decoration: none; transition: border-color .15s, transform .15s; }
+.rgpa-metric:hover { border-color: #9ac6b9; color: var(--rg-ink); transform: translateY(-2px); }
+.rgpa-metric:focus-visible, .rgpa-nav__link:focus-visible { outline: 2px solid #126d65; outline-offset: -3px; box-shadow: none; }
+.rgpa-metric__top { display: flex; justify-content: space-between; color: #526c69; font-size: 11px; font-weight: 700; letter-spacing: .045em; text-transform: uppercase; }
+.rgpa-metric__arrow { color: #67978c; font-size: 16px; }
+.rgpa-metric strong { color: #173c3b; font-size: 29px; line-height: 1; letter-spacing: -.035em; }
+.rgpa-metric__caption { color: #788b86; font-size: 12px; }
+
+/* Tables, forms, and filters are still WordPress core controls. */
+.rgpa-workspace .wrap > h1 { color: #172e3a; font-size: 23px; font-weight: 650; letter-spacing: -.025em; }
+.rgpa-workspace .wrap .page-title-action { top: -2px; padding: 7px 14px; border: 1px solid #b4d0c7; border-radius: 8px; background: #fff; color: #176a61; font-size: 12px; font-weight: 650; }
+.rgpa-workspace .wrap .page-title-action:hover { background: #edf7f2; border-color: #76a99c; }
+.rgpa-workspace .wrap .subsubsub { margin: 15px 0; color: #b7c7c1; }
+.rgpa-workspace .wrap .subsubsub a { color: #4f7470; }
+.rgpa-workspace .wrap .subsubsub a.current { color: #183f3b; font-weight: 700; }
+.rgpa-workspace .wrap .search-box { margin: 10px 0; }
+.rgpa-workspace .wp-list-table, .rgpa-workspace .wrap table.widefat { border: 1px solid var(--rg-border); border-radius: 12px; overflow: hidden; box-shadow: var(--rg-shadow); }
+.rgpa-workspace .wp-list-table thead, .rgpa-workspace .wrap table.widefat thead { background: #edf3ef; }
+.rgpa-workspace .wp-list-table thead th, .rgpa-workspace .wrap table.widefat thead th { color: #556f69; font-size: 11px; font-weight: 700; letter-spacing: .035em; text-transform: uppercase; }
+.rgpa-workspace .wp-list-table tbody td, .rgpa-workspace .wp-list-table tbody th, .rgpa-workspace .wrap table.widefat tbody td { padding-top: 14px; padding-bottom: 14px; border-bottom: 1px solid #edf1ee; line-height: 1.6; }
+.rgpa-workspace .wp-list-table.striped > tbody > :nth-child(odd), .rgpa-workspace .wrap table.striped > tbody > :nth-child(odd) { background: #fbfcfb; }
+.rgpa-workspace .wp-list-table a, .rgpa-workspace .wrap table.widefat a { color: #176b64; }
+.rgpa-workspace .wp-list-table .row-actions .trash a, .rgpa-workspace .wp-list-table .row-actions .delete a { color: #a92e32; }
+.rgpa-workspace .wrap input:not([type]), .rgpa-workspace .wrap input[type=text], .rgpa-workspace .wrap input[type=search], .rgpa-workspace .wrap input[type=number], .rgpa-workspace .wrap select, .rgpa-workspace .wrap textarea { border-color: #cbdad4; border-radius: 7px; color: #263f43; }
+.rgpa-workspace .wrap input:focus, .rgpa-workspace .wrap select:focus, .rgpa-workspace .wrap textarea:focus { border-color: #268177; box-shadow: 0 0 0 1px #268177; }
+.rgpa-workspace.wp-core-ui .button { border-radius: 7px; border-color: #b3cbc2; color: #1b6b62; background: #fff; }
+.rgpa-workspace.wp-core-ui .button:hover { background: #edf7f2; border-color: #72a79a; color: #145c54; }
+.rgpa-workspace.wp-core-ui .button-primary { background: #176e68; border-color: #176e68; color: #fff; }
+.rgpa-workspace.wp-core-ui .button-primary:hover, .rgpa-workspace.wp-core-ui .button-primary:focus { background: #115852; border-color: #115852; color: #fff; }
+.rgpa-workspace .notice { border-radius: 4px 9px 9px 4px; }
+.rgpa-workspace #col-left .form-wrap { box-sizing: border-box; padding: 22px; border: 1px solid var(--rg-border); border-radius: 12px; background: #fff; box-shadow: var(--rg-shadow); }
+.rgpa-workspace #col-left .form-wrap h2 { margin-top: 0; color: #1e4140; font-size: 17px; }
+.rgpa-workspace #col-left .form-wrap input[type=text], .rgpa-workspace #col-left .form-wrap textarea, .rgpa-workspace #col-left .form-wrap select { max-width: 100%; }
+.rgpa-workspace-orders .wrap > p { max-width: 980px; color: #58716b; line-height: 1.6; }
+.rgpa-workspace-orders .wrap table.widefat { min-width: 1100px; }
+.rgpa-workspace-orders .wrap table.widefat th, .rgpa-workspace-orders .wrap table.widefat td { padding-left: 16px; padding-right: 16px; }
+.rgpa-workspace-orders .wrap table.widefat input, .rgpa-workspace-orders .wrap table.widefat select { width: 100%; max-width: 220px; margin: 4px 0 10px; }
+.rgpa-workspace-orders .wrap table.widefat label { display: inline-block; font-size: 11px; color: #607772; font-weight: 700; }
+.rgpa-workspace-orders.wp-core-ui .wrap table.widefat form .button { background: #176e68; border-color: #176e68; color: #fff; }
+
+/* Keep the block editor's canvas and toolbar layout under WordPress control. */
+.rgpa-workspace-editor.block-editor-page { --wp-admin-theme-color: #176e68; --wp-admin-theme-color-darker-10: #125b56; --wp-admin-theme-color-darker-20: #0e4844; }
+.rgpa-workspace-editor .edit-post-meta-boxes-area .postbox { border-color: #dce7e2; }
+.rgpa-workspace-editor:not(.block-editor-page) .postbox { border: 1px solid var(--rg-border); border-radius: 10px; box-shadow: var(--rg-shadow); }
+.rgpa-workspace-editor .rg-section-fieldset, .rgpa-workspace-editor .rg-gallery-item { border-color: #dbe6e1; border-radius: 8px; background: #f9fbf9; }
+.rgpa-workspace-editor .rg-gallery-preview { gap: 12px; }
+
+@media (max-width: 960px) {
+  .rgpa-workspace.auto-fold #adminmenuwrap::before { content: "R"; padding: 18px 0; text-align: center; font-size: 17px; }
+  .rgpa-hero { padding: 30px; }
+  .rgpa-hero__signature { display: none; }
+}
+@media (max-width: 782px) {
+  .rgpa-workspace #wpcontent { padding-left: 12px; }
+  .rgpa-workspace #wpbody-content > .wrap, .rgpa-hero, .rgpa-nav, .rgpa-metrics { margin-right: 12px; }
+  .rgpa-hero { min-height: 190px; margin-top: 15px; padding: 25px; border-radius: 14px; }
+  .rgpa-hero h2 { margin-top: 20px; }
+  .rgpa-nav__link { padding: 14px 12px; }
+  .rgpa-metrics { gap: 8px; }
+  .rgpa-metric { padding: 14px 12px; gap: 7px; }
+  .rgpa-metric strong { font-size: 24px; }
+  .rgpa-metric__top { font-size: 10px; }
+  .rgpa-metric__caption { font-size: 11px; line-height: 1.4; }
+  .rgpa-workspace #adminmenuwrap::before { content: "RAGHUSHREE  /  WORKSPACE" !important; padding: 18px 16px !important; text-align: left !important; font-size: 10px !important; }
+  .rgpa-workspace #col-left .form-wrap { padding: 18px; }
+}
+@media (max-width: 400px) {
+  .rgpa-metrics { grid-template-columns: 1fr; }
+  .rgpa-metric { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .rgpa-metric__top { grid-column: 1; }
+  .rgpa-metric strong { grid-column: 2; grid-row: 1 / 3; }
+  .rgpa-metric__caption { grid-column: 1; }
+  .rgpa-metric__arrow { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .rgpa-metric { transition: none; } .rgpa-metric:hover { transform: none; } }
