@@ -6,6 +6,8 @@ Custom WordPress theme built specifically for **Raghushree (`Raghushree Plast Pr
 >
 > **How the code connects:** [Code architecture README](docs/code-architecture/README.md) traces product data, shipping quotes, checkout, webhooks and order storage through the actual files and hooks.
 >
+> **Sources of truth:** [docs/sources-of-truth.md](docs/sources-of-truth.md) records the authoritative provider documentation ([Shiprocket API](https://apidocs.shiprocket.in/), [Razorpay docs](https://razorpay.com/docs/home), [WordPress.com developer docs](https://developer.wordpress.com/docs/)), the verified provider facts, and which file owns each piece of logic. Read it before changing payment, shipping or deployment code.
+>
 > **Current status:** the code and mocked tests are present, but the payment flow has not been verified end-to-end on the deployed WordPress site with the merchant's actual accounts. Keep live checkout disabled until staging and controlled live checks are complete. Shiprocket is used for **quotes only**; orders and delivery are managed manually in WordPress.
 
 ---
@@ -413,7 +415,7 @@ The product page shows a breakdown alongside delivery details. The amount and ta
 - Theme/plugin mixed versions disable new checkout to avoid an outdated amount. Install [`plugin-download/raghushree-payments.zip`](plugin-download/raghushree-payments.zip) as a replacement, not an additional copy. Legacy order snapshots and old manual-delivery data remain available; check Shiprocket for older shipments before booking a new one.
 - A known reconciliation risk remains: an unknown Razorpay order webhook is acknowledged with HTTP 200, including if it arrives before its order ID has been stored. A delivered webhook alone is not proof of a paid WordPress order. Manually reconcile uncertain payments with Razorpay; do not ask a customer to pay twice or ship until resolved.
 
-For implementation details, see the [code architecture README](docs/code-architecture/README.md). The repository includes mocked smoke tests; they are not a real WordPress or provider end-to-end test. Consult the [Razorpay documentation](https://razorpay.com/docs/home/) and [Shiprocket API documentation](https://apidocs.shiprocket.in/) as provider sources of truth.
+For implementation details, see the [code architecture README](docs/code-architecture/README.md). The repository includes mocked smoke tests; they are not a real WordPress or provider end-to-end test. Consult the [Razorpay documentation](https://razorpay.com/docs/home/) and [Shiprocket API documentation](https://apidocs.shiprocket.in/) as provider sources of truth. The designated authorities, verified provider facts and the file-by-file ownership map are recorded in [docs/sources-of-truth.md](docs/sources-of-truth.md); update that file when a provider contract changes.
 
 ### Restricted Product Manager access
 

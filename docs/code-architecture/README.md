@@ -2,6 +2,8 @@
 
 This document describes the current custom theme and plugin. See the [main README](../../README.md#26-product-master-gst-checkout-and-manual-delivery) for the owner setup, GST warning, catalog installation and test checklist. The implementation is not a substitute for real WordPress/provider end-to-end and tax validation.
 
+**External authorities:** request/response shapes, signatures and error codes are defined by the provider docs designated in [`docs/sources-of-truth.md`](../sources-of-truth.md) — [Shiprocket API](https://apidocs.shiprocket.in/), [Razorpay docs](https://razorpay.com/docs/home) and [WordPress.com developer docs](https://developer.wordpress.com/docs/). That file also carries the verified provider facts and the file-by-file ownership map below. Code wins only for describing what this site does, never for describing what a provider does.
+
 ## Connections
 
 ```text
