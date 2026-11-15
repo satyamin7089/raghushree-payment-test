@@ -1,0 +1,13 @@
+.rg-gallery-preview { display: flex; flex-wrap: wrap; gap: 12px; }
+.rg-gallery-item { width: 150px; padding: 8px; border: 1px solid #dcdcde; background: #fff; }
+.rg-gallery-item img { display: block; width: 100%; height: 110px; object-fit: cover; }
+.rg-gallery-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.rg-gallery-actions .button { font-size: 12px; padding: 0 6px; }
+.rg-gallery-editor [hidden] { display: none; }
+.rg-section-editor { margin: 24px 0; }
+.rg-section-fieldset { border: 1px solid #dcdcde; padding: 14px; margin: 0 0 16px; background: #fff; }
+.rg-section-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+.rg-section-row label { display: block; flex: 1 1 180px; }
+.rg-section-row input { display: block; margin-top: 5px; }
+.rg-section-intro { display: block; margin: 0 0 16px; }
+.rg-section-intro textarea { display: block; margin-top: 5px; }

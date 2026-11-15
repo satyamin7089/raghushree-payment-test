@@ -1,0 +1,211 @@
+/* ==========================================================================
+   Raghushree — Global Footer (Dark Industrial Surface, Zero Visible Borders)
+   ========================================================================== */
+
+.site-footer {
+  background-color: var(--ink);
+  color: var(--text-on-dark-muted);
+}
+
+.site-footer__main {
+  padding-block: clamp(3.5rem, 2.75rem + 3vw, 5.5rem);
+}
+
+.site-footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7);
+}
+
+@media (min-width: 768px) {
+  .site-footer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7) var(--space-6);
+  }
+}
+
+@media (min-width: 1200px) {
+  .site-footer__grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr) minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: var(--space-7);
+  }
+}
+
+/* Footer Brand Column */
+.site-footer__brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-bottom: var(--space-4);
+  color: var(--text-on-dark);
+}
+
+.site-footer__logo {
+  display: block;
+  width: auto;
+  height: 50px;
+  max-width: 210px;
+  object-fit: contain;
+}
+
+.site-footer__intro {
+  color: var(--text-on-dark-muted);
+  margin-bottom: var(--space-5);
+  max-width: 380px;
+}
+
+.site-footer__Badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background-color: var(--ink-soft);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-on-dark);
+}
+
+/* Footer Navigation Columns */
+.site-footer__heading {
+  font-family: var(--font-heading);
+  font-size: var(--text-h6);
+  font-weight: 600;
+  color: var(--text-on-dark);
+  margin-bottom: var(--space-4);
+}
+
+.site-footer__links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.site-footer__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding-block: 4px;
+  font-size: var(--text-label);
+  color: var(--text-on-dark-muted);
+}
+
+.site-footer__links a:hover {
+  color: var(--text-on-dark);
+  transform: translateX(2px);
+}
+
+/* Footer Contact Card */
+.site-footer__contact-card {
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background-color: var(--ink-soft);
+  box-shadow: var(--shadow-dark);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.site-footer__company-legal {
+  font-family: var(--font-heading);
+  font-size: 0.96875rem;
+  font-weight: 600;
+  color: var(--text-on-dark);
+}
+
+.site-footer__address {
+  font-style: normal;
+  font-size: var(--text-label);
+  line-height: 1.55;
+  color: var(--text-on-dark-muted);
+}
+
+.site-footer__contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.site-footer__contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  font-size: var(--text-label);
+  font-weight: 500;
+  color: var(--text-on-dark);
+}
+
+.site-footer__contact-link:hover {
+  color: var(--accent-light);
+}
+
+.site-footer__contact-link svg {
+  width: 17px;
+  height: 17px;
+  color: var(--accent-light);
+  flex-shrink: 0;
+}
+
+.site-footer__socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.site-footer__social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 12px;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  border-radius: var(--radius-xs);
+  background-color: var(--ink);
+  color: var(--text-on-dark);
+}
+
+.site-footer__social-link:hover {
+  background-color: var(--cta);
+}
+
+/* Bottom Bar (Tonal Separation via --ink-soft, Zero Horizontal Lines) */
+.site-footer__bottom {
+  background-color: var(--ink-soft);
+  padding-block: var(--space-4);
+}
+
+.site-footer__bottom-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-caption);
+  color: var(--text-on-dark-muted);
+}
+
+@media (min-width: 768px) {
+  .site-footer__bottom-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.site-footer__legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.site-footer__legal-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--text-on-dark-muted);
+}
+
+.site-footer__legal-links a:hover {
+  color: var(--text-on-dark);
+}
