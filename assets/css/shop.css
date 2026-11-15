@@ -341,6 +341,35 @@
   transform: translateX(calc(-50% + 112%)) scale(0.74);
 }
 
+/* Third and fourth neighbours keep their off-stage positions so that a slide
+   gliding in from the loop point never flies across the centre. They stay
+   invisible, which is what makes the slider feel endless in both directions. */
+.shopflow__slide[data-offset="-3"],
+.shopflow__slide[data-offset="3"],
+.shopflow__slide[data-offset="-4"],
+.shopflow__slide[data-offset="4"] {
+  z-index: 0;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shopflow__slide[data-offset="-3"] {
+  transform: translateX(calc(-50% - 160%)) scale(0.68);
+}
+
+.shopflow__slide[data-offset="3"] {
+  transform: translateX(calc(-50% + 160%)) scale(0.68);
+}
+
+.shopflow__slide[data-offset="-4"] {
+  transform: translateX(calc(-50% - 205%)) scale(0.62);
+}
+
+.shopflow__slide[data-offset="4"] {
+  transform: translateX(calc(-50% + 205%)) scale(0.62);
+}
+
 /* Narrow screens cannot fit two neighbours on each side without clipping, so
    only the first neighbour stays visible there. */
 @media (max-width: 767px) {
