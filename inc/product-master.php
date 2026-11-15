@@ -46,6 +46,53 @@ function raghushree_master_variations( $post_id ) {
 	unset( $row );
 	return $rows;
 }
+/**
+ * Lowest enabled packet price for consumer-facing tiles and the showcase slider.
+ *
+ * Read-only helper: it never writes, edits or invents commercial values. When no
+ * packet has an enabled price the caller receives has_price = false so templates
+ * can say "price on request" instead of displaying a made-up amount.
+ *
+ * @param int $post_id Product post ID.
+ * @return array{has_price: bool, label: string, price_paise: int, display: string}
+ */
+function raghushree_product_price_summary( $post_id ) {
+	$empty = array( 'has_price' => false, 'label' => '', 'price_paise' => 0, 'display' => '' );
+	$post_id = absint( $post_id );
+	if ( ! $post_id ) {
+		return $empty;
+	}
+
+	$rows = raghushree_master_variations( $post_id );
+	$best = null;
+	foreach ( (array) $rows as $key => $row ) {
+		if ( 'sample' === $key || empty( $row['enabled'] ) || empty( $row['price_paise'] ) ) {
+			continue;
+		}
+		$price_paise = (int) $row['price_paise'];
+		if ( $price_paise <= 0 ) {
+			continue;
+		}
+		if ( null === $best || $price_paise < $best['price_paise'] ) {
+			$best = array(
+				'label'       => isset( $row['label'] ) ? (string) $row['label'] : '',
+				'price_paise' => $price_paise,
+			);
+		}
+	}
+
+	if ( null === $best ) {
+		return $empty;
+	}
+
+	return array(
+		'has_price'   => true,
+		'label'       => $best['label'],
+		'price_paise' => $best['price_paise'],
+		'display'     => '₹' . number_format_i18n( $best['price_paise'] / 100, 0 === $best['price_paise'] % 100 ? 0 : 2 ),
+	);
+}
+
 function raghushree_master_box_register() { add_meta_box( 'raghushree_master', __( 'Product Master — Pricing, GST & Shipping', 'raghushree' ), 'raghushree_master_box_render', 'products', 'normal', 'high' ); }
 add_action( 'add_meta_boxes', 'raghushree_master_box_register' );
 function raghushree_master_page_box_register( $post ) { if ( 'page-templates/template-product-detail.php' === get_page_template_slug( $post ) ) { add_meta_box( 'raghushree_master', __( 'Product Master — Pricing, GST & Shipping', 'raghushree' ), 'raghushree_master_box_render', 'page', 'normal', 'high' ); } }
