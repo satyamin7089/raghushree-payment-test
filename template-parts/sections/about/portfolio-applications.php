@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$catalog_items = raghushree_get_catalog_items( 7 );
+$catalog_items = raghushree_get_catalog_items( 9 );
 
 $about_image_cards = array(
 	array(
@@ -51,29 +51,45 @@ $about_image_cards = array(
 			'template-parts/components/section-heading',
 			null,
 			array(
-				'eyebrow'     => __( 'Material Portfolio', 'raghushree' ),
-				'title'       => __( 'Seven Core Polymer Categories Supporting Industrial Buyers', 'raghushree' ),
-				'description' => __( 'Our portfolio spans commodity polyolefins, engineering vinyls and polyesters, and recycled & reprocessed polymer grades across granules, powder, and applicable forms.', 'raghushree' ),
+				'eyebrow'     => __( 'Shop Polymer Packets', 'raghushree' ),
+				'title'       => __( 'Polymer Packets Available to Order', 'raghushree' ),
+				'description' => __( 'Open any material to see its packet sizes, price before GST, delivery check and online payment. Larger loads can be quoted on request.', 'raghushree' ),
 				'align'       => 'split',
 			)
 		);
 		?>
 
 		<?php if ( ! empty( $catalog_items ) ) : ?>
-			<div class="grid-3">
+			<div class="shop-grid">
 				<?php foreach ( $catalog_items as $item ) : ?>
 					<?php
 					get_template_part(
-						'template-parts/components/product-card',
+						'template-parts/components/product-tile',
 						null,
 						array( 'product' => $item )
 					);
 					?>
 				<?php endforeach; ?>
 			</div>
+
+			<div class="shop-grid__footer">
+				<a class="btn btn--dark" href="<?php echo esc_url( raghushree_get_products_url() ); ?>">
+					<span><?php esc_html_e( 'Explore All', 'raghushree' ); ?></span>
+					<?php echo raghushree_icon( 'arrow-right', 'icon-arrow' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</a>
+			</div>
 		<?php endif; ?>
 	</div>
 </section>
+
+<!-- Centre-Focused Product Coverflow (image-first, opens the product page) -->
+<?php
+get_template_part(
+	'template-parts/components/product-coverflow',
+	null,
+	array( 'id' => 'about-product-showcase' )
+);
+?>
 
 <!-- Five-Slide Scroll-Pinned Visual Product Story (Integrated on About Page) -->
 <?php

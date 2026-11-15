@@ -136,6 +136,27 @@ function raghushree_enqueue_assets() {
 		);
 	}
 
+	// Consumer shop sections: 3 × 3 packet grid + centre-focused product coverflow
+	// (Homepage and About page only — archive and product pages are untouched).
+	if ( is_front_page() || $is_about ) {
+		wp_enqueue_style(
+			'raghushree-shop',
+			$uri . '/assets/css/shop.css',
+			array( 'raghushree-components', 'raghushree-interactive-sections' ),
+			raghushree_asset_version( 'assets/css/shop.css' )
+		);
+		wp_enqueue_script(
+			'raghushree-shop',
+			$uri . '/assets/js/shop.js',
+			array(),
+			raghushree_asset_version( 'assets/js/shop.js' ),
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
+	}
+
 	// Interactive Sections Engine (5-Slide Story, 180° Flip Cards, Single-Product Fade Slider)
 	if ( is_front_page() || $is_about || $is_single_product ) {
 		$deps = ( is_front_page() || $is_about ) ? array( 'raghushree-gsap', 'raghushree-scrolltrigger' ) : array();

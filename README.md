@@ -48,7 +48,7 @@ The `raghushree` theme is a zero-bloat, standalone custom WordPress theme engine
 Key architectural highlights:
 - **Zero third-party plugin lock-in:** Native WordPress Custom Post Types (`products`, `raghushree_enquiry`), custom taxonomies, structured WP Admin meta boxes, native Customizer company settings, native server-side RFQ handling, and built-in SEO/Schema support.
 - **Complete core page suite:**
-  - **Homepage (`front-page.php`):** Exact 12-section industrial B2B layout.
+  - **Homepage (`front-page.php`):** Image-first consumer layout: hero → 3 × 3 packet grid with **Explore All** → centre-focused product coverflow (third section) → the existing industrial proof sections.
   - **About Page (`page-templates/template-about.php`):** 12-section company, capability, technical support, global supply, and enquiry-workflow layout.
   - **Contact & RFQ Page (`page-templates/template-contact.php`):** 9-section enquiry hub with a nonce-verified, honeypot-protected 11-field industrial quotation/sample form.
   - **Products Catalog (`archive-products.php` & `page-templates/template-products.php`):** Dynamic filterable polymer archive with category pills, live search, and verified taxonomy filters.
@@ -183,8 +183,8 @@ Product enquiry buttons link to the contact enquiry form with the product presel
 
 | Page / View | Template File | Section Partials |
 |---|---|---|
-| **Homepage** | `front-page.php` | `template-parts/sections/home/*.php` (12 modular files, 1 per section) |
-| **About Page** | `page-templates/template-about.php` | `template-parts/sections/about/*.php` (4 grouped files covering 12 sections) |
+| **Homepage** | `front-page.php` | `template-parts/sections/home/*.php` (12 modular files, 1 per section) + the shared packet grid and product coverflow components |
+| **About Page** | `page-templates/template-about.php` | `template-parts/sections/about/*.php` (4 grouped files covering 12 sections) + the shared packet grid and product coverflow components |
 | **Contact Page** | `page-templates/template-contact.php` | `template-parts/sections/contact/hero-info-form.php` & `options-channels-faq.php` (9 sections) |
 | **Products Listing** | `archive-products.php` & `page-templates/template-products.php` | `template-parts/sections/product/listing-content.php` |
 | **Product Detail** | `single-products.php` & `page-templates/template-product-detail.php` | `template-parts/sections/product/detail-content.php` (owner-entered sections) |
@@ -193,6 +193,17 @@ Product enquiry buttons link to the contact enquiry form with the product presel
 Additionally:
 - Page intros/content and Featured Images on `Home`, `About`, and `Contact` can be updated directly in WP Admin → **Pages**.
 - Company name, phone, WhatsApp, email, and address are managed centrally in **Appearance → Customize → Raghushree Company & Contact**.
+
+### Consumer shop sections (Homepage & About page only)
+
+The homepage and the About page open with two image-first shopping sections. Both are driven by the same published `products` records, so nothing has to be duplicated in the editor.
+
+1. **Packet grid (`template-parts/sections/home/product-categories.php` on Home, `template-parts/sections/about/portfolio-applications.php` on About):** up to **9 products in a 3 × 3 grid** (2 columns on tablet, 1 on mobile). Each tile shows the featured image, product name, the lowest enabled packet price and a **Buy now** button that opens the product page purchase area. The **Explore All** button sits after the grid and links to the Products catalog. Tiles are rendered by `template-parts/components/product-tile.php`; the archive keeps using the existing `product-card` component.
+2. **Product coverflow (`template-parts/components/product-coverflow.php`):** the third homepage section is a centre-focused image slider. The active product is sharp and centred with a **+** button that opens its product page; the neighbouring slides are scaled down, blurred and dimmed. Previous/next arrows, dots, keyboard arrows, swipe and click-a-neighbour-to-centre all work, and the first slide stays visible without JavaScript.
+
+**Prices on the tiles never invent a value.** They come from the enabled packet prices in the Product Master meta box (`inc/product-master.php` → `raghushree_product_price_summary()`). While no packet price is enabled the tile reads “Price on request”, so keep the Product Master up to date before launch.
+
+Both sections share `assets/css/shop.css` and `assets/js/shop.js`, which are only loaded on the homepage and the About page; the Products archive and product detail pages are unchanged. A static design preview (sample photos and sample prices) is available at [`docs/previews/shop-preview.html`](docs/previews/shop-preview.html).
 
 ---
 
