@@ -33,6 +33,13 @@ function raghushree_get_placeholder_registry() {
 			'alt'        => 'Industrial thermoplastic polymer processing and raw material production facility',
 			'label'      => 'Homepage Hero Image',
 		),
+		'home_hero_pipes'   => array(
+			'base_url' => 'https://images.unsplash.com/photo-1779718811629-92d973f0badb',
+			'width'    => 1500,
+			'height'   => 760,
+			'alt'      => 'Representative PVC irrigation and suction pipes prepared for farm water supply',
+			'label'    => 'Homepage Banner 1 — Agriculture & Irrigation Pipes Image',
+		),
 		'home_about'        => array(
 			'base_url' => 'https://images.unsplash.com/photo-1730705788367-dbd288c40ee7',
 			'width'    => 1200,

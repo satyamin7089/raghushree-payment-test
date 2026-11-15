@@ -131,6 +131,44 @@ function raghushree_contact_material_options( $options, $selected ) {
 }
 
 /**
+ * Pick the temporary placeholder image slot for a polymer category card.
+ *
+ * Real category photography can replace these placeholders through
+ * Appearance → Customize → Raghushree Media Placeholders.
+ *
+ * @param string $slug Category slug.
+ * @param string $type Optional catalog type ('polymer' or 'pipe').
+ * @return string Placeholder registry key.
+ */
+function raghushree_category_image_slot( $slug, $type = 'polymer' ) {
+	$map = array(
+		'pp-granules'    => 'polymer_pp',
+		'ldpe-granules'  => 'polymer_ldpe',
+		'lldpe-granules' => 'polymer_lldpe',
+		'hdpe-granules'  => 'polymer_hdpe',
+		'pet-granules'   => 'polymer_pet',
+		'pet-resin'      => 'polymer_pet',
+		'recycled'       => 'polymer_recycled',
+		'pvc-granules'   => 'polymer_pvc',
+		'pvc-resin'      => 'polymer_pvc',
+	);
+
+	if ( isset( $map[ $slug ] ) ) {
+		return $map[ $slug ];
+	}
+
+	if ( 'pipe' === $type ) {
+		// Spread the pipe/hose categories across the pipe and extrusion imagery so
+		// neighbouring cards do not repeat the same placeholder photograph.
+		$pipe_pool = array( 'polymer_pvc', 'app_extrusion', 'app_blow', 'app_film' );
+		$index     = abs( (int) crc32( $slug ) ) % count( $pipe_pool );
+		return $pipe_pool[ $index ];
+	}
+
+	return 'polymer_hdpe';
+}
+
+/**
  * Return crisp inline SVG icons (zero CSS border triangles).
  *
  * @param string $name  Icon identifier.

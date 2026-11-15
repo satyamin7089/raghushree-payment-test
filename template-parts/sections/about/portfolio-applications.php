@@ -91,6 +91,18 @@ get_template_part(
 );
 ?>
 
+<!-- Polymer & Pipe Category Cards (image-led, after the showcase slider) -->
+<?php
+get_template_part(
+	'template-parts/components/category-grid',
+	null,
+	array(
+		'id'      => 'about-categories',
+		'surface' => 'surface--pearl',
+	)
+);
+?>
+
 <!-- Five-Slide Scroll-Pinned Visual Product Story (Integrated on About Page) -->
 <?php
 get_template_part(
