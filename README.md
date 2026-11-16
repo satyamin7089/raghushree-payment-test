@@ -221,18 +221,34 @@ These sections share `assets/css/shop.css` and `assets/js/shop.js`, which are on
 
 They rotate every **12 seconds** with **left/right arrow buttons only — no dots**, pause on hover and keyboard focus, support the arrow keys, and do not auto-rotate when the visitor prefers reduced motion. Without JavaScript the first banner stays visible. Banner photographs are **full colour** — the previous greyscale filter has been removed.
 
-Replace either photograph in **Appearance → Customize → Raghushree Media Placeholders** (`Homepage Banner 1 — Agriculture & Irrigation Pipes Image`, `Homepage Hero Image`); the Kisan/irrigation banner is a placeholder until real photography is uploaded.
+Replace either photograph in **Appearance → Customize → Home Page Images** (`Home · Banner 1 Image — Agriculture & Irrigation Pipes`, `Home · Banner 2 Image — Polymer Raw Materials`); the Kisan/irrigation banner is a placeholder until real photography is uploaded.
 
 ---
 
 ## 12. How to Replace Temporary Unsplash Images
 
-**Zero AI-generated images** are used anywhere in this theme. All temporary visual placeholders are genuine industrial photographs from Unsplash managed in **one single file**: `inc/image-placeholders.php`.
+**Zero AI-generated images** are used anywhere in this theme. All temporary visual placeholders are genuine industrial photographs from Unsplash, registered in one file: `inc/image-placeholders.php`.
 
-You can replace placeholders with authentic Raghushree photography in **3 ways** (in priority order):
-1. **Per Page / Product in WP Admin (No code needed):** Upload a real photo to the WordPress Media Library and set it as the **Featured Image** on any Product (`products`) or Page (`Home`, `About`, `Contact`). `raghushree_render_image()` automatically prioritizes `wp_get_attachment_image()` (`srcset` + `sizes` + Media Library `alt` text) over the placeholder registry.
-2. **Centralized Media Attachment ID:** In `inc/image-placeholders.php`, set `'attachment_id' => 123` (your uploaded Media Library ID) on any registry key (`home_hero`, `home_about`, `polymer_pp`, `about_hero`, etc.).
-3. **Direct Theme Asset Replacement:** Drop optimized `.webp`/`.jpg` files into `assets/images/` and update the `'url'` and `'alt'` entries in `inc/image-placeholders.php`.
+**Every page owns its own image set.** The home page, the About page, the Contact page, the catalogue and the product cards never share a slot, so replacing a homepage photo can never change the About page (or a product card).
+
+The Customizer reflects that separation with six sections under **Appearance → Customize**:
+
+| Section | Covers |
+|---|---|
+| Home Page Images | `home_*` — 2 banners, about split, quality split, 5 story slides, 4 application cards, 12 category cards |
+| About Page Images | `about_*` — hero, 4 overview stack images, quality, supply, 5 story slides, 4 application cards, 4 showcase cards, 12 category cards |
+| Contact Page Images | `contact_hero` |
+| Catalogue & Standard Pages Images | `products_hero`, `page_hero` |
+| Header Images | `mega_menu_feature` |
+| Product Card Fallback Images | `polymer_*` — used only when a product has no Featured Image |
+
+Replace a placeholder in **3 ways** (in priority order):
+
+1. **Per Page / Product in WP Admin (no code):** set a **Featured Image** on any Product (`products`) or Page (`Home`, `About`, `Contact`). `raghushree_render_image()` prioritises `wp_get_attachment_image()` (`srcset` + `sizes` + Media Library `alt`) over the placeholder registry.
+2. **Per slot in the Customizer:** Appearance → Customize → the page's image section → pick the labelled slot → upload from the Media Library. Each control writes `raghushree_media_{slot}` for that slot only.
+3. **Code default:** change `base_url` (Unsplash) or `local_file` (asset in `assets/images/`) for a slot inside `inc/image-placeholders.php`.
+
+Category cards resolve through `raghushree_category_image_slot()` in `inc/helpers.php`, which maps every catalog category to that page's own card slot (`home_cat_pvc`, `about_cat_pvc`, …) and keyword-matches categories created later. Legacy `app_*` slots remain resolvable for older product records but are hidden from the Customizer.
 
 > **Editorial Integrity Rule:** Until replaced with genuine Raghushree photography, stock placeholders are never captioned as actual Raghushree plants, warehouses, labs, or staff.
 

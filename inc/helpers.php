@@ -131,41 +131,79 @@ function raghushree_contact_material_options( $options, $selected ) {
 }
 
 /**
- * Pick the temporary placeholder image slot for a polymer category card.
+ * Pick the page-scoped placeholder image slot for a category card.
  *
- * Real category photography can replace these placeholders through
- * Appearance → Customize → Raghushree Media Placeholders.
+ * Every page owns its own set of category images: the home page uses
+ * `home_cat_*` slots and the About page uses `about_cat_*` slots, so replacing
+ * one card photo on the home page never changes the About page.
  *
  * @param string $slug Category slug.
  * @param string $type Optional catalog type ('polymer' or 'pipe').
- * @return string Placeholder registry key.
+ * @param string $page Page scope: 'home' (default) or 'about'.
+ * @return string Placeholder registry key that always exists in the registry.
  */
-function raghushree_category_image_slot( $slug, $type = 'polymer' ) {
+function raghushree_category_image_slot( $slug, $type = 'polymer', $page = 'home' ) {
+	$page     = ( 'about' === $page ) ? 'about' : 'home';
+	$registry = raghushree_get_placeholder_registry();
+
+	// 1. Exact catalog category → dedicated page-scoped slot.
 	$map = array(
-		'pp-granules'    => 'polymer_pp',
-		'ldpe-granules'  => 'polymer_ldpe',
-		'lldpe-granules' => 'polymer_lldpe',
-		'hdpe-granules'  => 'polymer_hdpe',
-		'pet-granules'   => 'polymer_pet',
-		'pet-resin'      => 'polymer_pet',
-		'recycled'       => 'polymer_recycled',
-		'pvc-granules'   => 'polymer_pvc',
-		'pvc-resin'      => 'polymer_pvc',
+		'pp-granules'        => 'pp',
+		'ldpe-granules'      => 'ldpe',
+		'lldpe-granules'     => 'lldpe',
+		'hdpe-granules'      => 'hdpe',
+		'pvc-granules'       => 'pvc',
+		'pvc-resin'          => 'pvc_resin',
+		'pet-granules'       => 'pet',
+		'pet-resin'          => 'pet',
+		'recycled'           => 'recycled',
+		'industrial-hoses'   => 'hoses',
+		'pvc-suction-pipes'  => 'suction_pipes',
+		'pvc-tubing'         => 'tubing',
+		'lay-flat-pipes'     => 'lay_flat',
 	);
 
-	if ( isset( $map[ $slug ] ) ) {
-		return $map[ $slug ];
+	$family = isset( $map[ $slug ] ) ? $map[ $slug ] : '';
+	$key    = $page . '_cat_' . $family;
+
+	if ( '' !== $family && isset( $registry[ $key ] ) ) {
+		return $key;
 	}
 
-	if ( 'pipe' === $type ) {
-		// Spread the pipe/hose categories across the pipe and extrusion imagery so
-		// neighbouring cards do not repeat the same placeholder photograph.
-		$pipe_pool = array( 'polymer_pvc', 'app_extrusion', 'app_blow', 'app_film' );
-		$index     = abs( (int) crc32( $slug ) ) % count( $pipe_pool );
-		return $pipe_pool[ $index ];
+	// 2. Category created later by the client: match the slug against a family.
+	$slug_lower = strtolower( (string) $slug );
+	// Pipe words are checked first: "pvc-suction-pipes" should reach the suction
+	// card, not the generic PVC card.
+	$keywords   = array(
+		'lay-flat' => 'lay_flat',
+		'layflat'  => 'lay_flat',
+		'suction'  => 'suction_pipes',
+		'tubing'   => 'tubing',
+		'hose'     => 'hoses',
+		'lldpe'    => 'lldpe',
+		'ldpe'     => 'ldpe',
+		'hdpe'     => 'hdpe',
+		'pet'      => 'pet',
+		'recycl'   => 'recycled',
+		'pvc'      => 'pvc',
+		'pp'       => 'pp',
+	);
+
+	foreach ( $keywords as $needle => $candidate ) {
+		$candidate_key = $page . '_cat_' . $candidate;
+		if ( false !== strpos( $slug_lower, $needle ) && isset( $registry[ $candidate_key ] ) ) {
+			return $candidate_key;
+		}
 	}
 
-	return 'polymer_hdpe';
+	// 3. Unknown pipe category → its own page's tubing card.
+	$pipe_key = $page . '_cat_tubing';
+	if ( 'pipe' === $type && isset( $registry[ $pipe_key ] ) ) {
+		return $pipe_key;
+	}
+
+	// 4. Last resort: the page's PP card, else a product fallback slot.
+	return isset( $registry[ $page . '_cat_pp' ] ) ? $page . '_cat_pp' : 'polymer_hdpe';
 }
 
 /**

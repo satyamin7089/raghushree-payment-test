@@ -19,11 +19,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $section_id = ! empty( $args['id'] ) ? sanitize_html_class( $args['id'] ) : 'manufacturing-applications';
 $surface    = ! empty( $args['surface'] ) ? sanitize_html_class( $args['surface'] ) : 'surface--white';
+$page_scope = ( ! empty( $args['page'] ) && 'about' === $args['page'] ) ? 'about' : 'home';
 
 $cards = array(
 	array(
 		'num'      => '01',
-		'slot'     => 'app_injection',
+		'slot'     => $page_scope . '_app_injection',
 		'title'    => __( 'Injection Moulding', 'raghushree' ),
 		'front'    => __( 'Rigid industrial components, caps and closures, crates, automotive parts, electrical housings, and utility articles.', 'raghushree' ),
 		'polymers' => array( 'PP', 'HDPE', 'LDPE', 'PET', 'Recycled' ),
@@ -41,7 +42,7 @@ $cards = array(
 	),
 	array(
 		'num'      => '02',
-		'slot'     => 'app_blow',
+		'slot'     => $page_scope . '_app_blow',
 		'title'    => __( 'Blow Moulding', 'raghushree' ),
 		'front'    => __( 'Hollow bottles, jerrycans, chemical containers, liquid packaging, and industrial drums requiring parison stability.', 'raghushree' ),
 		'polymers' => array( 'HDPE', 'PET', 'PP', 'LDPE' ),
@@ -59,7 +60,7 @@ $cards = array(
 	),
 	array(
 		'num'      => '03',
-		'slot'     => 'app_extrusion',
+		'slot'     => $page_scope . '_app_extrusion',
 		'title'    => __( 'Extrusion & Pipes', 'raghushree' ),
 		'front'    => __( 'Water and agricultural piping, electrical conduits, rigid profiles, sheets, raffia tapes, strapping, and cable sheathing.', 'raghushree' ),
 		'polymers' => array( 'PVC', 'HDPE', 'PP', 'Recycled' ),
@@ -77,7 +78,7 @@ $cards = array(
 	),
 	array(
 		'num'      => '04',
-		'slot'     => 'app_film',
+		'slot'     => $page_scope . '_app_film',
 		'title'    => __( 'Film & Packaging', 'raghushree' ),
 		'front'    => __( 'Blown and cast packaging films, stretch wraps, heavy-duty liners, woven sacks, and thermoformed rigid packaging.', 'raghushree' ),
 		'polymers' => array( 'LLDPE', 'LDPE', 'HDPE', 'PP', 'PET' ),

@@ -14,6 +14,8 @@
  * - description (string) Section description.
  * - surface (string)     Surface class (default: surface--white).
  * - limit (int)          Maximum category cards (default: 9).
+ * - page (string)        Image scope: 'home' (default) or 'about'. Every page
+ *                        uses its own category images, never another page's.
  *
  * @package Raghushree
  */
@@ -30,6 +32,7 @@ $description = isset( $args['description'] ) ? (string) $args['description'] : _
 $surface     = isset( $args['surface'] ) ? (string) $args['surface'] : 'surface--white';
 $limit       = isset( $args['limit'] ) ? absint( $args['limit'] ) : 9;
 $limit       = $limit > 0 ? $limit : 9;
+$page_scope  = ( isset( $args['page'] ) && 'about' === $args['page'] ) ? 'about' : 'home';
 
 $cards = array();
 
@@ -48,7 +51,7 @@ foreach ( $definitions as $slug => $definition ) {
 		'name'  => $term->name,
 		'url'   => $term_link,
 		'count' => (int) $term->count,
-		'slot'  => raghushree_category_image_slot( $slug, isset( $definition['type'] ) ? $definition['type'] : 'polymer' ),
+		'slot'  => raghushree_category_image_slot( $slug, isset( $definition['type'] ) ? $definition['type'] : 'polymer', $page_scope ),
 	);
 }
 
@@ -72,7 +75,7 @@ if ( empty( $cards ) ) {
 				'name'  => $term->name,
 				'url'   => $term_link,
 				'count' => (int) $term->count,
-				'slot'  => raghushree_category_image_slot( $term->slug ),
+				'slot'  => raghushree_category_image_slot( $term->slug, 'polymer', $page_scope ),
 			);
 		}
 	}
