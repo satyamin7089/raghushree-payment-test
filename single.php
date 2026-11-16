@@ -36,7 +36,7 @@ get_header();
 						'url'    => raghushree_get_enquiry_url( array( 'enquiry_type' => 'Request a Quotation' ) ),
 						'icon'   => 'phone',
 					),
-					'image_slot'    => 'about_hero',
+					'image_slot'    => 'page_hero',
 					'post_id'       => get_the_ID(),
 					'caption_title' => __( 'Industrial Polymer Raw Material Supply', 'raghushree' ),
 					'caption_sub'   => __( 'Bulk orders, grade consultation & sample enquiries', 'raghushree' ),

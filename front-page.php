@@ -35,7 +35,10 @@ get_header();
 	get_template_part(
 		'template-parts/components/category-grid',
 		null,
-		array( 'id' => 'home-categories' )
+		array(
+			'id'   => 'home-categories',
+			'page' => 'home',
+		)
 	);
 
 	// 5. Business Strength / Trust Bar
@@ -48,7 +51,10 @@ get_header();
 	get_template_part(
 		'template-parts/components/visual-product-story',
 		null,
-		array( 'id' => 'home-visual-product-story' )
+		array(
+			'id'   => 'home-visual-product-story',
+			'page' => 'home',
+		)
 	);
 
 	// 8. Grades and Material Forms

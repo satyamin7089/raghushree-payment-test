@@ -111,7 +111,13 @@ function raghushree_render_product_meta_box( $post ) {
 			<th><label for="raghushree_image_slot"><?php esc_html_e( 'Placeholder Image Key', 'raghushree' ); ?></label></th>
 			<td>
 				<select id="raghushree_image_slot" name="raghushree_image_slot">
-					<?php foreach ( raghushree_get_placeholder_registry() as $slot_key => $slot_info ) : ?>
+					<?php
+					foreach ( raghushree_get_placeholder_registry() as $slot_key => $slot_info ) :
+						$is_product_slot = isset( $slot_info['group'] ) && 'products' === $slot_info['group'];
+						if ( ! $is_product_slot && $slot_key !== $fields['image_slot'] ) {
+							continue;
+						}
+						?>
 						<option value="<?php echo esc_attr( $slot_key ); ?>" <?php selected( $fields['image_slot'], $slot_key ); ?>>
 							<?php echo esc_html( $slot_info['label'] . ' (' . $slot_key . ')' ); ?>
 						</option>

@@ -234,7 +234,7 @@ function raghushree_resolve_current_seo() {
 		} elseif ( is_page_template( 'page-templates/template-contact.php' ) || is_page( 'contact' ) ) {
 			$title       = 'Contact & Request a Quotation | ' . $site_name;
 			$description = 'Contact Raghushree Plast Products Pvt. Ltd. in Kanpur, India to request polymer quotations, check grade availability, request material samples, or discuss bulk supply.';
-			$image       = raghushree_get_image_url( 'home_hero', $post_id );
+			$image       = raghushree_get_image_url( 'page_hero', $post_id );
 		} elseif ( has_excerpt( $post_id ) ) {
 			$description = wp_strip_all_tags( get_the_excerpt( $post_id ) );
 		}

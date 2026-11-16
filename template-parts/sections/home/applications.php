@@ -16,5 +16,6 @@ get_template_part(
 	array(
 		'id'      => 'manufacturing-applications',
 		'surface' => 'surface--white',
+		'page'    => 'home',
 	)
 );

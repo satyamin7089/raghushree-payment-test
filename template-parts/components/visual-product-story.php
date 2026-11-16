@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $section_id = ! empty( $args['id'] ) ? sanitize_html_class( $args['id'] ) : 'visual-product-story';
+$page_scope = ( ! empty( $args['page'] ) && 'about' === $args['page'] ) ? 'about' : 'home';
 $products   = raghushree_get_catalog_items( 7 );
 
 // Map canonical polymer permalinks dynamically when seeded
@@ -45,7 +46,7 @@ $slides = array(
 			__( 'Supplied in free-flowing granules & verified forms', 'raghushree' ),
 			__( 'Pre-bulk sample evaluation & scheduled plant supply', 'raghushree' ),
 		),
-		'slot'      => 'polymer_pp',
+		'slot'      => $page_scope . '_story_pp',
 		'cta_label' => __( 'Explore Polypropylene', 'raghushree' ),
 		'cta_url'   => $url_pp,
 		'rfq_url'   => raghushree_get_enquiry_url(
@@ -65,7 +66,7 @@ $slides = array(
 			__( 'LDPE & LLDPE film extrusion and rotomoulding options', 'raghushree' ),
 			__( 'Consistent feed form verified prior to commercial dispatch', 'raghushree' ),
 		),
-		'slot'      => 'polymer_hdpe',
+		'slot'      => $page_scope . '_story_pe',
 		'cta_label' => __( 'Explore Polyethylene Range', 'raghushree' ),
 		'cta_url'   => $url_hdpe,
 		'rfq_url'   => raghushree_get_enquiry_url(
@@ -85,7 +86,7 @@ $slides = array(
 			__( 'PET bottle, sheet & strapping raw material options', 'raghushree' ),
 			__( 'Technical consultation for line temperature & drying setups', 'raghushree' ),
 		),
-		'slot'      => 'polymer_pvc',
+		'slot'      => $page_scope . '_story_pvc',
 		'cta_label' => __( 'Explore PVC & PET', 'raghushree' ),
 		'cta_url'   => $url_pvc,
 		'rfq_url'   => raghushree_get_enquiry_url(
@@ -105,7 +106,7 @@ $slides = array(
 			__( 'Honest batch-by-batch parameter confirmation', 'raghushree' ),
 			__( 'Trial sample testing encouraged before full-load commitment', 'raghushree' ),
 		),
-		'slot'      => 'polymer_recycled',
+		'slot'      => $page_scope . '_story_recycled',
 		'cta_label' => __( 'Explore Recycled Polymers', 'raghushree' ),
 		'cta_url'   => $url_recycled,
 		'rfq_url'   => raghushree_get_enquiry_url(
@@ -125,7 +126,7 @@ $slides = array(
 			__( 'Responsive coordination for OEMs, moulders & distributors', 'raghushree' ),
 			__( 'Direct RFQ & WhatsApp commercial support desk', 'raghushree' ),
 		),
-		'slot'      => 'about_supply',
+		'slot'      => $page_scope . '_story_supply',
 		'cta_label' => __( 'View Complete Catalog', 'raghushree' ),
 		'cta_url'   => raghushree_get_products_url(),
 		'rfq_url'   => raghushree_get_page_url( 'contact' ),

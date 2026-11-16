@@ -69,7 +69,7 @@ get_template_part(
 				<div class="about-triptych__media reveal">
 					<?php
 					raghushree_render_image(
-						'app_injection',
+						'about_stack_2',
 						array(
 							'sizes'    => '(min-width: 1024px) 380px, (min-width: 640px) 48vw, 100vw',
 							'priority' => false,
@@ -129,7 +129,7 @@ get_template_part(
 				<div class="about-triptych__media reveal">
 					<?php
 					raghushree_render_image(
-						'about_quality',
+						'about_stack_3',
 						array(
 							'sizes'    => '(min-width: 1024px) 380px, (min-width: 640px) 48vw, 100vw',
 							'priority' => false,
@@ -142,7 +142,7 @@ get_template_part(
 				<div class="about-triptych__media reveal">
 					<?php
 					raghushree_render_image(
-						'about_supply',
+						'about_stack_4',
 						array(
 							'sizes'    => '(min-width: 1024px) 380px, (min-width: 640px) 48vw, 100vw',
 							'priority' => false,

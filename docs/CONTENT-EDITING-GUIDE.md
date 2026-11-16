@@ -70,39 +70,83 @@ These values feed `raghushree_get_company_info()` (`inc/helpers.php`), so changi
 
 ## 3. Replacing any image
 
-Every photograph in the theme is a **placeholder slot** registered in `inc/image-placeholders.php`. Each slot already has an upload control in **Appearance → Customize → Raghushree Media Placeholders**, so you never edit code to change a photo.
+Every photograph in the theme is a **placeholder slot** registered in `inc/image-placeholders.php`. **Each page owns its own slots** — the home page, the About page, the Contact page, the catalogue and the product cards never share a photo. Uploading an image in one slot changes exactly one place on the site.
+
+The Customizer therefore has **six separate image sections**:
+
+| Customizer section | Slots | Notes |
+|---|---|---|
+| **Home Page Images** | `home_*` (25) | Banners, about split, quality split, the 5 story slides, the 4 application cards, 12 category cards |
+| **About Page Images** | `about_*` (32) | Hero, 4 overview stack images, quality, supply, the 5 story slides, the 4 application cards, 4 showcase cards, 12 category cards |
+| **Contact Page Images** | `contact_hero` | Contact page hero |
+| **Catalogue & Standard Pages Images** | `products_hero`, `page_hero` | Products listing hero; banner for standard pages, posts, search and 404 |
+| **Header Images** | `mega_menu_feature` | Mega menu feature photo |
+| **Product Card Fallback Images** | `polymer_*` (7) | Only used when a product has **no Featured Image** |
+
+### 3.1 Home page slots
 
 | Slot | Where it appears |
 |---|---|
-| `home_hero_pipes` | Homepage banner 1 (agriculture / irrigation pipes) |
-| `home_hero` | Homepage banner 2 (polymer) — *also* the Home page **Featured Image**, if set |
-| `home_about` | Homepage “About Raghushree” split image |
-| `home_quality` | Homepage “Quality & Supply” split image |
-| `mega_menu_feature` | Products mega menu image in the header |
-| `about_hero` | About page hero image |
-| `about_overview` | About page company overview image |
-| `about_quality` | About page quality commitment image |
-| `about_supply` | About page supply & distribution image |
-| `products_hero` | Products catalogue hero image |
-| `contact_hero` | Contact page hero image |
-| `polymer_pp`, `polymer_hdpe`, `polymer_ldpe`, `polymer_lldpe`, `polymer_pvc`, `polymer_pet`, `polymer_recycled` | Product cards, tiles, sliders **when a product has no Featured Image** |
-| `app_injection`, `app_blow`, `app_extrusion`, `app_film` | The four application flip cards |
+| `home_hero_pipes` | Banner 1 — agriculture & irrigation pipes |
+| `home_hero` | Banner 2 — polymer raw materials (*also* the Home page Featured Image, if set) |
+| `home_about` | “About Raghushree” split image |
+| `home_quality` | “Quality & Supply” split image |
+| `home_story_pp`, `home_story_pe`, `home_story_pvc`, `home_story_recycled`, `home_story_supply` | Visual Product Story slides 01–05 |
+| `home_app_injection`, `home_app_blow`, `home_app_extrusion`, `home_app_film` | The four application flip cards |
+| `home_cat_pp`, `home_cat_ldpe`, `home_cat_lldpe`, `home_cat_hdpe`, `home_cat_pvc`, `home_cat_pvc_resin`, `home_cat_pet`, `home_cat_recycled`, `home_cat_hoses`, `home_cat_suction_pipes`, `home_cat_tubing`, `home_cat_lay_flat` | The category cards (one slot per card) |
+
+### 3.2 About page slots
+
+| Slot | Where it appears |
+|---|---|
+| `about_hero` | About page hero |
+| `about_overview`, `about_stack_2`, `about_stack_3`, `about_stack_4` | The four stacked photos in the company overview triptych |
+| `about_quality` | Quality commitment split image |
+| `about_supply` | Supply & distribution split image |
+| `about_story_pp`, `about_story_pe`, `about_story_pvc`, `about_story_recycled`, `about_story_supply` | Visual Product Story slides 01–05 (About copy) |
+| `about_app_injection`, `about_app_blow`, `about_app_extrusion`, `about_app_film` | The four application flip cards |
+| `about_show_1` … `about_show_4` | The four “Inside Our Supply Capabilities” showcase cards |
+| `about_cat_pp` … `about_cat_lay_flat` (12) | The category cards (one slot per card) |
+
+### 3.3 Other slots
+
+| Slot | Where it appears |
+|---|---|
+| `contact_hero` | Contact page hero |
+| `products_hero` | Products listing hero |
+| `page_hero` | Banner of standard pages, single posts, search results and 404 |
+| `mega_menu_feature` | Mega menu feature image in the header |
+| `polymer_pp`, `polymer_hdpe`, `polymer_ldpe`, `polymer_lldpe`, `polymer_pvc`, `polymer_pet`, `polymer_recycled` | Product card / tile / slider **fallback** when the product has no Featured Image |
+
+> `app_injection`, `app_blow`, `app_extrusion`, `app_film` still exist inside the file for products saved before this change, but they are **hidden** from the Customizer — every visible surface now uses the page-scoped slots above.
 
 **Three ways to replace a photo (in priority order):**
 
 1. **Per product/page (recommended):** set a **Featured Image** on the product or page in WP Admin. It always wins over the placeholder.
-2. **Per slot:** Appearance → Customize → Raghushree Media Placeholders → choose the labelled image.
+2. **Per slot:** Appearance → Customize → the page's image section (Home / About / Contact / Catalogue / Header / Product fallbacks) → choose the labelled image.
 3. **Code default:** edit the `base_url` or `local_file` of the slot in `inc/image-placeholders.php`.
 
-**Recommended sizes:** hero/banner `1600 × 900 px`, split images `1200 × 840 px`, product photos `1200 × 1500 px` (portrait works best in the grid and slider), flip cards `800 × 450 px`. Use WebP or JPEG under ~200 KB.
+**Recommended sizes**
 
-**Category cards** (see §9) do not have their own upload field. Their image is chosen by `raghushree_category_image_slot()` in `inc/helpers.php`: a fixed map for polymer categories, and a fixed pool for pipe categories. To give a category a specific photo, change its line in that map to the slot you uploaded, e.g.:
+| Kind of slot | Upload size | Ratio |
+|---|---|---|
+| Banners (`home_hero*`), story slides | `1600 × 1200 px` and `1920 × 1080 px` | 4:3 / 16:9 |
+| Split images (`home_about`, `home_quality`, `about_quality`, `about_supply`, stack images) | `1200 × 900 px` | 4:3 |
+| Category cards (`*_cat_*`) | `1000 × 750 px` | 4:3 |
+| Application flip cards (`*_app_*`) | `960 × 540 px` | 16:9 |
+| Showcase cards (`about_show_*`) | `1200 × 750 px` | 16:10 |
+| Product fallbacks (`polymer_*`) | `1000 × 625 px` | 16:10 |
+| Hero (`about_hero`, `contact_hero`, `products_hero`, `page_hero`) | `1400 × 900 px` | ~3:2 |
+
+Use WebP or JPEG under ~200 KB. The temporary Unsplash defaults repeat a few photos because the theme ships a small stock set — each slot is independent, so upload your own photo in every card you want to differentiate.
+
+**Category cards** take their slot from `raghushree_category_image_slot()` in `inc/helpers.php`, which maps each catalog category slug to that page's own card slot, e.g.:
 
 ```php
-'pvc-granules' => 'polymer_pvc',   // ← change the right-hand slot name
+'pvc-granules' => 'pvc',    // → home_cat_pvc on Home, about_cat_pvc on About
 ```
 
----
+A category created later is matched by keyword (`ldpe`, `pp`, `pet`, `pvc`, `hose`, `layflat`, …) and falls back to the page's tubing card, so a new category never shows a broken image.
 
 ## 4. Buttons and where they point
 
@@ -217,7 +261,7 @@ $banners = array(
 | `title` | slide heading |
 | `desc` | paragraph |
 | `points` | up to 3 bullet lines |
-| `slot` | background image slot |
+| `slot` | background image slot — `home_story_*` on Home, `about_story_*` on About (the component picks the page automatically) |
 | `cta_label` / `cta_url` | primary button |
 | `rfq_url` | secondary “Enquire Now” button |
 
@@ -229,7 +273,7 @@ The polymer links are resolved from the seeded slugs; if you rename a product sl
 
 ### 5.9 Application flip cards — `flip-cards-section.php`
 
-`$cards` array, four entries: `num`, `slot` (image), `title`, `front` (text on the front), `polymers` (tags on the front), `details` (3 bullet lines on the back), `rfq_url`. The same component is reused on the About page.
+`$cards` array, four entries: `num`, `slot` (image — resolved as `home_app_*` or `about_app_*` from the section's `page` arg), `title`, `front` (text on the front), `polymers` (tags on the front), `details` (3 bullet lines on the back), `rfq_url`. The same component is reused on the About page with its own images.
 
 ### 5.10 Why choose — `why-choose.php`
 
@@ -279,7 +323,7 @@ Rendered by `page-templates/template-about.php`, which loads four grouped files 
 | Business approach cards (3) | `hero-overview.php` → `$principles` array |
 | Material portfolio heading + tiles | `portfolio-applications.php` (grid heading and `raghushree_get_catalog_items( 9 )`) |
 | Category cards heading | `portfolio-applications.php` → `get_template_part( '…/category-grid', …, array( 'id' => 'about-categories', 'surface' => 'surface--pearl' ) )` |
-| Image showcase cards (4) | `portfolio-applications.php` → `$about_image_cards` (`slot`, `kicker`, `title`, `desc`, `url`) |
+| Image showcase cards (4) | `portfolio-applications.php` → `$about_image_cards` (text keys) and Customizer → About Page Images → `about_show_1…4` (photos) |
 | Quality / supply copy | `quality-supply-tech.php` (inline eyebrow, `<h2>` and paragraphs of the Quality Commitment and Supply & Distribution sections) |
 | Technical support cards (3) | `quality-supply-tech.php` → `$tech_support` array |
 | Markets & global reach copy | `markets-why-process.php` (inline eyebrow, `<h2>`, paragraphs) |
@@ -419,7 +463,7 @@ Meta descriptions that are not set explicitly fall back to the page excerpt/cont
 | Tiles show “Price on request” | No packet price enabled in the Product Master for that product. |
 | A product is missing from the grid/coverflow | It is not published, or it has no category inside `raghushree_catalog_definitions()`. |
 | Category cards are missing | Every category is empty, or products were not assigned to `polymer_category`. |
-| Image did not change | A Featured Image on that product/page overrides the slot, or the Customizer image was not published. |
+| Image did not change | A Featured Image on that product/page overrides the slot, or the image was published in a different page's section (Home vs About). |
 | Slider shows only one side | Screen narrower than 768 px (one neighbour per side by design), or JavaScript blocked — the first slide still shows. |
 | Banner 2 never appears | JavaScript disabled, or a page builder script error; the carousel needs `assets/js/home-hero.js`. |
 | A section disappeared | Its `get_template_part()` line is commented out, or its data array is empty (e.g. no FAQ entries). |
@@ -439,7 +483,7 @@ Meta descriptions that are not set explicitly fall back to the page excerpt/cont
 | Reorder the packet grid | Products → edit → Page Attributes → Order (lower = earlier). |
 | Show 12 products instead of 9 | Replace `( 9 )` with `( 12 )` in the three files listed in §9.1. |
 | Change the “Buy now” wording | `template-parts/components/product-tile.php` → `$cta_label`. |
-| Change a category card photo | `inc/helpers.php` → `raghushree_category_image_slot()` map. |
+| Change a category card photo | Customizer → Home Page Images (or About Page Images) → “Category Card — …”. |
 | Rename a category | Products → Polymer Categories → edit Name / Slug. |
 | Make a product buyable | Product Master → enable a pack size and enter its price (₹ before GST). |
 | Change a product's packet label (“25 kg” etc.) | Product Master → packet table (polymer) or *Packet size / description* (pipe). |

@@ -14,28 +14,28 @@ $catalog_items = raghushree_get_catalog_items( 9 );
 
 $about_image_cards = array(
 	array(
-		'slot'   => 'polymer_hdpe',
+		'slot'   => 'about_show_1',
 		'kicker' => __( '01 · Polymer Resins', 'raghushree' ),
 		'title'  => __( 'Multi-Polymer Raw Material Portfolio', 'raghushree' ),
 		'desc'   => __( 'Supplying PP, HDPE, LDPE, LLDPE, PVC, PET, and sorted recycled polymer grades across verified forms.', 'raghushree' ),
 		'url'    => raghushree_get_products_url(),
 	),
 	array(
-		'slot'   => 'home_about',
+		'slot'   => 'about_show_2',
 		'kicker' => __( '02 · Conversion Line Focus', 'raghushree' ),
 		'title'  => __( 'Shop-Floor Equipment Compatibility', 'raghushree' ),
 		'desc'   => __( 'Aligned with injection moulding, blow moulding, pipe extrusion, raffia tape, and flexible film lines.', 'raghushree' ),
 		'url'    => raghushree_get_enquiry_url( array( 'enquiry_type' => 'Technical Consultation' ) ),
 	),
 	array(
-		'slot'   => 'home_quality',
+		'slot'   => 'about_show_3',
 		'kicker' => __( '03 · Pre-Order Validation', 'raghushree' ),
 		'title'  => __( 'Grade & Sample Evaluation', 'raghushree' ),
 		'desc'   => __( 'Supporting QC and production teams with trial sample coordination before committing full commercial loads.', 'raghushree' ),
 		'url'    => raghushree_get_enquiry_url( array( 'enquiry_type' => 'Sample Request' ) ),
 	),
 	array(
-		'slot'   => 'about_supply',
+		'slot'   => 'about_show_4',
 		'kicker' => __( '04 · Pan-India & Export Reach', 'raghushree' ),
 		'title'  => __( 'Structured Bulk Dispatch', 'raghushree' ),
 		'desc'   => __( 'Organized raw material dispatch from Kanpur for Indian manufacturing clusters and international buyers.', 'raghushree' ),
@@ -99,6 +99,7 @@ get_template_part(
 	array(
 		'id'      => 'about-categories',
 		'surface' => 'surface--pearl',
+		'page'    => 'about',
 	)
 );
 ?>
@@ -108,7 +109,10 @@ get_template_part(
 get_template_part(
 	'template-parts/components/visual-product-story',
 	null,
-	array( 'id' => 'about-visual-product-story' )
+	array(
+		'id'   => 'about-visual-product-story',
+		'page' => 'about',
+	)
 );
 ?>
 
@@ -166,5 +170,6 @@ get_template_part(
 	array(
 		'id'      => 'about-applications',
 		'surface' => 'surface--tint',
+		'page'    => 'about',
 	)
 );

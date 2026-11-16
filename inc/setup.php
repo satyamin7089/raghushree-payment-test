@@ -135,17 +135,25 @@ function raghushree_customize_register( $wp_customize ) {
 		);
 	}
 
-	// 2. Centralized Image Replacement Section
-	$wp_customize->add_section(
-		'raghushree_media_section',
-		array(
-			'title'       => __( 'Raghushree Image Placeholders', 'raghushree' ),
-			'description' => __( 'Replace any temporary Unsplash placeholder photograph with an uploaded WordPress Media Library image.', 'raghushree' ),
-			'priority'    => 35,
-		)
-	);
+	// 2. Page-scoped Image Replacement Sections
+	// Each page owns its own section, so a home page photo can never be replaced
+	// by, or overwrite, an About, Contact, catalogue or product-card photo.
+	foreach ( raghushree_get_placeholder_groups() as $group_key => $group ) {
+		$wp_customize->add_section(
+			'raghushree_media_' . $group_key,
+			array(
+				'title'       => $group['title'],
+				'description' => $group['description'],
+				'priority'    => $group['priority'],
+			)
+		);
+	}
 
 	foreach ( raghushree_get_placeholder_registry() as $slot_key => $slot_data ) {
+		if ( ! empty( $slot_data['hidden'] ) ) {
+			continue;
+		}
+
 		$setting_key = 'raghushree_media_' . $slot_key;
 		$wp_customize->add_setting(
 			$setting_key,
@@ -161,7 +169,7 @@ function raghushree_customize_register( $wp_customize ) {
 					$setting_key,
 					array(
 						'label'     => $slot_data['label'],
-						'section'   => 'raghushree_media_section',
+						'section'   => raghushree_placeholder_section_id( $slot_key ),
 						'mime_type' => 'image',
 					)
 				)
