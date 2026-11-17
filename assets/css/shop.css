@@ -66,30 +66,23 @@
 
 .shop-tile__media {
   position: relative;
+  flex-shrink: 0;
   display: block;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   background-color: var(--tint);
 }
 
 .shop-tile__media img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
-  transition: transform var(--transition-slow) var(--ease-standard);
-}
-
-.shop-tile:hover .shop-tile__media img,
-.shop-tile:focus-within .shop-tile__media img {
-  transform: scale(1.04);
 }
 
 .shop-tile__tag {
-  position: absolute;
-  top: var(--space-3);
-  left: var(--space-3);
-  z-index: 2;
+  align-self: flex-start;
   padding: 5px 10px;
   font-family: var(--font-body);
   font-size: var(--text-caption);
@@ -236,8 +229,7 @@
 /* --------------------------------------------------------------------------
    2. Centre-focused product coverflow
    The active slide is sharp and centred; neighbours are scaled, blurred and
-   dimmed. Slide width follows the stage height so the layout stays identical
-   on every screen size.
+   dimmed. Square image areas stay consistent on every screen size.
    -------------------------------------------------------------------------- */
 .shopflow {
   overflow: hidden;
@@ -255,7 +247,8 @@
 
 .shopflow__stage {
   position: relative;
-  height: clamp(340px, 42vw, 540px);
+  --shopflow-image-size: min(calc(100vw - 120px), clamp(240px, 42vw, 440px));
+  height: calc(var(--shopflow-image-size) + 130px);
   margin-top: var(--space-6);
 }
 
@@ -269,8 +262,8 @@
   position: absolute;
   top: 0;
   left: 50%;
+  width: var(--shopflow-image-size);
   height: 100%;
-  aspect-ratio: 3 / 4;
   overflow: hidden;
   border-radius: var(--radius-md);
   background-color: var(--ink-soft);
@@ -382,68 +375,29 @@
 
 .shopflow__link {
   position: relative;
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
 }
 
 .shopflow__img {
+  display: block;
+  flex: 0 0 auto;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
   object-position: center;
 }
 
-.shopflow__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(15, 17, 19, 0.92) 0%, rgba(15, 17, 19, 0.35) 42%, rgba(15, 17, 19, 0) 70%);
-}
-
-.shopflow__plus {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 58px;
-  height: 58px;
-  color: var(--text-on-dark);
-  background-color: rgba(255, 255, 255, 0.16);
-  border-radius: 50%;
-  box-shadow: var(--shadow-dark);
-  backdrop-filter: blur(8px);
-  transform: translate(-50%, -50%);
-  transition: background-color var(--transition-fast) var(--ease-standard),
-              transform var(--transition-fast) var(--ease-standard);
-}
-
-.shopflow__plus svg {
-  width: 22px;
-  height: 22px;
-}
-
-.shopflow__link:hover .shopflow__plus,
-.shopflow__link:focus-visible .shopflow__plus {
-  background-color: var(--cta);
-  transform: translate(-50%, -50%) scale(1.08);
-}
-
-.shopflow__slide:not([data-offset="0"]) .shopflow__plus {
-  opacity: 0;
-}
-
 .shopflow__caption {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
+  position: static;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: var(--space-7) var(--space-5) var(--space-5);
+  padding: var(--space-3) var(--space-4);
   text-align: center;
 }
 
@@ -467,11 +421,11 @@
   overflow-wrap: anywhere;
 }
 
-.shopflow__slide:not([data-offset="0"]) .shopflow__caption {
+.shopflow__slide:not(.is-active) .shopflow__caption {
   opacity: 0;
 }
 
-.shopflow__slide[data-offset="0"] .shopflow__caption {
+.shopflow__slide.is-active .shopflow__caption {
   opacity: 1;
   transition: opacity var(--transition-slow) var(--ease-standard);
 }
@@ -549,11 +503,6 @@
   .shopflow__arrow {
     width: 44px;
     height: 44px;
-  }
-
-  .shopflow__plus {
-    width: 50px;
-    height: 50px;
   }
 
   .shopflow__title {

@@ -58,15 +58,12 @@ $enquire_url = raghushree_get_enquiry_url(
 	data-forms="<?php echo esc_attr( implode( ',', $form_slugs ) ); ?>"
 >
 	<a class="product-card__media" href="<?php echo esc_url( $product['permalink'] ); ?>" tabindex="-1" aria-hidden="true">
-		<?php if ( ! empty( $product['primary_cat'] ) ) : ?>
-			<span class="product-card__badge"><?php echo esc_html( $product['primary_cat'] ); ?></span>
-		<?php endif; ?>
 		<?php
 		raghushree_render_image(
 			$product['image_slot'],
 			array(
 				'post_id'  => $product['id'],
-				'size'     => 'raghushree-card',
+				'size'     => 'full',
 				'sizes'    => '(min-width: 1200px) 380px, (min-width: 768px) 46vw, 100vw',
 				'priority' => false,
 			)
@@ -75,6 +72,9 @@ $enquire_url = raghushree_get_enquiry_url(
 	</a>
 
 	<div class="product-card__body">
+		<?php if ( ! empty( $product['primary_cat'] ) ) : ?>
+			<span class="product-card__badge"><?php echo esc_html( $product['primary_cat'] ); ?></span>
+		<?php endif; ?>
 		<h3 class="product-card__title">
 			<a href="<?php echo esc_url( $product['permalink'] ); ?>">
 				<?php echo esc_html( $product['title'] ); ?>

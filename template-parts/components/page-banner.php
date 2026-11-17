@@ -30,6 +30,9 @@ $post_id       = ! empty( $args['post_id'] ) ? (int) $args['post_id'] : 0;
 $caption_title = ! empty( $args['caption_title'] ) ? $args['caption_title'] : __( 'Industrial Polymer Raw Material Supply', 'raghushree' );
 $caption_sub   = array_key_exists( 'caption_sub', $args ) ? (string) $args['caption_sub'] : __( 'Bulk orders, grade consultation & sample enquiries', 'raghushree' );
 $has_slider    = count( $slider_slides ) > 1;
+// Product images must use the original, not one of the hard-cropped theme sizes.
+$is_product_banner = 'product-hero' === $section_id;
+$image_size = $is_product_banner ? 'full' : 'raghushree-hero';
 ?>
 <section class="section section--hero page-banner-section"<?php echo '' !== $section_id ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
 	<div class="page-banner-card">
@@ -119,6 +122,7 @@ $has_slider    = count( $slider_slides ) > 1;
 			<!-- Right Column: Equal-Height Image Frame (Single Image or Smooth Fade-In / Fade-Out Slider) -->
 			<div class="page-banner-card__right">
 				<div class="page-banner-card__frame<?php echo $has_slider ? ' banner-fade-slider' : ''; ?>"<?php echo $has_slider ? ' data-fade-slider' : ''; ?>>
+					<?php if ( $is_product_banner ) : ?><div class="page-banner-card__product-image"><?php endif; ?>
 					<?php if ( $has_slider ) : ?>
 						<div class="banner-fade-slider__slides">
 							<?php foreach ( $slider_slides as $sl_idx => $sl ) : ?>
@@ -135,7 +139,7 @@ $has_slider    = count( $slider_slides ) > 1;
 											$image_slot,
 											array(
 												'attachment_id' => (int) $sl['attachment_id'],
-												'size'          => 'raghushree-hero',
+												'size'          => $image_size,
 												'sizes'         => '(min-width: 900px) 520px, 100vw',
 												'priority'      => 0 === $sl_idx,
 											)
@@ -145,7 +149,7 @@ $has_slider    = count( $slider_slides ) > 1;
 											! empty( $sl['slot'] ) ? $sl['slot'] : $image_slot,
 											array(
 												'post_id'  => 0 === $sl_idx ? $post_id : 0,
-												'size'     => 'raghushree-hero',
+												'size'     => $image_size,
 												'sizes'    => '(min-width: 900px) 520px, 100vw',
 												'priority' => 0 === $sl_idx,
 											)
@@ -155,6 +159,7 @@ $has_slider    = count( $slider_slides ) > 1;
 								</div>
 							<?php endforeach; ?>
 						</div>
+						<?php if ( $is_product_banner ) : ?></div><?php endif; ?>
 
 						<div class="page-banner-card__caption page-banner-card__caption--slider">
 							<div class="page-banner-card__caption-text">
@@ -188,11 +193,12 @@ $has_slider    = count( $slider_slides ) > 1;
 						} else {
 							raghushree_render_image( $image_slot, array(
 								'attachment_id' => ! empty( $slider_slides[0]['attachment_id'] ) ? (int) $slider_slides[0]['attachment_id'] : 0,
-								'post_id' => $post_id, 'size' => 'raghushree-hero',
+								'post_id' => $post_id, 'size' => $image_size,
 								'sizes' => '(min-width: 900px) 520px, 100vw', 'priority' => true,
 							) );
 						}
 						?>
+						<?php if ( $is_product_banner ) : ?></div><?php endif; ?>
 						<div class="page-banner-card__caption">
 							<span class="page-banner-card__caption-title"><?php echo esc_html( $caption_title ); ?></span>
 							<span class="page-banner-card__caption-sub"><?php echo esc_html( $caption_sub ); ?></span>

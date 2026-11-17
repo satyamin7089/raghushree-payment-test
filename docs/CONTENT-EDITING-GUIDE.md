@@ -135,8 +135,10 @@ The Customizer therefore has **six separate image sections**:
 | Category cards (`*_cat_*`) | `1000 × 750 px` | 4:3 |
 | Application flip cards (`*_app_*`) | `960 × 540 px` | 16:9 |
 | Showcase cards (`about_show_*`) | `1200 × 750 px` | 16:10 |
-| Product fallbacks (`polymer_*`) | `1000 × 625 px` | 16:10 |
+| Product featured images, gallery images and fallbacks (`polymer_*`) | `1200 × 1200 px` | 1:1 |
 | Hero (`about_hero`, `contact_hero`, `products_hero`, `page_hero`) | `1400 × 900 px` | ~3:2 |
+
+Use square product images for the best fit on product cards, the product page and the product showcase. Non-square product images are displayed in full with empty space around them, rather than cropped. Existing uploads do not need thumbnail regeneration.
 
 Use WebP or JPEG under ~200 KB. The temporary Unsplash defaults repeat a few photos because the theme ships a small stock set — each slot is independent, so upload your own photo in every card you want to differentiate.
 
