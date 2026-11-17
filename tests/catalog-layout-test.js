@@ -6,7 +6,7 @@ const chromiumBinary = chromiumModule.default || chromiumModule;
 const fs = require('fs');
 const assert = require('assert');
 const styles = ['assets/css/global.css', 'assets/css/components.css', 'assets/css/products.css', 'assets/css/typography.css'].map((file) => fs.readFileSync(file, 'utf8')).join('\n');
-const card = (name) => `<article class="product-card"><a class="product-card__media" href="#"><span class="product-card__badge">PVC Flexible Suction Pipes</span></a><div class="product-card__body"><h3 class="product-card__title"><a href="#">${name}</a></h3><p class="product-card__desc">A verified description of this product and its use.</p><div class="product-card__actions"><a class="btn btn--secondary btn--sm" href="#">Product Details</a><a class="btn btn--primary btn--sm" href="#">Enquire</a></div></div></article>`;
+const card = (name) => `<article class="product-card"><a class="product-card__media" href="#"></a><div class="product-card__body"><span class="product-card__badge">PVC Flexible Suction Pipes</span><h3 class="product-card__title"><a href="#">${name}</a></h3><p class="product-card__desc">A verified description of this product and its use.</p><div class="product-card__actions"><a class="btn btn--secondary btn--sm" href="#">Product Details</a><a class="btn btn--primary btn--sm" href="#">Enquire</a></div></div></article>`;
 (async () => {
   const browser = await chromium.launch({ executablePath: await chromiumBinary.executablePath(), args: chromiumBinary.args, headless: true });
   try {

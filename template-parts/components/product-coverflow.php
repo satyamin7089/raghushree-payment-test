@@ -3,7 +3,7 @@
  * Consumer Product Coverflow — centre-focused image slider.
  *
  * The active slide is sharp and centred; the neighbouring slides sit behind it,
- * scaled down, blurred and dimmed. Clicking the centre "+" opens the product
+ * scaled down, blurred and dimmed. Clicking the active slide opens the product
  * page. Arrows, dots, keyboard arrows, swipe and reduced-motion are supported,
  * and without JavaScript the first slide simply renders centred and legible.
  *
@@ -87,17 +87,13 @@ if ( empty( $slides_items ) ) {
 							$item['image_slot'],
 							array(
 								'post_id'  => $item['id'],
-								'size'     => 'raghushree-hero',
+								'size'     => 'full',
 								'sizes'    => '(min-width: 900px) 520px, 84vw',
 								'priority' => $is_active,
 								'class'    => 'shopflow__img',
 							)
 						);
 						?>
-						<span class="shopflow__scrim" aria-hidden="true"></span>
-						<span class="shopflow__plus" aria-hidden="true">
-							<?php echo raghushree_icon( 'plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</span>
 						<span class="shopflow__caption">
 							<span class="shopflow__kicker"><?php echo esc_html( implode( ' · ', $kicker_bits ) ); ?></span>
 							<span class="shopflow__title"><?php echo esc_html( $item['title'] ); ?></span>

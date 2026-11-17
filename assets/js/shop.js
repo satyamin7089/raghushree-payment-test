@@ -4,7 +4,7 @@
  * 1. Centre-focused product coverflow: the active slide is sharp and centred,
  *    the neighbouring slides are positioned behind it and blurred by CSS.
  * 2. Controls: previous/next arrows, dot tabs, keyboard arrows, touch swipe and
- *    click-a-neighbour-to-centre. The centre "+" link opens the product page.
+ *    click-a-neighbour-to-centre. The active slide links to the product page.
  *
  * Progressive enhancement only: without JavaScript the first slide stays
  * centred and the link to its product page keeps working.

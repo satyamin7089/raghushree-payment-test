@@ -684,11 +684,40 @@ main .sp-grade-card__desc, main .sp-tech-item__desc, main .sp-logistics-card__de
 @media (min-width: 900px) { .product-editorial { grid-template-columns: minmax(0, .6fr) minmax(0, 1.4fr); gap: clamp(32px, 5vw, 80px); } }
 .product-image-empty { position: absolute; inset: 0; display: grid; place-items: center; background: var(--tint); color: var(--muted); font-weight: 600; }
 
-/* Keep the product image a comfortable size and sticky only within the hero. */
+/* A square image area, independent of the length of the purchase panel. */
+#product-hero .page-banner-card__frame {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+#product-hero .page-banner-card__product-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--tint);
+}
+#product-hero .page-banner-card__product-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: none;
+}
+#product-hero .page-banner-card__caption {
+  position: relative;
+  background: var(--ink-soft);
+  padding: 12px 18px;
+}
 @media (min-width: 900px) {
   #product-hero, #product-hero .page-banner-card { overflow: visible; }
   #product-hero .page-banner-card__right { display: block; animation: none; }
-  #product-hero .page-banner-card__frame { position: sticky; top: calc(var(--header-height, 90px) + 16px); height: min(560px, calc(100vh - var(--header-height, 90px) - 36px)); min-height: 0; }
+  #product-hero .page-banner-card__frame {
+    position: sticky;
+    top: calc(var(--header-height, 90px) + 16px);
+    width: min(100%, 520px, max(200px, calc(100vh - var(--header-height, 90px) - 120px)));
+  }
 }
 .product-editorial__cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .product-editorial__body.product-editorial__cards > * { margin: 0; }

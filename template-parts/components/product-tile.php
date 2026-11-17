@@ -40,15 +40,12 @@ if ( $has_price ) {
 ?>
 <article class="shop-tile reveal">
 	<a class="shop-tile__media" href="<?php echo esc_url( $product['permalink'] ); ?>" tabindex="-1" aria-hidden="true">
-		<?php if ( ! empty( $product['primary_cat'] ) ) : ?>
-			<span class="shop-tile__tag"><?php echo esc_html( $product['primary_cat'] ); ?></span>
-		<?php endif; ?>
 		<?php
 		raghushree_render_image(
 			$product['image_slot'],
 			array(
 				'post_id'  => $product['id'],
-				'size'     => 'raghushree-card',
+				'size'     => 'full',
 				'sizes'    => '(min-width: 1200px) 380px, (min-width: 900px) 30vw, (min-width: 600px) 46vw, 92vw',
 				'priority' => false,
 			)
@@ -57,6 +54,9 @@ if ( $has_price ) {
 	</a>
 
 	<div class="shop-tile__body">
+		<?php if ( ! empty( $product['primary_cat'] ) ) : ?>
+			<span class="shop-tile__tag"><?php echo esc_html( $product['primary_cat'] ); ?></span>
+		<?php endif; ?>
 		<h3 class="shop-tile__title">
 			<a href="<?php echo esc_url( $product['permalink'] ); ?>"><?php echo esc_html( $product['title'] ); ?></a>
 		</h3>
